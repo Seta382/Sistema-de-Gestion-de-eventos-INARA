@@ -9,7 +9,7 @@
     <h1>INARA</h1>
     <h2>Iniciar Sesión</h2>
 
-    <form action="LoginServlet" method="post">
+    <form action="${pageContext.request.contextPath}/login" method="post">
 
         <label>Correo:</label>
         <input type="email" name="correo" required>

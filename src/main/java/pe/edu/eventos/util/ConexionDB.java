@@ -1,31 +1,55 @@
 package pe.edu.eventos.util;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.ResultSet;
+import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.Properties;
+
 /**
- * pruebas con supabase. actualizar conexiones
+ * Conexión a Supabase (PostgreSQL) usando el Session pooler.
+ * Las credenciales viven en resources/application.properties, NO en el
+ * código, para no subir la contraseña al repositorio por accidente.
  */
-public class TestConexion {
+public class ConexionDB {
 
-    public static void main(String[] args) {
-        try (Connection con = ConexionDB.obtenerConexion()) {
+    private static final Properties props = new Properties();
 
-            System.out.println("Conexión a Supabase exitosa.");
-
-            try (Statement st = con.createStatement();
-                 ResultSet rs = st.executeQuery("SELECT COUNT(*) AS total FROM usuario")) {
-                if (rs.next()) {
-                    System.out.println("Filas en la tabla usuario: " + rs.getInt("total"));
-                }
+    static {
+        try (InputStream input = ConexionDB.class.getClassLoader()
+                .getResourceAsStream("application.properties")) {
+            if (input == null) {
+                throw new RuntimeException("No se encontró application.properties en resources/");
             }
-
-        } catch (SQLException e) {
-            System.out.println("Fallo la conexión o la consulta. Revisa lo siguiente:");
-            System.out.println("- application.properties (host/usuario/password correctos)");
-            System.out.println("- Que ya hayas corrido 01_create_usuario.sql en el SQL Editor de Supabase");
-            e.printStackTrace();
+            props.load(input);
+        } catch (IOException e) {
+            throw new RuntimeException("Error al leer application.properties", e);
         }
+    }
+
+    private ConexionDB() {
+    }
+
+    public static Connection obtenerConexion() throws SQLException {
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("No se encontró el driver JDBC de PostgreSQL en el classpath", e);
+        }
+
+        String host = props.getProperty("db.host");
+        String port = props.getProperty("db.port");
+        String database = props.getProperty("db.database");
+        String user = props.getProperty("db.user");
+        String password = props.getProperty("db.password");
+
+        // sslmode=require porque Supabase exige conexiones cifradas
+        String url = String.format(
+                "jdbc:postgresql://%s:%s/%s?sslmode=require",
+                host, port, database
+        );
+
+        return DriverManager.getConnection(url, user, password);
     }
 }

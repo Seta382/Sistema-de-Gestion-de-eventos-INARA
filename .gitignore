@@ -1,0 +1,8 @@
+# IntelliJ IDEA
+.idea/
+
+# Maven
+target/
+
+# Credenciales de Supabase
+src/main/resources/application.properties

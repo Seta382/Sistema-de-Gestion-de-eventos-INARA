@@ -1,0 +1,15 @@
+CREATE TABLE Usuario (
+    id SERIAL PRIMARY KEY,}
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    correo VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    rol VARCHAR(50) DEFAULT 'USER',
+    telefono VARCHAR(20),
+    creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE Cliente (
+    -- id de usuario
+    id INTEGER PRIMARY KEY REFERENCES Usuario(id) ON DELETE CASCADE
+);

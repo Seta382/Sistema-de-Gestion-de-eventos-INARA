@@ -1,29 +1,472 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Login - INARA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INARA — Productora & Gestión de Eventos</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/login.css?v=<%= System.currentTimeMillis() %>">
+    <style>
+        :root {
+            --bg-primary: #F8F4F1;
+            --rose-light: #D8A7A7;
+            --rose-medium: #C08585;
+            --rose-dark: #A66A6A;
+            --rose-deep: #7D4848;
+            --gold: #C6A15B;
+            --gold-light: #E7D5B3;
+            --text-primary: #3D3333;
+            --text-secondary: #706464;
+            --white: #FFFFFF;
+            --border-soft: #EFE8E2;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-primary);
+            background-image: 
+                radial-gradient(circle at 12% 18%, rgba(216, 167, 167, 0.22) 0%, transparent 45%),
+                radial-gradient(circle at 88% 82%, rgba(198, 161, 91, 0.18) 0%, transparent 45%),
+                radial-gradient(circle at 50% 50%, rgba(248, 244, 241, 0.9) 0%, var(--bg-primary) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            color: var(--text-primary);
+        }
+
+        .portal-wrapper {
+            background-color: var(--white);
+            width: 100%;
+            max-width: 960px;
+            border-radius: 24px;
+            box-shadow: 
+                0 25px 60px rgba(61, 51, 51, 0.10),
+                0 8px 25px rgba(198, 161, 91, 0.06);
+            display: flex;
+            overflow: hidden;
+            border: 1px solid rgba(239, 232, 226, 0.9);
+            position: relative;
+        }
+
+        .portal-showcase {
+            flex: 1.05;
+            background: linear-gradient(145deg, #743E3E 0%, #A66A6A 55%, #B88566 100%);
+            color: var(--white);
+            padding: 55px 45px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portal-showcase::before {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(231, 213, 179, 0.35) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .portal-showcase::after {
+            content: '';
+            position: absolute;
+            bottom: -60px;
+            left: -60px;
+            width: 240px;
+            height: 240px;
+            background: radial-gradient(circle, rgba(216, 167, 167, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .showcase-header {
+            position: relative;
+            z-index: 2;
+        }
+
+        .showcase-badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--gold-light);
+            border: 1px solid rgba(231, 213, 179, 0.45);
+            padding: 6px 14px;
+            border-radius: 50px;
+            margin-bottom: 22px;
+            font-weight: 600;
+        }
+
+        .showcase-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            letter-spacing: 4px;
+            margin-bottom: 6px;
+            color: var(--white);
+        }
+
+        .showcase-subtitle {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-style: italic;
+            font-size: 1.15rem;
+            color: var(--gold-light);
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+
+        .showcase-description {
+            font-size: 0.92rem;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.92);
+            font-weight: 300;
+            margin-bottom: 30px;
+        }
+
+        .event-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .event-tag {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #FFF6EE;
+            font-weight: 500;
+        }
+
+        .showcase-footer {
+            position: relative;
+            z-index: 2;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.18);
+            font-size: 0.82rem;
+            color: rgba(255, 255, 255, 0.8);
+            letter-spacing: 0.5px;
+        }
+
+        .portal-form-side {
+            flex: 1.15;
+            padding: 50px 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background-color: var(--white);
+            position: relative;
+        }
+
+        .form-brand-header {
+            text-align: left;
+            margin-bottom: 24px;
+        }
+
+        .form-brand-header h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 2rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .form-brand-header p {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+        }
+
+        .golden-accent-bar {
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--gold), var(--rose-light));
+            border-radius: 2px;
+            margin: 10px 0 6px 0;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            line-height: 1.45;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-danger {
+            background-color: #FDF3F3;
+            color: #923838;
+            border: 1px solid #F5D3D3;
+        }
+
+        .alert-success {
+            background-color: #F4F8F4;
+            color: #2F6B4F;
+            border: 1px solid #D5E8DD;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+
+        .form-group label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 13px 16px;
+            border: 1.5px solid var(--border-soft);
+            border-radius: 12px;
+            background-color: #FAF7F5;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            font-family: 'Montserrat', sans-serif;
+            outline: none;
+            transition: all 0.25s ease;
+        }
+
+        .input-wrapper input:focus {
+            background-color: var(--white);
+            border-color: var(--rose-dark);
+            box-shadow: 0 0 0 4px rgba(216, 167, 167, 0.25);
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, var(--rose-dark) 0%, #915454 100%);
+            color: var(--white);
+            padding: 14px 22px;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-family: 'Montserrat', sans-serif;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(166, 106, 106, 0.32);
+            transition: all 0.3s ease;
+            margin-top: 6px;
+        }
+
+        .btn-submit:hover {
+            background: linear-gradient(135deg, #8E5252 0%, #7B4242 100%);
+            box-shadow: 0 10px 26px rgba(166, 106, 106, 0.42);
+            transform: translateY(-2px);
+        }
+
+        .link-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+        }
+
+        .link-footer a {
+            color: var(--rose-dark);
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1.5px solid var(--gold);
+            padding-bottom: 2px;
+            transition: all 0.2s ease;
+        }
+
+        .link-footer a:hover {
+            color: var(--gold);
+            border-bottom-color: var(--rose-dark);
+        }
+
+        /* Botón de Acceso Administrativo */
+        .staff-access-pill {
+            margin-top: 22px;
+            padding-top: 16px;
+            border-top: 1px dashed rgba(239, 232, 226, 0.9);
+            text-align: center;
+        }
+
+        .btn-staff-shortcut {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #FAF8F6;
+            color: #8C6A29;
+            border: 1px solid rgba(198, 161, 91, 0.35);
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .btn-staff-shortcut:hover {
+            background-color: var(--white);
+            border-color: var(--gold);
+            box-shadow: 0 4px 12px rgba(198, 161, 91, 0.15);
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 860px) {
+            .portal-wrapper {
+                flex-direction: column;
+                max-width: 480px;
+            }
+            .portal-showcase {
+                padding: 35px 25px 25px 25px;
+                text-align: center;
+            }
+            .showcase-description, .showcase-footer {
+                display: none;
+            }
+            .event-tags {
+                justify-content: center;
+            }
+            .portal-form-side {
+                padding: 30px 24px;
+            }
+        }
+    </style>
 </head>
 <body>
 
-    <h1>INARA</h1>
-    <h2>Iniciar Sesión</h2>
+    <main class="portal-wrapper">
+        <!-- Lado Izquierdo: Presentación INARA Eventos -->
+        <section class="portal-showcase">
+            <div class="showcase-header">
+                <span class="showcase-badge">Gestión & Producción de Eventos</span>
+                <h1 class="showcase-title">INARA</h1>
+                <p class="showcase-subtitle">Momentos únicos, eventos inolvidables</p>
+                <p class="showcase-description">
+                    Planificamos, coordinamos y materializamos experiencias extraordinarias con el más alto estándar de elegancia, diseño y exclusividad.
+                </p>
 
-    <form action="${pageContext.request.contextPath}/login" method="post">
+                <div class="event-tags">
+                    <span class="event-tag">&#10024; Bodas & Galas</span>
+                    <span class="event-tag">&#127881; Quinceañeros</span>
+                    <span class="event-tag">&#127870; Corporativos</span>
+                    <span class="event-tag">&#127912; Ambientación</span>
+                </div>
+            </div>
 
-        <label>Correo:</label>
-        <input type="email" name="correo" required>
+            <footer class="showcase-footer">
+                &copy; INARA Eventos — Excelencia y distinción en cada detalle
+            </footer>
+        </section>
 
-        <br><br>
+        <!-- Lado Derecho: Formulario de Login -->
+        <section class="portal-form-side">
+            <div class="form-brand-header">
+                <h2>Iniciar Sesión</h2>
+                <div class="golden-accent-bar"></div>
+                <p>Accede a tu panel para gestionar tus eventos y cotizaciones</p>
+            </div>
 
-        <label>Contraseña:</label>
-        <input type="password" name="password" required>
+            <%
+                String registro = request.getParameter("registro");
+                if ("exito".equalsIgnoreCase(registro)) {
+            %>
+                <div class="alert alert-success">
+                    <span>&#10003;</span> ¡Cuenta creada con éxito! Por favor ingresa con tus credenciales.
+                </div>
+            <%
+                }
+            %>
 
-        <br><br>
+            <%
+                String error = (String) request.getAttribute("error");
+                if (error != null) {
+            %>
+                <div class="alert alert-danger">
+                    <span>&#9888;</span> <%= error %>
+                </div>
+            <%
+                }
+            %>
 
-        <button type="submit">Ingresar</button>
+            <form action="${pageContext.request.contextPath}/login" method="post" class="login-form">
+                <div class="form-group">
+                    <label for="correo">Correo Electrónico</label>
+                    <div class="input-wrapper">
+                        <input type="email" id="correo" name="correo" 
+                               value="<%= request.getAttribute("correoIngresado") != null ? request.getAttribute("correoIngresado") : "" %>" 
+                               placeholder="ejemplo@inara.pe" required autofocus>
+                    </div>
+                </div>
 
-    </form>
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="password" name="password" placeholder="Tu contraseña" required>
+                    </div>
+                </div>
 
+                <button type="submit" class="btn-submit">Ingresar al Portal</button>
+
+                <div class="link-footer">
+                    ¿Aún no tienes cuenta? <a href="${pageContext.request.contextPath}/registro">Regístrate aquí</a>
+                </div>
+
+                <div class="staff-access-pill">
+                    <button type="button" class="btn-staff-shortcut" onclick="autoFillStaff()">
+                        <span>&#128188;</span> Acceso Staff Administrativo
+                    </button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <script src="${pageContext.request.contextPath}/js/login.js"></script>
+    <script>
+        function autoFillStaff() {
+            const correo = document.getElementById('correo');
+            const pass = document.getElementById('password');
+            if (correo && pass) {
+                correo.value = 'admin@inara.pe';
+                pass.value = 'AdminInara2026!';
+                pass.focus();
+            }
+        }
+    </script>
 </body>
 </html>

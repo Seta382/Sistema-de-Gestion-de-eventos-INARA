@@ -1,19 +1,18 @@
-package main.java.pe.edu.eventos.model;
+package pe.edu.eventos.model;
 
 /**
- *heredan los datos de la clase usuario
+ * Representa a un cliente en el sistema, heredando los atributos de Usuario.
  */
 public class Cliente extends Usuario {
     private Integer idCliente;
-    private String telefono;
 
-    public Cliente(){
+    public Cliente() {
         super();
+        setRol("CLIENTE");
     }
 
     public Cliente(Integer id, String nombre, String apellido, String correo, String password, String rol, String telefono, Integer idCliente) {
-        super(id, nombre, apellido, correo, password, "CLIENTE");
-        this.telefono = telefono;
+        super(id, nombre, apellido, correo, password, rol != null ? rol : "CLIENTE", telefono, null);
         this.idCliente = idCliente;
     }
 
@@ -24,12 +23,5 @@ public class Cliente extends Usuario {
     public void setIdCliente(Integer idCliente) {
         this.idCliente = idCliente;
     }
-
-    public String getTelefono() {
-        return telefono;
-    }
-
-    public void setTelefono(String telefono) {
-        this.telefono = telefono;
-    }
 }
+

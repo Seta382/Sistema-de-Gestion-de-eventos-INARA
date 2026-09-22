@@ -1,7 +1,10 @@
-package main.java.pe.edu.eventos.model;
+package pe.edu.eventos.model;
+
+import java.time.LocalDateTime;
 
 /**
- *Para los clientes y organizadores que interactuen con el sistema
+ * Representa los usuarios registrados en el sistema (Clientes, Organizadores, Administradores).
+ * Mapea directamente con la tabla 'Usuario' en Supabase.
  */
 public class Usuario {
     private Integer id;
@@ -10,8 +13,10 @@ public class Usuario {
     private String correo;
     private String password;
     private String rol;
+    private String telefono;
+    private LocalDateTime creadoEn;
 
-    public Usuario(){
+    public Usuario() {
     }
 
     public Usuario(Integer id, String nombre, String apellido, String correo, String password, String rol) {
@@ -21,6 +26,17 @@ public class Usuario {
         this.correo = correo;
         this.password = password;
         this.rol = rol;
+    }
+
+    public Usuario(Integer id, String nombre, String apellido, String correo, String password, String rol, String telefono, LocalDateTime creadoEn) {
+        this.id = id;
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.correo = correo;
+        this.password = password;
+        this.rol = rol;
+        this.telefono = telefono;
+        this.creadoEn = creadoEn;
     }
 
     public Integer getId() {
@@ -69,5 +85,33 @@ public class Usuario {
 
     public void setRol(String rol) {
         this.rol = rol;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
+    }
+
+    public LocalDateTime getCreadoEn() {
+        return creadoEn;
+    }
+
+    public void setCreadoEn(LocalDateTime creadoEn) {
+        this.creadoEn = creadoEn;
+    }
+
+    @Override
+    public String toString() {
+        return "Usuario{" +
+                "id=" + id +
+                ", nombre='" + nombre + '\'' +
+                ", apellido='" + apellido + '\'' +
+                ", correo='" + correo + '\'' +
+                ", rol='" + rol + '\'' +
+                ", telefono='" + telefono + '\'' +
+                '}';
     }
 }

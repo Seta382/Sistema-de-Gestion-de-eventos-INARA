@@ -1,6 +1,14 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="pe.edu.eventos.dto.UsuarioDTO" %>
 <%@ page import="pe.edu.eventos.util.Constantes" %>
+<%@ page import="pe.edu.eventos.dao.ClienteDAO" %>
+<%@ page import="pe.edu.eventos.dao.impl.ClienteDAOImpl" %>
+<%@ page import="pe.edu.eventos.model.Cita" %>
+<%@ page import="pe.edu.eventos.service.CitaService" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Collections" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="java.util.Locale" %>
 <%
     UsuarioDTO usuario = (UsuarioDTO) session.getAttribute(Constantes.SESION_USUARIO);
     if (usuario == null) {
@@ -18,6 +26,13 @@
     if (iniciales.isEmpty()) {
         iniciales = "CL";
     }
+
+    // Sección de pruebas del módulo Cita: trae las citas del cliente logueado
+    ClienteDAO clienteDAO = new ClienteDAOImpl();
+    Integer idCliente = clienteDAO.buscarIdPorUsuario(usuario.getId());
+    List<Cita> misCitas = (idCliente != null)
+            ? new CitaService().listarPorCliente(idCliente)
+            : Collections.emptyList();
 %>
 <!DOCTYPE html>
 <html lang="es">
@@ -54,9 +69,9 @@
         body {
             font-family: 'Montserrat', sans-serif;
             background-color: var(--bg-primary);
-            background-image: 
-                radial-gradient(circle at 10% 10%, rgba(216, 167, 167, 0.16) 0%, transparent 40%),
-                radial-gradient(circle at 90% 90%, rgba(198, 161, 91, 0.14) 0%, transparent 45%);
+            background-image:
+                    radial-gradient(circle at 10% 10%, rgba(216, 167, 167, 0.16) 0%, transparent 40%),
+                    radial-gradient(circle at 90% 90%, rgba(198, 161, 91, 0.14) 0%, transparent 45%);
             min-height: 100vh;
             color: var(--text-primary);
             display: flex;
@@ -428,6 +443,89 @@
             transform: translateY(-1px);
         }
 
+        /* Sección de Mis Citas (pruebas del módulo Cita) */
+        .citas-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-top: 20px;
+        }
+
+        .cita-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            background-color: #FAF8F6;
+            border-radius: 14px;
+            padding: 16px 20px;
+            border: 1px solid rgba(239, 232, 226, 0.6);
+        }
+
+        .cita-fecha-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 64px;
+            background: var(--white);
+            border: 1px solid var(--border-soft);
+            border-radius: 10px;
+            padding: 8px 6px;
+        }
+
+        .cita-fecha-box .dia {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--rose-dark);
+            line-height: 1;
+        }
+
+        .cita-fecha-box .hora {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .cita-info {
+            flex: 1;
+        }
+
+        .cita-motivo {
+            font-weight: 600;
+            font-size: 0.92rem;
+            color: var(--text-primary);
+        }
+
+        .cita-detalle {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .estado-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .estado-PENDIENTE   { background: #FDF3E3; color: #8C6A29; }
+        .estado-CONFIRMADA  { background: #F4F8F4; color: #2F6B4F; }
+        .estado-REPROGRAMADA{ background: #EFE8F5; color: #5B3E8C; }
+        .estado-CANCELADA   { background: #FDF3F3; color: #923838; }
+        .estado-FINALIZADA  { background: #F0F0F0; color: #555555; }
+
+        .citas-empty {
+            text-align: center;
+            padding: 30px 10px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
         /* Sección de Servicios INARA */
         .services-section {
             background-color: var(--white);
@@ -527,169 +625,211 @@
 </head>
 <body>
 
-    <!-- Navegación Superior -->
-    <header class="portal-navbar">
-        <div class="navbar-content">
-            <a href="#" class="nav-brand">
-                <span class="nav-logo-title">INARA</span>
-                <span class="nav-logo-subtitle">Portal del Cliente</span>
+<!-- Navegación Superior -->
+<header class="portal-navbar">
+    <div class="navbar-content">
+        <a href="#" class="nav-brand">
+            <span class="nav-logo-title">INARA</span>
+            <span class="nav-logo-subtitle">Portal del Cliente</span>
+        </a>
+
+        <div class="nav-user-area">
+            <div class="user-chip">
+                <div class="user-avatar"><%= iniciales %></div>
+                <div class="user-info-text">
+                    <span class="user-name"><%= usuario.getNombreCompleto() %></span>
+                    <span class="user-role-badge">Cliente VIP &bull; <%= usuario.getRol() %></span>
+                </div>
+            </div>
+
+            <a href="${pageContext.request.contextPath}/login?accion=logout" class="btn-logout">
+                Cerrar Sesión
             </a>
+        </div>
+    </div>
+</header>
 
-            <div class="nav-user-area">
-                <div class="user-chip">
-                    <div class="user-avatar"><%= iniciales %></div>
-                    <div class="user-info-text">
-                        <span class="user-name"><%= usuario.getNombreCompleto() %></span>
-                        <span class="user-role-badge">Cliente VIP &bull; <%= usuario.getRol() %></span>
-                    </div>
-                </div>
+<!-- Contenido Principal -->
+<main class="portal-main">
 
-                <a href="${pageContext.request.contextPath}/login?accion=logout" class="btn-logout">
-                    Cerrar Sesión
-                </a>
+    <!-- Banner de Bienvenida -->
+    <section class="hero-banner">
+        <div class="hero-text">
+            <span class="hero-greeting">Bienvenido a tu Espacio Exclusivo</span>
+            <h1 class="hero-title"><%= usuario.getNombre() %> <%= usuario.getApellido() %></h1>
+            <p class="hero-tagline">"Momentos únicos, eventos inolvidables"</p>
+            <div class="status-pill">
+                <span class="status-dot"></span>
+                <span>Conexión Activa con Supabase Cloud</span>
             </div>
         </div>
-    </header>
+    </section>
 
-    <!-- Contenido Principal -->
-    <main class="portal-main">
+    <!-- Grilla de Información -->
+    <div class="dashboard-grid">
 
-        <!-- Banner de Bienvenida -->
-        <section class="hero-banner">
-            <div class="hero-text">
-                <span class="hero-greeting">Bienvenido a tu Espacio Exclusivo</span>
-                <h1 class="hero-title"><%= usuario.getNombre() %> <%= usuario.getApellido() %></h1>
-                <p class="hero-tagline">"Momentos únicos, eventos inolvidables"</p>
-                <div class="status-pill">
-                    <span class="status-dot"></span>
-                    <span>Conexión Activa con Supabase Cloud</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- Grilla de Información -->
-        <div class="dashboard-grid">
-
-            <!-- Tarjeta 1: Perfil y Datos Personales -->
-            <section class="card-panel">
-                <div class="card-header-styled">
-                    <div>
-                        <h3>Perfil del Cliente</h3>
-                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 3px;">Tus datos registrados en la plataforma</p>
-                    </div>
-                    <div class="card-icon-badge">&#128100;</div>
-                </div>
-
-                <div class="profile-details-list">
-                    <div class="detail-row">
-                        <span class="detail-label">&#128278; Código de Cliente (ID)</span>
-                        <span class="detail-value" style="color: var(--rose-dark); font-family: monospace; font-size: 1.05rem;">#CLI-<%= String.format("%04d", usuario.getId()) %></span>
-                    </div>
-
-                    <div class="detail-row">
-                        <span class="detail-label">&#128100; Nombre Completo</span>
-                        <span class="detail-value"><%= usuario.getNombreCompleto() %></span>
-                    </div>
-
-                    <div class="detail-row">
-                        <span class="detail-label">&#9993; Correo Electrónico</span>
-                        <span class="detail-value"><%= usuario.getCorreo() %></span>
-                    </div>
-
-                    <div class="detail-row">
-                        <span class="detail-label">&#128222; Teléfono / WhatsApp</span>
-                        <span class="detail-value"><%= usuario.getTelefono() != null && !usuario.getTelefono().trim().isEmpty() ? usuario.getTelefono() : "No registrado" %></span>
-                    </div>
-
-                    <div class="detail-row">
-                        <span class="detail-label">&#9874; Rol Asignado</span>
-                        <span class="role-tag"><%= usuario.getRol() %></span>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Tarjeta 2: Estado de Cotizaciones y Atención -->
-            <section class="card-panel">
-                <div class="card-header-styled">
-                    <div>
-                        <h3>Estado de tu Evento</h3>
-                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 3px;">Seguimiento personalizado</p>
-                    </div>
-                    <div class="card-icon-badge">&#10024;</div>
-                </div>
-
-                <div class="events-summary-cards">
-                    <div class="stat-box">
-                        <div>
-                            <div class="stat-label">Planificación Activa</div>
-                            <div class="stat-main">En Coordinación</div>
-                        </div>
-                        <a href="mailto:contacto@inara.pe?subject=Consulta%20Evento%20INARA" class="stat-action-btn">Contactar</a>
-                    </div>
-
-                    <div class="stat-box gold-accent">
-                        <div>
-                            <div class="stat-label">Asesor de Evento</div>
-                            <div class="stat-main">Equipo INARA Luxury</div>
-                        </div>
-                        <span style="color: var(--gold); font-weight: 700; font-size: 1.2rem;">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
-                    </div>
-
-                    <div class="stat-box">
-                        <div>
-                            <div class="stat-label">Cotizaciones Disponibles</div>
-                            <div class="stat-main">Paquetes 2026</div>
-                        </div>
-                        <span style="font-size: 0.82rem; color: var(--rose-dark); font-weight: 600;">Actualizado</span>
-                    </div>
-                </div>
-            </section>
-
-        </div>
-
-        <!-- Sección de Catálogo de Servicios para Celebraciones -->
-        <section class="services-section">
-            <div class="card-header-styled" style="border-bottom: none; margin-bottom: 0;">
+        <!-- Tarjeta 1: Perfil y Datos Personales -->
+        <section class="card-panel">
+            <div class="card-header-styled">
                 <div>
-                    <h3>Experiencias que Diseñamos para Ti</h3>
-                    <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">Servicios integrales para que tu celebración sea inolvidable</p>
+                    <h3>Perfil del Cliente</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 3px;">Tus datos registrados en la plataforma</p>
                 </div>
-                <div class="card-icon-badge" style="background: rgba(198, 161, 91, 0.2); color: var(--gold);">&#127881;</div>
+                <div class="card-icon-badge">&#128100;</div>
             </div>
 
-            <div class="services-grid">
-                <div class="service-card">
-                    <span class="service-icon">&#128141;</span>
-                    <h4 class="service-title">Bodas de Ensueño</h4>
-                    <p class="service-desc">Diseño ceremonial, banquetes de gala y coordinación integral minuto a minuto.</p>
+            <div class="profile-details-list">
+                <div class="detail-row">
+                    <span class="detail-label">&#128278; Código de Cliente (ID)</span>
+                    <span class="detail-value" style="color: var(--rose-dark); font-family: monospace; font-size: 1.05rem;">#CLI-<%= String.format("%04d", usuario.getId()) %></span>
                 </div>
 
-                <div class="service-card">
-                    <span class="service-icon">&#127878;</span>
-                    <h4 class="service-title">Quinceañeros & Proms</h4>
-                    <p class="service-desc">Ambientaciones temáticas vanguardistas, efectos de iluminación y show en vivo.</p>
+                <div class="detail-row">
+                    <span class="detail-label">&#128100; Nombre Completo</span>
+                    <span class="detail-value"><%= usuario.getNombreCompleto() %></span>
                 </div>
 
-                <div class="service-card">
-                    <span class="service-icon">&#127870;</span>
-                    <h4 class="service-title">Catering de Autor</h4>
-                    <p class="service-desc">Experiencias gastronómicas de primer nivel con maridaje y coctelería personalizada.</p>
+                <div class="detail-row">
+                    <span class="detail-label">&#9993; Correo Electrónico</span>
+                    <span class="detail-value"><%= usuario.getCorreo() %></span>
                 </div>
 
-                <div class="service-card">
-                    <span class="service-icon">&#127912;</span>
-                    <h4 class="service-title">Diseño & Mobiliario</h4>
-                    <p class="service-desc">Arreglos florales exclusivos, salas lounge, pistas led y toldos arquitectónicos.</p>
+                <div class="detail-row">
+                    <span class="detail-label">&#128222; Teléfono / WhatsApp</span>
+                    <span class="detail-value"><%= usuario.getTelefono() != null && !usuario.getTelefono().trim().isEmpty() ? usuario.getTelefono() : "No registrado" %></span>
+                </div>
+
+                <div class="detail-row">
+                    <span class="detail-label">&#9874; Rol Asignado</span>
+                    <span class="role-tag"><%= usuario.getRol() %></span>
                 </div>
             </div>
         </section>
 
-    </main>
+        <!-- Tarjeta 2: Estado de Cotizaciones y Atención -->
+        <section class="card-panel">
+            <div class="card-header-styled">
+                <div>
+                    <h3>Estado de tu Evento</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 3px;">Seguimiento personalizado</p>
+                </div>
+                <div class="card-icon-badge">&#10024;</div>
+            </div>
 
-    <!-- Pie de página -->
-    <footer class="portal-footer">
-        <p>&copy; 2026 <strong>INARA</strong> — Gestión & Producción de Eventos Exclusivos. Todos los derechos reservados.</p>
-    </footer>
+            <div class="events-summary-cards">
+                <div class="stat-box">
+                    <div>
+                        <div class="stat-label">Planificación Activa</div>
+                        <div class="stat-main">En Coordinación</div>
+                    </div>
+                    <a href="mailto:contacto@inara.pe?subject=Consulta%20Evento%20INARA" class="stat-action-btn">Contactar</a>
+                </div>
+
+                <div class="stat-box gold-accent">
+                    <div>
+                        <div class="stat-label">Asesor de Evento</div>
+                        <div class="stat-main">Equipo INARA Luxury</div>
+                    </div>
+                    <span style="color: var(--gold); font-weight: 700; font-size: 1.2rem;">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+                </div>
+
+                <div class="stat-box">
+                    <div>
+                        <div class="stat-label">Cotizaciones Disponibles</div>
+                        <div class="stat-main">Paquetes 2026</div>
+                    </div>
+                    <span style="font-size: 0.82rem; color: var(--rose-dark); font-weight: 600;">Actualizado</span>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Sección de Mis Citas -->
+    <section class="card-panel" style="margin-bottom: 32px;">
+        <div class="card-header-styled">
+            <div>
+                <h3>Mis Próximas Citas</h3>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 3px;">Citas agendadas con el equipo INARA</p>
+            </div>
+            <div class="card-icon-badge">&#128197;</div>
+        </div>
+
+        <% if (misCitas.isEmpty()) { %>
+        <div class="citas-empty">Todavía no tienes citas agendadas.</div>
+        <% } else {
+            SimpleDateFormat fmtDia = new SimpleDateFormat("dd", new Locale("es", "PE"));
+            SimpleDateFormat fmtMes = new SimpleDateFormat("MMM", new Locale("es", "PE"));
+            for (Cita cita : misCitas) {
+        %>
+        <div class="cita-item">
+            <div class="cita-fecha-box">
+                <span class="dia"><%= fmtDia.format(cita.getFecha()) %></span>
+                <span class="hora"><%= fmtMes.format(cita.getFecha()).toUpperCase() %></span>
+            </div>
+            <div class="cita-info">
+                <div class="cita-motivo"><%= cita.getMotivo() != null ? cita.getMotivo() : "Cita con INARA" %></div>
+                <div class="cita-detalle">
+                    <%= cita.getHora() %> &bull; <%= cita.getModalidad() %>
+                    <% if (cita.getLugar() != null && !cita.getLugar().isBlank()) { %>
+                    &bull; <%= cita.getLugar() %>
+                    <% } %>
+                </div>
+            </div>
+            <span class="estado-badge estado-<%= cita.getEstado() %>"><%= cita.getEstado() %></span>
+        </div>
+        <%  }
+        } %>
+
+        <div style="display: flex; gap: 12px; margin-top: 20px;">
+            <a href="${pageContext.request.contextPath}/citas?accion=nueva" class="stat-action-btn">+ Agendar cita</a>
+            <a href="${pageContext.request.contextPath}/citas" class="stat-action-btn" style="background-color: var(--gold);">Ver todas</a>
+        </div>
+    </section>
+
+    <!-- Sección de Catálogo de Servicios para Celebraciones -->
+    <section class="services-section">
+        <div class="card-header-styled" style="border-bottom: none; margin-bottom: 0;">
+            <div>
+                <h3>Experiencias que Diseñamos para Ti</h3>
+                <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">Servicios integrales para que tu celebración sea inolvidable</p>
+            </div>
+            <div class="card-icon-badge" style="background: rgba(198, 161, 91, 0.2); color: var(--gold);">&#127881;</div>
+        </div>
+
+        <div class="services-grid">
+            <div class="service-card">
+                <span class="service-icon">&#128141;</span>
+                <h4 class="service-title">Bodas de Ensueño</h4>
+                <p class="service-desc">Diseño ceremonial, banquetes de gala y coordinación integral minuto a minuto.</p>
+            </div>
+
+            <div class="service-card">
+                <span class="service-icon">&#127878;</span>
+                <h4 class="service-title">Quinceañeros & Proms</h4>
+                <p class="service-desc">Ambientaciones temáticas vanguardistas, efectos de iluminación y show en vivo.</p>
+            </div>
+
+            <div class="service-card">
+                <span class="service-icon">&#127870;</span>
+                <h4 class="service-title">Catering de Autor</h4>
+                <p class="service-desc">Experiencias gastronómicas de primer nivel con maridaje y coctelería personalizada.</p>
+            </div>
+
+            <div class="service-card">
+                <span class="service-icon">&#127912;</span>
+                <h4 class="service-title">Diseño & Mobiliario</h4>
+                <p class="service-desc">Arreglos florales exclusivos, salas lounge, pistas led y toldos arquitectónicos.</p>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- Pie de página -->
+<footer class="portal-footer">
+    <p>&copy; 2026 <strong>INARA</strong> — Gestión & Producción de Eventos Exclusivos. Todos los derechos reservados.</p>
+</footer>
 
 </body>
 </html>

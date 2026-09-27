@@ -1,4 +1,3 @@
-
 package pe.edu.eventos.dto;
 
 import pe.edu.eventos.model.Usuario;

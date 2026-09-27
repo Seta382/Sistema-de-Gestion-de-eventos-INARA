@@ -1,3 +1,4 @@
+package pe.edu.eventos.dao;
 
 import pe.edu.eventos.model.Usuario;
 import java.util.List;

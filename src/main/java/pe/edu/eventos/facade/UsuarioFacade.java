@@ -2,6 +2,7 @@ package pe.edu.eventos.facade;
 
 import pe.edu.eventos.dto.UsuarioDTO;
 import pe.edu.eventos.model.Usuario;
+import pe.edu.eventos.model.Cliente;
 import pe.edu.eventos.service.UsuarioService;
 import pe.edu.eventos.util.Constantes;
 
@@ -26,9 +27,6 @@ public class UsuarioFacade {
 
     /**
      * Autentica un usuario y retorna su información en un DTO.
-     * @param correo correo ingresado.
-     * @param password contraseña ingresada.
-     * @return UsuarioDTO si las credenciales son válidas, null en caso contrario.
      */
     public UsuarioDTO login(String correo, String password) {
         Usuario usuario = usuarioService.iniciarSesion(correo, password);
@@ -37,21 +35,27 @@ public class UsuarioFacade {
 
     /**
      * Registra un nuevo cliente en el sistema.
-     * @param nombre nombre del cliente.
-     * @param apellido apellido del cliente.
-     * @param correo correo único del cliente.
-     * @param password contraseña a cifrar.
-     * @param telefono teléfono de contacto.
+
+     * @param nombre    nombre del cliente.
+     * @param apellido  apellido del cliente.
+     * @param correo    correo único del cliente.
+     * @param password  contraseña a cifrar.
+     * @param telefono  teléfono de contacto (columna de "usuario").
+     * @param dni       DNI del cliente (columna de "cliente").
+     * @param direccion dirección del cliente (columna de "cliente").
      * @return true si se registró con éxito, false si el correo ya existe o hubo error.
      */
-    public boolean registrarCliente(String nombre, String apellido, String correo, String password, String telefono) {
-        Usuario nuevo = new Usuario();
+    public boolean registrarCliente(String nombre, String apellido, String correo, String password,
+                                    String telefono, String dni, String direccion) {
+        Cliente nuevo = new Cliente();
         nuevo.setNombre(nombre);
         nuevo.setApellido(apellido);
         nuevo.setCorreo(correo);
         nuevo.setPassword(password);
         nuevo.setTelefono(telefono);
         nuevo.setRol(Constantes.ROL_CLIENTE);
+        nuevo.setDni(dni);
+        nuevo.setDireccion(direccion);
 
         return usuarioService.registrar(nuevo);
     }

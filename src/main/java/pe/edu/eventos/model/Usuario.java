@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 /**
  * Representa los usuarios registrados en el sistema (Clientes, Organizadores, Administradores).
- * Mapea directamente con la tabla 'Usuario' en Supabase.
+ * Mapea directamente con la tabla 'usuario' en Supabase.
  */
 public class Usuario {
     private Integer id;
@@ -105,7 +105,7 @@ public class Usuario {
 
     @Override
     public String toString() {
-        return "Usuario{" +
+        return "usuario{" +
                 "id=" + id +
                 ", nombre='" + nombre + '\'' +
                 ", apellido='" + apellido + '\'' +

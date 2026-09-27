@@ -58,15 +58,17 @@ public class UsuarioServlet extends HttpServlet {
         String correo = request.getParameter("correo");
         String password = request.getParameter("password");
         String telefono = request.getParameter("telefono");
+        String dni = request.getParameter("dni");
+        String direccion = request.getParameter("direccion");
 
         // Validar campos obligatorios
         if (nombre == null || nombre.trim().isEmpty() ||
-            apellido == null || apellido.trim().isEmpty() ||
-            correo == null || correo.trim().isEmpty() ||
-            password == null || password.trim().isEmpty()) {
+                apellido == null || apellido.trim().isEmpty() ||
+                correo == null || correo.trim().isEmpty() ||
+                password == null || password.trim().isEmpty()) {
 
             request.setAttribute("error", Constantes.MSG_CAMPOS_OBLIGATORIOS);
-            preservarCampos(request, nombre, apellido, correo, telefono);
+            preservarCampos(request, nombre, apellido, correo, telefono, dni, direccion);
             request.getRequestDispatcher("/cliente/registro.jsp").forward(request, response);
             return;
         }
@@ -76,23 +78,27 @@ public class UsuarioServlet extends HttpServlet {
                 apellido.trim(),
                 correo.trim(),
                 password,
-                telefono != null ? telefono.trim() : null
+                telefono != null ? telefono.trim() : null,
+                dni != null ? dni.trim() : null,
+                direccion != null ? direccion.trim() : null
         );
 
         if (registrado) {
-            // Redirigir a login con indicador de éxito
             response.sendRedirect(request.getContextPath() + "/login?registro=exito");
         } else {
             request.setAttribute("error", Constantes.MSG_CORREO_DUPLICADO);
-            preservarCampos(request, nombre, apellido, correo, telefono);
+            preservarCampos(request, nombre, apellido, correo, telefono, dni, direccion);
             request.getRequestDispatcher("/cliente/registro.jsp").forward(request, response);
         }
     }
 
-    private void preservarCampos(HttpServletRequest request, String nombre, String apellido, String correo, String telefono) {
+    private void preservarCampos(HttpServletRequest request, String nombre, String apellido, String correo,
+                                 String telefono, String dni, String direccion) {
         request.setAttribute("nombre", nombre);
         request.setAttribute("apellido", apellido);
         request.setAttribute("correo", correo);
         request.setAttribute("telefono", telefono);
+        request.setAttribute("dni", dni);
+        request.setAttribute("direccion", direccion);
     }
 }

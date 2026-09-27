@@ -2,9 +2,10 @@ package pe.edu.eventos.controller;
 
 import pe.edu.eventos.dao.ClienteDAO;
 import pe.edu.eventos.dao.impl.ClienteDAOImpl;
+import pe.edu.eventos.dto.UsuarioDTO;
 import pe.edu.eventos.model.Cita;
-import pe.edu.eventos.model.Usuario;
 import pe.edu.eventos.service.CitaService;
+import pe.edu.eventos.util.Constantes;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -28,51 +29,51 @@ public class CitaServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        Usuario usuario = obtenerUsuarioDeSesion(request, response);
+        UsuarioDTO usuario = obtenerUsuarioDeSesion(request, response);
         if (usuario == null) return;
 
-        String action = request.getParameter("action");
+        String accion = request.getParameter("accion");
 
-        if ("nueva".equals(action)) {
-            request.getRequestDispatcher("cliente/registrar-cita.jsp").forward(request, response);
+        if ("nueva".equals(accion)) {
+            request.getRequestDispatcher("/cliente/registrar-cita.jsp").forward(request, response);
             return;
         }
 
-        if ("cancelar".equals(action)) {
+        if ("cancelar".equals(accion)) {
             int idCita = Integer.parseInt(request.getParameter("id"));
             citaService.cancelar(idCita);
-            response.sendRedirect("citas");
+            response.sendRedirect(request.getContextPath() + "/citas");
             return;
         }
 
         Integer idCliente = clienteDAO.buscarIdPorUsuario(usuario.getId());
         if (idCliente == null) {
             request.setAttribute("error", "Tu perfil de cliente no está completo todavía");
-            request.getRequestDispatcher("cliente/mis-citas.jsp").forward(request, response);
+            request.getRequestDispatcher("/cliente/mis-citas.jsp").forward(request, response);
             return;
         }
 
         List<Cita> citas = citaService.listarPorCliente(idCliente);
         request.setAttribute("citas", citas);
-        request.getRequestDispatcher("cliente/mis-citas.jsp").forward(request, response);
+        request.getRequestDispatcher("/cliente/mis-citas.jsp").forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        Usuario usuario = obtenerUsuarioDeSesion(request, response);
+        UsuarioDTO usuario = obtenerUsuarioDeSesion(request, response);
         if (usuario == null) return;
 
         Integer idCliente = clienteDAO.buscarIdPorUsuario(usuario.getId());
         if (idCliente == null) {
             request.setAttribute("error", "Tu perfil de cliente no está completo todavía");
-            request.getRequestDispatcher("cliente/registrar-cita.jsp").forward(request, response);
+            request.getRequestDispatcher("/cliente/registrar-cita.jsp").forward(request, response);
             return;
         }
 
-        Date fecha = Date.valueOf(request.getParameter("fecha"));   // formato yyyy-MM-dd (input type="date")
-        Time hora = Time.valueOf(request.getParameter("hora") + ":00"); // input type="time" da HH:mm
+        Date fecha = Date.valueOf(request.getParameter("fecha"));       // input type="date" -> yyyy-MM-dd
+        Time hora = Time.valueOf(request.getParameter("hora") + ":00"); // input type="time" -> HH:mm
         String modalidad = request.getParameter("modalidad");
         String lugar = request.getParameter("lugar");
         String motivo = request.getParameter("motivo");
@@ -82,19 +83,21 @@ public class CitaServlet extends HttpServlet {
         String error = citaService.crear(cita);
         if (error != null) {
             request.setAttribute("error", error);
-            request.getRequestDispatcher("cliente/registrar-cita.jsp").forward(request, response);
+            request.getRequestDispatcher("/cliente/registrar-cita.jsp").forward(request, response);
             return;
         }
 
-        response.sendRedirect("citas");
+        response.sendRedirect(request.getContextPath() + "/citas");
     }
 
-    private Usuario obtenerUsuarioDeSesion(HttpServletRequest request, HttpServletResponse response)
+    private UsuarioDTO obtenerUsuarioDeSesion(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         HttpSession session = request.getSession(false);
-        Usuario usuario = session != null ? (Usuario) session.getAttribute("usuario") : null;
+        UsuarioDTO usuario = session != null
+                ? (UsuarioDTO) session.getAttribute(Constantes.SESION_USUARIO)
+                : null;
         if (usuario == null) {
-            response.sendRedirect("login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return null;
         }
         return usuario;

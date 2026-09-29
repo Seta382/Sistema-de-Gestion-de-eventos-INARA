@@ -65,6 +65,7 @@
 
         <div class="link-footer">
             <a href="${pageContext.request.contextPath}/citas">Volver a mis citas</a>
+            <a href="${pageContext.request.contextPath}/cliente/dashboard.jsp">&larr; Volver al dashboard</a>
         </div>
     </form>
 </div>

@@ -28,7 +28,11 @@
     <div class="form-brand-header">
         <h2>Mis citas</h2>
         <div class="golden-accent-bar"></div>
-        <p><a href="${pageContext.request.contextPath}/citas?accion=nueva">+ Agendar nueva cita</a></p>
+        <p>
+            <a href="${pageContext.request.contextPath}/citas?accion=nueva">+ Agendar nueva cita</a>
+            &nbsp;&middot;&nbsp;
+            <a href="${pageContext.request.contextPath}/cliente/dashboard.jsp">&larr; Volver al dashboard</a>
+        </p>
     </div>
 
     <%

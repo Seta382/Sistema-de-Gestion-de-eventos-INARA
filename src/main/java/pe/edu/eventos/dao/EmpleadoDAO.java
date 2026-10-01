@@ -11,6 +11,10 @@ public interface EmpleadoDAO {
 
     boolean registrarEmpleado(Usuario usuario, Empleado empleado);
 
+    boolean actualizarEmpleado(Usuario usuario, Empleado empleado);
+
+    boolean cambiarEstado(int idUsuario, String nuevoEstado);
+
     Empleado buscarPorIdUsuario(int idUsuario);
 
     Empleado buscarPorId(int idEmpleado);

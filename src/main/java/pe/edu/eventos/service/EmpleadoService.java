@@ -12,7 +12,7 @@ import pe.edu.eventos.util.PasswordUtil;
 import java.util.List;
 
 /**
- * Capa de servicio para el alta y consulta de personal administrativo/operativo.
+ * Capa de servicio para el alta, edición y baja de personal administrativo/operativo.
  */
 public class EmpleadoService {
 
@@ -27,7 +27,6 @@ public class EmpleadoService {
     /**
      * Registra un nuevo empleado: valida campos, hashea la contraseña y
      * delega al DAO, que inserta usuario + empleado en una sola transacción.
-     *
      * @return null si se registró con éxito; un mensaje de error si no.
      */
     public String registrar(Usuario usuario, Empleado empleado) {
@@ -49,6 +48,30 @@ public class EmpleadoService {
 
         boolean ok = empleadoDAO.registrarEmpleado(usuario, empleado);
         return ok ? null : "No se pudo registrar el personal. Intenta nuevamente.";
+    }
+
+    /**
+     * Actualiza nombre/apellido/telefono (usuario) + dni/cargo/area (empleado).
+     * El correo no se modifica desde aquí a propósito.
+     * @return null si se actualizó con éxito; un mensaje de error si no.
+     */
+    public String actualizar(Usuario usuario, Empleado empleado) {
+        if (usuario == null || usuario.getId() == null
+                || usuario.getNombre() == null || usuario.getNombre().trim().isEmpty()
+                || usuario.getApellido() == null || usuario.getApellido().trim().isEmpty()) {
+            return Constantes.MSG_CAMPOS_OBLIGATORIOS;
+        }
+
+        boolean ok = empleadoDAO.actualizarEmpleado(usuario, empleado);
+        return ok ? null : "No se pudo actualizar el personal. Intenta nuevamente.";
+    }
+
+    public boolean darDeBaja(int idUsuario) {
+        return empleadoDAO.cambiarEstado(idUsuario, "INACTIVO");
+    }
+
+    public boolean reactivar(int idUsuario) {
+        return empleadoDAO.cambiarEstado(idUsuario, "ACTIVO");
     }
 
     public Empleado buscarPorIdUsuario(int idUsuario) {

@@ -18,6 +18,8 @@ public class Empleado {
     private String apellido;
     private String correo;
     private String rol;
+    private String telefono;
+    private String estado;
 
     public Empleado() {
     }
@@ -109,6 +111,22 @@ public class Empleado {
         this.rol = rol;
     }
 
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
     public String getNombreCompleto() {
         if (nombre != null && apellido != null) {
             return nombre + " " + apellido;
@@ -126,6 +144,7 @@ public class Empleado {
                 ", dni='" + dni + '\'' +
                 ", cargo='" + cargo + '\'' +
                 ", area='" + area + '\'' +
+                ", estado='" + estado + '\'' +
                 ", nombre='" + getNombreCompleto() + '\'' +
                 '}';
     }

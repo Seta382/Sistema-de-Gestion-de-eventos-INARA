@@ -34,7 +34,9 @@ public class UsuarioService {
      */
     public Usuario iniciarSesion(String correo, String password) {
         Usuario usuario = usuarioDAO.buscarPorCorreo(correo);
-        if (usuario != null && PasswordUtil.verificarPassword(password, usuario.getPassword())) {
+        if (usuario != null
+                && PasswordUtil.verificarPassword(password, usuario.getPassword())
+                && !"INACTIVO".equalsIgnoreCase(usuario.getEstado())) {
             return usuario;
         }
         return null;

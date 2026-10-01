@@ -15,6 +15,7 @@ public class Usuario {
     private String rol;
     private String telefono;
     private LocalDateTime creadoEn;
+    private String estado;
 
     public Usuario() {
     }
@@ -103,6 +104,14 @@ public class Usuario {
         this.creadoEn = creadoEn;
     }
 
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
     @Override
     public String toString() {
         return "usuario{" +
@@ -112,6 +121,7 @@ public class Usuario {
                 ", correo='" + correo + '\'' +
                 ", rol='" + rol + '\'' +
                 ", telefono='" + telefono + '\'' +
+                ", estado='" + estado + '\'' +
                 '}';
     }
 }

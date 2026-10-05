@@ -15,6 +15,12 @@ import java.util.List;
 
 public class EmpleadoDAOImpl implements EmpleadoDAO {
 
+    private static final String SELECT_BASE =
+            "SELECT e.id_empleado, e.id_usuario, e.dni, e.cargo, e.area, " +
+                    "u.nombre, u.apellido, u.correo, u.rol, u.telefono, u.estado " +
+                    "FROM empleado e " +
+                    "JOIN usuario u ON e.id_usuario = u.id ";
+
     @Override
     public boolean registrarEmpleado(Usuario usuario, Empleado empleado) {
         String sqlUsuario = "INSERT INTO usuario (nombre, apellido, correo, password, rol, telefono, estado) " +
@@ -65,9 +71,7 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
 
         } catch (SQLException e) {
             if (conn != null) {
-                try {
-                    conn.rollback();
-                } catch (SQLException ex) {
+                try { conn.rollback(); } catch (SQLException ex) {
                     System.err.println("Error al ejecutar rollback: " + ex.getMessage());
                 }
             }
@@ -76,23 +80,81 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
             return false;
         } finally {
             if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                } catch (SQLException ex) {
+                try { conn.setAutoCommit(true); conn.close(); } catch (SQLException ex) {
                     System.err.println("Error al cerrar conexión: " + ex.getMessage());
                 }
             }
         }
     }
 
+    // FIX: nuevo. Misma estructura transaccional que registrarEmpleado, pero con UPDATE.
+    // El correo NO se toca aquí a propósito (se deja de solo lectura en el formulario).
+    @Override
+    public boolean actualizarEmpleado(Usuario usuario, Empleado empleado) {
+        String sqlUsuario = "UPDATE usuario SET nombre = ?, apellido = ?, telefono = ? WHERE id = ?";
+        String sqlEmpleado = "UPDATE empleado SET dni = ?, cargo = ?, area = ? WHERE id_usuario = ?";
+
+        Connection conn = null;
+        try {
+            conn = ConexionDB.obtenerConexion();
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement psUser = conn.prepareStatement(sqlUsuario)) {
+                psUser.setString(1, usuario.getNombre());
+                psUser.setString(2, usuario.getApellido());
+                psUser.setString(3, usuario.getTelefono());
+                psUser.setInt(4, usuario.getId());
+                psUser.executeUpdate();
+            }
+
+            try (PreparedStatement psEmp = conn.prepareStatement(sqlEmpleado)) {
+                psEmp.setString(1, empleado.getDni());
+                psEmp.setString(2, empleado.getCargo());
+                psEmp.setString(3, empleado.getArea());
+                psEmp.setInt(4, usuario.getId());
+                psEmp.executeUpdate();
+            }
+
+            conn.commit();
+            return true;
+
+        } catch (SQLException e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException ex) {
+                    System.err.println("Error al ejecutar rollback: " + ex.getMessage());
+                }
+            }
+            System.err.println("Error en EmpleadoDAOImpl.actualizarEmpleado: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (conn != null) {
+                try { conn.setAutoCommit(true); conn.close(); } catch (SQLException ex) {
+                    System.err.println("Error al cerrar conexión: " + ex.getMessage());
+                }
+            }
+        }
+    }
+
+    // FIX: nuevo. Baja lógica / reactivación: solo toca usuario.estado.
+    @Override
+    public boolean cambiarEstado(int idUsuario, String nuevoEstado) {
+        String sql = "UPDATE usuario SET estado = ? WHERE id = ?";
+        try (Connection conn = ConexionDB.obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, nuevoEstado);
+            ps.setInt(2, idUsuario);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error en EmpleadoDAOImpl.cambiarEstado: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     @Override
     public Empleado buscarPorIdUsuario(int idUsuario) {
-        String sql = "SELECT e.id_empleado, e.id_usuario, e.dni, e.cargo, e.area, " +
-                "u.nombre, u.apellido, u.correo, u.rol " +
-                "FROM empleado e " +
-                "JOIN usuario u ON e.id_usuario = u.id " +
-                "WHERE e.id_usuario = ?";
+        String sql = SELECT_BASE + "WHERE e.id_usuario = ?";
         try (Connection conn = ConexionDB.obtenerConexion();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -111,11 +173,7 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
 
     @Override
     public Empleado buscarPorId(int idEmpleado) {
-        String sql = "SELECT e.id_empleado, e.id_usuario, e.dni, e.cargo, e.area, " +
-                "u.nombre, u.apellido, u.correo, u.rol " +
-                "FROM empleado e " +
-                "JOIN usuario u ON e.id_usuario = u.id " +
-                "WHERE e.id_empleado = ?";
+        String sql = SELECT_BASE + "WHERE e.id_empleado = ?";
         try (Connection conn = ConexionDB.obtenerConexion();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -135,11 +193,7 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
     @Override
     public List<Empleado> listarTodos() {
         List<Empleado> lista = new ArrayList<>();
-        String sql = "SELECT e.id_empleado, e.id_usuario, e.dni, e.cargo, e.area, " +
-                "u.nombre, u.apellido, u.correo, u.rol " +
-                "FROM empleado e " +
-                "JOIN usuario u ON e.id_usuario = u.id " +
-                "ORDER BY e.id_empleado ASC";
+        String sql = SELECT_BASE + "ORDER BY e.id_empleado ASC";
         try (Connection conn = ConexionDB.obtenerConexion();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -157,13 +211,7 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
     @Override
     public List<Empleado> listarPersonalOperativo() {
         List<Empleado> lista = new ArrayList<>();
-        // Filtrar expresamente para NO mostrar clientes
-        String sql = "SELECT e.id_empleado, e.id_usuario, e.dni, e.cargo, e.area, " +
-                "u.nombre, u.apellido, u.correo, u.rol " +
-                "FROM empleado e " +
-                "JOIN usuario u ON e.id_usuario = u.id " +
-                "WHERE UPPER(u.rol) != 'CLIENTE' " +
-                "ORDER BY e.id_empleado ASC";
+        String sql = SELECT_BASE + "WHERE UPPER(u.rol) != 'CLIENTE' ORDER BY e.id_empleado ASC";
         try (Connection conn = ConexionDB.obtenerConexion();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -190,6 +238,8 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
         emp.setApellido(rs.getString("apellido"));
         emp.setCorreo(rs.getString("correo"));
         emp.setRol(rs.getString("rol"));
+        emp.setTelefono(rs.getString("telefono"));
+        emp.setEstado(rs.getString("estado"));
         return emp;
     }
 }

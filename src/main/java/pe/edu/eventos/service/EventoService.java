@@ -1,3 +1,40 @@
+package pe.edu.eventos.service;
+
+import pe.edu.eventos.dao.ArticuloDAO;
+import pe.edu.eventos.dao.ClienteDAO;
+import pe.edu.eventos.dao.EmpleadoDAO;
+import pe.edu.eventos.dao.EventoDAO;
+import pe.edu.eventos.dao.ProveedorDAO;
+import pe.edu.eventos.dao.TipoEventoDAO;
+import pe.edu.eventos.dao.impl.ArticuloDAOImpl;
+import pe.edu.eventos.dao.impl.ClienteDAOImpl;
+import pe.edu.eventos.dao.impl.EmpleadoDAOImpl;
+import pe.edu.eventos.dao.impl.EventoDAOImpl;
+import pe.edu.eventos.dao.impl.ProveedorDAOImpl;
+import pe.edu.eventos.dao.impl.TipoEventoDAOImpl;
+import pe.edu.eventos.model.Articulo;
+import pe.edu.eventos.model.Cliente;
+import pe.edu.eventos.model.Empleado;
+import pe.edu.eventos.model.Evento;
+import pe.edu.eventos.model.EventoArticulo;
+import pe.edu.eventos.model.Proveedor;
+import pe.edu.eventos.model.TipoEvento;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * Capa de servicio encargada de las reglas de negocio del módulo de eventos:
+ * - Validación exhaustiva de campos requeridos antes de persistir.
+ * - Deducción y consolidación de proveedores a partir de los insumos seleccionados.
+ * - Verificación preventiva de stock.
+ * - Delegación de la transacción atómica al DAO.
+ */
+public class EventoService {
+
     private final EventoDAO eventoDAO;
     private final ArticuloDAO articuloDAO;
     private final ProveedorDAO proveedorDAO;
@@ -105,3 +142,4 @@
         // Ejecución transaccional atómica en el DAO
         return eventoDAO.registrarEventoCompleto(evento, insumos, idEmpleados);
     }
+}

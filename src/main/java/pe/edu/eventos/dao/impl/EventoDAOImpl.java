@@ -25,13 +25,15 @@ public class EventoDAOImpl implements EventoDAO {
     @Override
     public boolean registrarEventoCompleto(Evento evento, List<EventoArticulo> insumos, List<Integer> idEmpleadosPersonal) {
         String sqlEvento = "INSERT INTO public.evento " +
-                "(nombre, id_cliente, id_empleado, id_tipo_evento, fecha_evento, hora_evento, lugar, num_invitados, presupuesto, descripcion, estado) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "(nombre, id_cliente, id_empleado, id_tipo_evento, fecha_evento, hora_evento, lugar, num_invitados, presupuesto, descripcion, estado, id_cita) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         String sqlCheckStock = "SELECT id_articulo, nombre, stock, precio FROM public.articulo WHERE id_articulo = ? FOR UPDATE";
         String sqlUpdateStock = "UPDATE public.articulo SET stock = stock - ? WHERE id_articulo = ?";
         String sqlEventoArticulo = "INSERT INTO public.evento_articulo (id_evento, id_articulo, cantidad, precio_unitario, subtotal) VALUES (?, ?, ?, ?, ?)";
         String sqlEventoEmpleado = "INSERT INTO public.evento_empleado (id_evento, id_empleado, rol_en_evento) VALUES (?, ?, ?) ON CONFLICT (id_evento, id_empleado) DO NOTHING";
+
+        String sqlActualizarCita = "UPDATE public.cita SET estado = 'FINALIZADA' WHERE id_cita = ?";
 
         Connection conn = null;
         try {
@@ -57,7 +59,6 @@ public class EventoDAOImpl implements EventoDAO {
                             throw new SQLException("Stock insuficiente para '" + nombreArt + "'. Stock actual: " + stockActual + ", solicitado: " + item.getCantidad());
                         }
 
-                        // Asegurar el precio unitario y subtotal si no venían seteados
                         if (item.getPrecioUnitario() == null || item.getPrecioUnitario().compareTo(BigDecimal.ZERO) <= 0) {
                             item.setPrecioUnitario(precioBD);
                         }
@@ -98,6 +99,13 @@ public class EventoDAOImpl implements EventoDAO {
                 psEv.setString(10, evento.getDescripcion() != null ? evento.getDescripcion().trim() : "Registro en vivo");
                 psEv.setString(11, evento.getEstado() != null ? evento.getEstado() : "CONFIRMADO");
 
+                // FIX: id_cita (columna 12), nullable
+                if (evento.getIdCita() != null && evento.getIdCita() > 0) {
+                    psEv.setInt(12, evento.getIdCita());
+                } else {
+                    psEv.setNull(12, Types.INTEGER);
+                }
+
                 int filas = psEv.executeUpdate();
                 if (filas == 0) {
                     throw new SQLException("No se pudo registrar la cabecera del evento.");
@@ -113,6 +121,14 @@ public class EventoDAOImpl implements EventoDAO {
                 }
             }
 
+            // 2.1 FIX: si el evento viene de una cita, marcarla como FINALIZADA
+            if (evento.getIdCita() != null && evento.getIdCita() > 0) {
+                try (PreparedStatement psCita = conn.prepareStatement(sqlActualizarCita)) {
+                    psCita.setInt(1, evento.getIdCita());
+                    psCita.executeUpdate();
+                }
+            }
+
             // 3. Insertar insumos y actualizar stock
             try (PreparedStatement psItem = conn.prepareStatement(sqlEventoArticulo);
                  PreparedStatement psStock = conn.prepareStatement(sqlUpdateStock)) {
@@ -125,14 +141,13 @@ public class EventoDAOImpl implements EventoDAO {
                     psItem.setBigDecimal(5, item.getSubtotal());
                     psItem.executeUpdate();
 
-                    // Descontar del inventario real
                     psStock.setInt(1, item.getCantidad());
                     psStock.setInt(2, item.getIdArticulo());
                     psStock.executeUpdate();
                 }
             }
 
-            // 4. Insertar personal operativo en evento_empleado (incluyendo coordinador y equipo sin duplicados)
+            // 4. Insertar personal operativo en evento_empleado
             Set<Integer> empleadosUnicos = new HashSet<>();
             if (evento.getIdEmpleado() != null && evento.getIdEmpleado() > 0) {
                 empleadosUnicos.add(evento.getIdEmpleado());
@@ -186,7 +201,7 @@ public class EventoDAOImpl implements EventoDAO {
         List<Evento> lista = new ArrayList<>();
         String sql = "SELECT e.id_evento, e.nombre, e.id_cliente, e.id_empleado, e.id_tipo_evento, " +
                 "e.fecha_evento, e.hora_evento, e.lugar, e.num_invitados, e.presupuesto, " +
-                "e.descripcion, e.estado, e.creado_en, " +
+                "e.descripcion, e.estado, e.creado_en, e.id_cita, " +
                 "te.nombre AS tipo_celebracion, " +
                 "CONCAT(uc.nombre, ' ', uc.apellido) AS cliente_nombre, " +
                 "CONCAT(ue.nombre, ' ', ue.apellido) AS coordinador_nombre " +
@@ -203,33 +218,7 @@ public class EventoDAOImpl implements EventoDAO {
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                Evento ev = new Evento();
-                ev.setIdEvento(rs.getInt("id_evento"));
-                ev.setNombre(rs.getString("nombre"));
-                ev.setIdCliente(rs.getInt("id_cliente"));
-                ev.setIdEmpleado(rs.getInt("id_empleado"));
-                ev.setIdTipoEvento(rs.getInt("id_tipo_evento"));
-
-                Date d = rs.getDate("fecha_evento");
-                if (d != null) ev.setFechaEvento(d.toLocalDate());
-
-                Time t = rs.getTime("hora_evento");
-                if (t != null) ev.setHoraEvento(t.toLocalTime());
-
-                ev.setLugar(rs.getString("lugar"));
-                ev.setNumInvitados(rs.getInt("num_invitados"));
-                ev.setPresupuesto(rs.getBigDecimal("presupuesto"));
-                ev.setDescripcion(rs.getString("descripcion"));
-                ev.setEstado(rs.getString("estado"));
-
-                Timestamp ts = rs.getTimestamp("creado_en");
-                if (ts != null) ev.setCreadoEn(ts.toLocalDateTime());
-
-                ev.setTipoCelebracion(rs.getString("tipo_celebracion"));
-                ev.setNombreCliente(rs.getString("cliente_nombre"));
-                ev.setNombreCoordinador(rs.getString("coordinador_nombre"));
-
-                lista.add(ev);
+                lista.add(mapearEvento(rs));
             }
         } catch (SQLException e) {
             System.err.println("Error en EventoDAOImpl.listarEventosActivos: " + e.getMessage());
@@ -242,7 +231,7 @@ public class EventoDAOImpl implements EventoDAO {
     public Evento buscarPorId(int idEvento) {
         String sql = "SELECT e.id_evento, e.nombre, e.id_cliente, e.id_empleado, e.id_tipo_evento, " +
                 "e.fecha_evento, e.hora_evento, e.lugar, e.num_invitados, e.presupuesto, " +
-                "e.descripcion, e.estado, e.creado_en, " +
+                "e.descripcion, e.estado, e.creado_en, e.id_cita, " +
                 "te.nombre AS tipo_celebracion, " +
                 "CONCAT(uc.nombre, ' ', uc.apellido) AS cliente_nombre, " +
                 "CONCAT(ue.nombre, ' ', ue.apellido) AS coordinador_nombre " +
@@ -259,32 +248,7 @@ public class EventoDAOImpl implements EventoDAO {
             ps.setInt(1, idEvento);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Evento ev = new Evento();
-                    ev.setIdEvento(rs.getInt("id_evento"));
-                    ev.setNombre(rs.getString("nombre"));
-                    ev.setIdCliente(rs.getInt("id_cliente"));
-                    ev.setIdEmpleado(rs.getInt("id_empleado"));
-                    ev.setIdTipoEvento(rs.getInt("id_tipo_evento"));
-
-                    Date d = rs.getDate("fecha_evento");
-                    if (d != null) ev.setFechaEvento(d.toLocalDate());
-
-                    Time t = rs.getTime("hora_evento");
-                    if (t != null) ev.setHoraEvento(t.toLocalTime());
-
-                    ev.setLugar(rs.getString("lugar"));
-                    ev.setNumInvitados(rs.getInt("num_invitados"));
-                    ev.setPresupuesto(rs.getBigDecimal("presupuesto"));
-                    ev.setDescripcion(rs.getString("descripcion"));
-                    ev.setEstado(rs.getString("estado"));
-
-                    Timestamp ts = rs.getTimestamp("creado_en");
-                    if (ts != null) ev.setCreadoEn(ts.toLocalDateTime());
-
-                    ev.setTipoCelebracion(rs.getString("tipo_celebracion"));
-                    ev.setNombreCliente(rs.getString("cliente_nombre"));
-                    ev.setNombreCoordinador(rs.getString("coordinador_nombre"));
-                    return ev;
+                    return mapearEvento(rs);
                 }
             }
         } catch (SQLException e) {
@@ -326,5 +290,37 @@ public class EventoDAOImpl implements EventoDAO {
             e.printStackTrace();
         }
         return lista;
+    }
+
+    private Evento mapearEvento(ResultSet rs) throws SQLException {
+        Evento ev = new Evento();
+        ev.setIdEvento(rs.getInt("id_evento"));
+        ev.setNombre(rs.getString("nombre"));
+        ev.setIdCliente(rs.getInt("id_cliente"));
+        ev.setIdEmpleado(rs.getInt("id_empleado"));
+        ev.setIdTipoEvento(rs.getInt("id_tipo_evento"));
+
+        Date d = rs.getDate("fecha_evento");
+        if (d != null) ev.setFechaEvento(d.toLocalDate());
+
+        Time t = rs.getTime("hora_evento");
+        if (t != null) ev.setHoraEvento(t.toLocalTime());
+
+        ev.setLugar(rs.getString("lugar"));
+        ev.setNumInvitados(rs.getInt("num_invitados"));
+        ev.setPresupuesto(rs.getBigDecimal("presupuesto"));
+        ev.setDescripcion(rs.getString("descripcion"));
+        ev.setEstado(rs.getString("estado"));
+
+        Timestamp ts = rs.getTimestamp("creado_en");
+        if (ts != null) ev.setCreadoEn(ts.toLocalDateTime());
+
+        int idCita = rs.getInt("id_cita");
+        ev.setIdCita(rs.wasNull() ? null : idCita);
+
+        ev.setTipoCelebracion(rs.getString("tipo_celebracion"));
+        ev.setNombreCliente(rs.getString("cliente_nombre"));
+        ev.setNombreCoordinador(rs.getString("coordinador_nombre"));
+        return ev;
     }
 }

@@ -100,6 +100,12 @@ public class EventoServlet extends HttpServlet {
                 evento.setIdEmpleado(Integer.parseInt(idCoordinadorStr.trim()));
             }
 
+            // FIX: id_cita de origen (opcional) — antes no se leía, por eso siempre llegaba vacío
+            String idCitaStr = request.getParameter("idCita");
+            if (idCitaStr != null && !idCitaStr.trim().isEmpty()) {
+                evento.setIdCita(Integer.parseInt(idCitaStr.trim()));
+            }
+
             // 2. Insumos seleccionados: formato "idArticulo:cantidad,idArticulo:cantidad"
             String insumosRaw = request.getParameter("insumosSeleccionados");
             List<EventoArticulo> insumos = new ArrayList<>();

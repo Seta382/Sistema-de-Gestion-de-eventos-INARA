@@ -40,8 +40,20 @@ public class CitaServlet extends HttpServlet {
         }
 
         if ("cancelar".equals(accion)) {
-            int idCita = Integer.parseInt(request.getParameter("id"));
-            citaService.cancelar(idCita);
+            Integer idCitaParam = null;
+            try {
+                idCitaParam = Integer.valueOf(request.getParameter("id"));
+            } catch (NumberFormatException ignored) {
+                // id ausente o inválido: no se hace nada
+            }
+
+            Integer idClienteSesion = clienteDAO.buscarIdPorUsuario(usuario.getId());
+            if (idCitaParam != null && idClienteSesion != null) {
+                Cita cita = citaService.buscarPorId(idCitaParam);
+                if (cita != null && idClienteSesion.equals(cita.getIdCliente())) {
+                    citaService.cancelar(idCitaParam);
+                }
+            }
             response.sendRedirect(request.getContextPath() + "/citas");
             return;
         }

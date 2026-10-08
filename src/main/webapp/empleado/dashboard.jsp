@@ -6,10 +6,20 @@
 <%@ page import="pe.edu.eventos.model.Articulo" %>
 <%@ page import="pe.edu.eventos.model.Empleado" %>
 <%@ page import="pe.edu.eventos.model.Evento" %>
+<%@ page import="pe.edu.eventos.model.Cita" %>
 <%@ page import="pe.edu.eventos.service.EventoService" %>
+<%@ page import="pe.edu.eventos.service.CitaService" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.text.NumberFormat" %>
 <%@ page import="java.util.Locale" %>
+<%!
+    // Escapa texto escrito por usuarios antes de imprimirlo en HTML
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                .replace("\"", "&quot;").replace("'", "&#39;");
+    }
+%>
 <%
     UsuarioDTO usuario = (UsuarioDTO) session.getAttribute(Constantes.SESION_USUARIO);
     if (usuario == null) {
@@ -29,6 +39,10 @@
     List<Articulo> listaInsumos = eventoService.listarInsumosDisponibles();
     List<Empleado> listaPersonal = eventoService.listarPersonalOperativo();
     List<Evento> listaEventosActivos = eventoService.listarEventosActivos();
+    List<Cita> listaCitas = eventoService.listarCitasDisponibles(); // FIX: nuevo
+    int citasPendientes = new CitaService().contarPorEstado("PENDIENTE");
+    // Llega desde "Convertir en evento" en el panel de citas (?idCita=X)
+    String idCitaPreseleccionada = request.getParameter("idCita");
     NumberFormat nf = NumberFormat.getCurrencyInstance(new Locale("es", "PE"));
 %>
 <!DOCTYPE html>
@@ -828,6 +842,19 @@
             </div>
 
         </a>
+
+        <a href="<%= request.getContextPath()%>/citas-gestion"
+           style="text-decoration: none; color: inherit; display: block;">
+
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">Citas por Atender</div>
+                    <div class="kpi-value"><%= citasPendientes%> Pendientes</div>
+                </div>
+                <div class="kpi-icon">&#128197;</div>
+            </div>
+
+        </a>
     </section>
 
     <!-- Espacio Dividido -->
@@ -956,6 +983,23 @@
                             <label>Presupuesto Estimado (S/) *</label>
                             <input type="number" id="ev-presupuesto" placeholder="Ej: 35000" min="0" step="100" value="25000" required>
                         </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label>Cita de Origen (opcional)</label>
+                        <select id="ev-cita" onchange="aplicarCitaSeleccionada()">
+                            <option value="">-- Ninguna, evento directo --</option>
+                            <% for (Cita cit : listaCitas) { %>
+                            <option value="<%= cit.getIdCita()%>" data-cliente="<%= cit.getIdCliente()%>"
+                                    <%= String.valueOf(cit.getIdCita()).equals(idCitaPreseleccionada) ? "selected" : ""%>>
+                                <%= esc(cit.getNombreCliente())%> &middot; <%= cit.getFecha()%> <%= cit.getHora()%>
+                                <%= cit.getMotivo() != null && !cit.getMotivo().isBlank() ? "— " + esc(cit.getMotivo()) : ""%>
+                            </option>
+                            <% } %>
+                        </select>
+                        <% if (listaCitas.isEmpty()) { %>
+                        <small style="color: var(--text-secondary); font-size: 0.78rem;">No hay citas confirmadas pendientes de convertir en evento.</small>
+                        <% } %>
                     </div>
 
                     <div class="nav-buttons-row" style="justify-content: flex-end;">
@@ -1318,6 +1362,22 @@
         document.getElementById('sum-proveedores').innerText = provsSet.size + " proveedores deducidos";
     }
 
+    document.addEventListener('DOMContentLoaded', function () {
+        var selCita = document.getElementById('ev-cita');
+        if (selCita && selCita.value) {
+            aplicarCitaSeleccionada();
+        }
+    });
+
+    function aplicarCitaSeleccionada() {
+        var sel = document.getElementById('ev-cita');
+        var opt = sel.options[sel.selectedIndex];
+        var idClienteCita = opt.getAttribute('data-cliente');
+        if (idClienteCita) {
+            document.getElementById('ev-cliente').value = idClienteCita;
+        }
+    }
+
     function ejecutarRegistroEventoEnVivo() {
         // Validaciones previas
         var nombre = document.getElementById('ev-nombre').value.trim();
@@ -1328,6 +1388,7 @@
         var aforo = document.getElementById('ev-invitados').value;
         var presupuesto = document.getElementById('ev-presupuesto').value;
         var idCoordinador = document.getElementById('ev-coordinador').value;
+        var idCita = document.getElementById('ev-cita').value;
 
         if (!nombre || !idCliente || !fecha) {
             alert('Faltan datos obligatorios en la pestaña 1 (Evento).');
@@ -1385,6 +1446,9 @@
         params.append('aforo', aforo);
         params.append('presupuesto', presupuesto);
         params.append('idCoordinador', idCoordinador);
+        if (idCita) {
+            params.append('idCita', idCita);
+        }
         params.append('insumosSeleccionados', insumosPairs.join(','));
 
         staffIds.forEach(function (id) {

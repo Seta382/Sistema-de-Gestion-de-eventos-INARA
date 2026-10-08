@@ -35,11 +35,25 @@ public class CitaService {
         return ok ? null : "No se pudo registrar la cita";
     }
 
+    /** PENDIENTE (o REPROGRAMADA) -> CONFIRMADA */
     public boolean confirmar(int idCita) {
+        Cita cita = citaDAO.buscarPorId(idCita);
+        if (cita == null) return false;
+        String estado = cita.getEstado();
+        if (!"PENDIENTE".equals(estado) && !"REPROGRAMADA".equals(estado)) {
+            return false;
+        }
         return citaDAO.actualizarEstado(idCita, "CONFIRMADA");
     }
 
+    /** Solo se puede cancelar mientras no esté FINALIZADA ni ya CANCELADA */
     public boolean cancelar(int idCita) {
+        Cita cita = citaDAO.buscarPorId(idCita);
+        if (cita == null) return false;
+        String estado = cita.getEstado();
+        if ("FINALIZADA".equals(estado) || "CANCELADA".equals(estado)) {
+            return false;
+        }
         return citaDAO.actualizarEstado(idCita, "CANCELADA");
     }
 
@@ -69,5 +83,17 @@ public class CitaService {
 
     public List<Cita> listarPorEstado(String estado) {
         return citaDAO.listarPorEstado(estado);
+    }
+
+    public List<Cita> listarTodasConCliente(String estado) {
+        return citaDAO.listarTodasConCliente(estado, null);
+    }
+
+    public List<Cita> listarTodasConCliente(String estado, String busqueda) {
+        return citaDAO.listarTodasConCliente(estado, busqueda);
+    }
+
+    public int contarPorEstado(String estado) {
+        return citaDAO.contarPorEstado(estado);
     }
 }

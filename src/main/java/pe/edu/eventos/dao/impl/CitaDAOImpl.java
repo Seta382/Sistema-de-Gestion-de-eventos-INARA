@@ -96,6 +96,122 @@ public class CitaDAOImpl implements CitaDAO {
     }
 
     @Override
+    public List<Cita> listarConfirmadasSinEvento() {
+        List<Cita> citas = new ArrayList<>();
+        String sql = "SELECT c.id_cita, c.id_cliente, c.id_empleado, c.fecha, c.hora, c.modalidad, " +
+                "c.lugar, c.motivo, c.estado, c.creado_en, " +
+                "CONCAT(u.nombre, ' ', u.apellido) AS nombre_cliente " +
+                "FROM public.cita c " +
+                "JOIN public.cliente cli ON c.id_cliente = cli.id_cliente " +
+                "JOIN public.usuario u ON cli.id_usuario = u.id " +
+                "WHERE c.estado = 'CONFIRMADA' " +
+                "AND NOT EXISTS (SELECT 1 FROM public.evento e WHERE e.id_cita = c.id_cita) " +
+                "ORDER BY c.fecha, c.hora";
+        try (Connection con = ConexionDB.obtenerConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Cita cita = mapear(rs);
+                cita.setNombreCliente(rs.getString("nombre_cliente"));
+                citas.add(cita);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return citas;
+    }
+
+    @Override
+    public List<Cita> listarTodasConCliente(String estado, String busqueda) {
+        List<Cita> citas = new ArrayList<>();
+        List<String> params = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT c.id_cita, c.id_cliente, c.id_empleado, c.fecha, c.hora, c.modalidad, " +
+                        "c.lugar, c.motivo, c.estado, c.creado_en, " +
+                        "CONCAT(u.nombre, ' ', u.apellido) AS nombre_cliente " +
+                        "FROM public.cita c " +
+                        "JOIN public.cliente cli ON c.id_cliente = cli.id_cliente " +
+                        "JOIN public.usuario u ON cli.id_usuario = u.id " +
+                        "WHERE 1=1 ");
+
+        if (estado != null && !estado.trim().isEmpty()) {
+            sql.append("AND c.estado = ? ");
+            params.add(estado.trim().toUpperCase());
+        }
+
+        // Cada palabra escrita debe coincidir en al menos uno de estos campos (AND entre palabras)
+        for (String palabra : tokenizar(busqueda)) {
+            sql.append("AND (CONCAT(u.nombre, ' ', u.apellido) ILIKE ? ")
+                    .append("OR cli.dni ILIKE ? ")
+                    .append("OR c.motivo ILIKE ? ")
+                    .append("OR c.lugar ILIKE ? ")
+                    .append("OR c.modalidad ILIKE ? ")
+                    .append("OR TO_CHAR(c.fecha, 'YYYY-MM-DD') ILIKE ? ")
+                    .append("OR TO_CHAR(c.fecha, 'DD/MM/YYYY') ILIKE ?) ");
+            String patron = "%" + escaparLike(palabra) + "%";
+            for (int i = 0; i < 7; i++) {
+                params.add(patron);
+            }
+        }
+
+        sql.append("ORDER BY c.fecha, c.hora");
+
+        try (Connection con = ConexionDB.obtenerConexion();
+             PreparedStatement ps = con.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setString(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Cita cita = mapear(rs);
+                    cita.setNombreCliente(rs.getString("nombre_cliente"));
+                    citas.add(cita);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return citas;
+    }
+
+    /** Separa el texto en palabras (máx. 6, máx. 50 caracteres cada una). */
+    private List<String> tokenizar(String texto) {
+        List<String> palabras = new ArrayList<>();
+        if (texto == null || texto.trim().isEmpty()) {
+            return palabras;
+        }
+        for (String p : texto.trim().split("\\s+")) {
+            if (p.isEmpty()) continue;
+            palabras.add(p.length() > 50 ? p.substring(0, 50) : p);
+            if (palabras.size() == 6) break;
+        }
+        return palabras;
+    }
+
+    /** Escapa los comodines de LIKE para que "50%" o "a_b" se busquen tal cual (escape por defecto: \). */
+    private String escaparLike(String s) {
+        return s.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+    }
+
+    @Override
+    public int contarPorEstado(String estado) {
+        String sql = "SELECT COUNT(*) FROM public.cita WHERE estado = ?";
+        try (Connection con = ConexionDB.obtenerConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, estado);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    @Override
     public boolean actualizarEstado(int idCita, String nuevoEstado) {
         String sql = "UPDATE public.cita SET estado = ? WHERE id_cita = ?";
         try (Connection con = ConexionDB.obtenerConexion();

@@ -18,6 +18,16 @@ public interface CitaDAO {
 
     List<Cita> listarPorEstado(String estado);
 
+    List<Cita> listarConfirmadasSinEvento();
+
+    List<Cita> listarTodasConCliente(String estado, String busqueda);
+
+    default List<Cita> listarTodasConCliente(String estado) {
+        return listarTodasConCliente(estado, null);
+    }
+
+    int contarPorEstado(String estado);
+
     boolean actualizarEstado(int idCita, String nuevoEstado);
 
     boolean reprogramar(int idCita, Date nuevaFecha, Time nuevaHora);

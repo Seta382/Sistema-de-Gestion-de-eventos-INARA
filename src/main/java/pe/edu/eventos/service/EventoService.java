@@ -1,18 +1,21 @@
 package pe.edu.eventos.service;
 
 import pe.edu.eventos.dao.ArticuloDAO;
+import pe.edu.eventos.dao.CitaDAO;
 import pe.edu.eventos.dao.ClienteDAO;
 import pe.edu.eventos.dao.EmpleadoDAO;
 import pe.edu.eventos.dao.EventoDAO;
 import pe.edu.eventos.dao.ProveedorDAO;
 import pe.edu.eventos.dao.TipoEventoDAO;
 import pe.edu.eventos.dao.impl.ArticuloDAOImpl;
+import pe.edu.eventos.dao.impl.CitaDAOImpl;
 import pe.edu.eventos.dao.impl.ClienteDAOImpl;
 import pe.edu.eventos.dao.impl.EmpleadoDAOImpl;
 import pe.edu.eventos.dao.impl.EventoDAOImpl;
 import pe.edu.eventos.dao.impl.ProveedorDAOImpl;
 import pe.edu.eventos.dao.impl.TipoEventoDAOImpl;
 import pe.edu.eventos.model.Articulo;
+import pe.edu.eventos.model.Cita;
 import pe.edu.eventos.model.Cliente;
 import pe.edu.eventos.model.Empleado;
 import pe.edu.eventos.model.Evento;
@@ -41,6 +44,7 @@ public class EventoService {
     private final EmpleadoDAO empleadoDAO;
     private final ClienteDAO clienteDAO;
     private final TipoEventoDAO tipoEventoDAO;
+    private final CitaDAO citaDAO; // FIX: nuevo
 
     public EventoService() {
         this.eventoDAO = new EventoDAOImpl();
@@ -49,6 +53,7 @@ public class EventoService {
         this.empleadoDAO = new EmpleadoDAOImpl();
         this.clienteDAO = new ClienteDAOImpl();
         this.tipoEventoDAO = new TipoEventoDAOImpl();
+        this.citaDAO = new CitaDAOImpl();
     }
 
     public List<TipoEvento> listarTiposEvento() {
@@ -69,6 +74,11 @@ public class EventoService {
 
     public List<Evento> listarEventosActivos() {
         return eventoDAO.listarEventosActivos();
+    }
+
+    // FIX: nuevo — citas confirmadas listas para convertirse en evento
+    public List<Cita> listarCitasDisponibles() {
+        return citaDAO.listarConfirmadasSinEvento();
     }
 
     /**
@@ -137,6 +147,16 @@ public class EventoService {
         boolean tieneStaff = (idEmpleados != null && !idEmpleados.isEmpty());
         if (!tieneCoordinador && !tieneStaff) {
             throw new IllegalArgumentException("Debe asignar al menos un responsable o personal en la pestaña 'Personal'.");
+        }
+
+        if (evento.getIdCita() != null && evento.getIdCita() > 0) {
+            Cita citaOrigen = citaDAO.buscarPorId(evento.getIdCita());
+            if (citaOrigen == null) {
+                throw new IllegalArgumentException("La cita de origen seleccionada ya no existe.");
+            }
+            if (!citaOrigen.getIdCliente().equals(evento.getIdCliente())) {
+                throw new IllegalArgumentException("La cita seleccionada no corresponde al cliente titular elegido.");
+            }
         }
 
         // Ejecución transaccional atómica en el DAO

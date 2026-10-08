@@ -17,6 +17,7 @@ public class Cita {
     private String motivo;
     private String estado; // PENDIENTE, CONFIRMADA, REPROGRAMADA, CANCELADA, FINALIZADA
     private Timestamp creadoEn;
+    private String nombreCliente;
 
     public Cita() {
     }
@@ -109,5 +110,13 @@ public class Cita {
 
     public void setCreadoEn(Timestamp creadoEn) {
         this.creadoEn = creadoEn;
+    }
+
+    public String getNombreCliente() {
+        return nombreCliente;
+    }
+
+    public void setNombreCliente(String nombreCliente) {
+        this.nombreCliente = nombreCliente;
     }
 }

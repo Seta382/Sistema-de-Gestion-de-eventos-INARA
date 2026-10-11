@@ -30,10 +30,9 @@ public class UsuarioDAOImpl implements UsuarioDAO {
 
     @Override
     public Usuario buscarPorCorreo(String correo) {
-        String sql = "SELECT id, nombre, apellido, correo, password, rol, telefono, creado_en " +
-                "FROM usuario WHERE LOWER(correo) = LOWER(?)";
-        try (Connection conn = ConexionDB.obtenerConexion();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = "SELECT id, nombre, apellido, correo, password, rol, telefono, creado_en "
+                + "FROM usuario WHERE LOWER(correo) = LOWER(?)";
+        try (Connection conn = ConexionDB.obtenerConexion(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, correo != null ? correo.trim() : "");
 
@@ -51,10 +50,9 @@ public class UsuarioDAOImpl implements UsuarioDAO {
 
     @Override
     public Usuario buscarPorId(int id) {
-        String sql = "SELECT id, nombre, apellido, correo, password, rol, telefono, creado_en " +
-                "FROM usuario WHERE id = ?";
-        try (Connection conn = ConexionDB.obtenerConexion();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = "SELECT id, nombre, apellido, correo, password, rol, telefono, creado_en "
+                + "FROM usuario WHERE id = ?";
+        try (Connection conn = ConexionDB.obtenerConexion(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
 
@@ -74,10 +72,9 @@ public class UsuarioDAOImpl implements UsuarioDAO {
     // Sin esto, UsuarioService no puede crear la fila en "cliente" (necesita el id).
     @Override
     public boolean registrar(Usuario usuario) {
-        String sql = "INSERT INTO usuario (nombre, apellido, correo, password, rol, telefono) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
-        try (Connection conn = ConexionDB.obtenerConexion();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        String sql = "INSERT INTO usuario (nombre, apellido, correo, password, rol, telefono) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = ConexionDB.obtenerConexion(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, usuario.getNombre());
             ps.setString(2, usuario.getApellido());
@@ -106,11 +103,9 @@ public class UsuarioDAOImpl implements UsuarioDAO {
     @Override
     public List<Usuario> listarTodos() {
         List<Usuario> lista = new ArrayList<>();
-        String sql = "SELECT id, nombre, apellido, correo, password, rol, telefono, creado_en " +
-                "FROM usuario ORDER BY id";
-        try (Connection conn = ConexionDB.obtenerConexion();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        String sql = "SELECT id, nombre, apellido, correo, password, rol, telefono, creado_en "
+                + "FROM usuario ORDER BY id";
+        try (Connection conn = ConexionDB.obtenerConexion(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 lista.add(mapearUsuario(rs));
@@ -134,5 +129,59 @@ public class UsuarioDAOImpl implements UsuarioDAO {
                 rs.getString("telefono"),
                 timestamp != null ? timestamp.toLocalDateTime() : null
         );
+    }
+
+    @Override
+    public boolean verificarDatosRecuperacion(
+            String nombreCompleto,
+            String dni,
+            String telefono,
+            String correo) {
+
+        String sql = "SELECT COUNT(*) "
+                + "FROM public.usuario u "
+                + "INNER JOIN public.cliente c ON c.id_usuario = u.id "
+                + "WHERE LOWER(TRIM(u.nombre || ' ' || u.apellido)) = LOWER(TRIM(?)) "
+                + "AND TRIM(c.dni) = TRIM(?) "
+                + "AND TRIM(u.telefono) = TRIM(?) "
+                + "AND LOWER(TRIM(u.correo)) = LOWER(TRIM(?))";
+
+        try (Connection conn = ConexionDB.obtenerConexion(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, nombreCompleto);
+            ps.setString(2, dni);
+            ps.setString(3, telefono);
+            ps.setString(4, correo);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error verificando datos de recuperación: "
+                    + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean actualizarPassword(int idUsuario, String password) {
+
+        String sql = "UPDATE public.usuario SET password = ? WHERE id = ?";
+
+        try (Connection conn = ConexionDB.obtenerConexion(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, PasswordUtil.hashPassword(password));
+            ps.setInt(2, idUsuario);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error actualizando contraseña: "
+                    + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 }

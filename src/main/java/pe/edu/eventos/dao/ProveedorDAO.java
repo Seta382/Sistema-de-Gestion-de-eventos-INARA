@@ -17,4 +17,10 @@ public interface ProveedorDAO {
     List<Proveedor> listarTodos();
 
     List<Proveedor> listarPorIds(List<Integer> ids);
+
+    /**
+     * Búsqueda para el panel de proveedores. Cada palabra de texto debe coincidir
+     * con razón social, RUC, correo o dirección. Texto vacío = todos.
+     */
+    List<Proveedor> buscar(String texto);
 }

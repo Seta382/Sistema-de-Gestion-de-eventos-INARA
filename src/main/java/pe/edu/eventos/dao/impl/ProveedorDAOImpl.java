@@ -2,6 +2,7 @@ package pe.edu.eventos.dao.impl;
 
 import pe.edu.eventos.dao.ProveedorDAO;
 import pe.edu.eventos.model.Proveedor;
+import pe.edu.eventos.util.BusquedaUtil;
 import pe.edu.eventos.util.ConexionDB;
 
 import java.sql.Connection;
@@ -137,6 +138,47 @@ public class ProveedorDAOImpl implements ProveedorDAO {
             e.printStackTrace();
         }
         return lista;
+    }
+
+    @Override
+    public List<Proveedor> buscar(String texto) {
+        List<Proveedor> lista = new ArrayList<>();
+        List<String> params = new ArrayList<>();
+        String sql = construirConsultaBusqueda(texto, params);
+        try (Connection conn = ConexionDB.obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            for (int i = 0; i < params.size(); i++) {
+                ps.setString(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapearProveedor(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error en ProveedorDAOImpl.buscar: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
+    /** Arma el SQL de búsqueda y llena params en el orden de los "?" (separado para poder probarlo). */
+    static String construirConsultaBusqueda(String texto, List<String> params) {
+        StringBuilder sql = new StringBuilder(
+                "SELECT id_proveedor, razon_social, ruc, correo, telefono, direccion, estado " +
+                        "FROM proveedor WHERE 1=1 ");
+
+        for (String palabra : BusquedaUtil.tokenizar(texto)) {
+            sql.append("AND (razon_social ILIKE ? OR ruc ILIKE ? OR correo ILIKE ? OR direccion ILIKE ?) ");
+            String patron = BusquedaUtil.patronContiene(palabra);
+            for (int i = 0; i < 4; i++) {
+                params.add(patron);
+            }
+        }
+
+        sql.append("ORDER BY razon_social ASC");
+        return sql.toString();
     }
 
     private Proveedor mapearProveedor(ResultSet rs) throws SQLException {

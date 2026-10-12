@@ -30,7 +30,7 @@ public class UsuarioDAOImpl implements UsuarioDAO {
 
     @Override
     public Usuario buscarPorCorreo(String correo) {
-        String sql = "SELECT id, nombre, apellido, correo, password, rol, telefono, creado_en "
+        String sql = "SELECT id, nombre, apellido, correo, password, rol, telefono, estado, creado_en "
                 + "FROM usuario WHERE LOWER(correo) = LOWER(?)";
         try (Connection conn = ConexionDB.obtenerConexion(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -50,7 +50,7 @@ public class UsuarioDAOImpl implements UsuarioDAO {
 
     @Override
     public Usuario buscarPorId(int id) {
-        String sql = "SELECT id, nombre, apellido, correo, password, rol, telefono, creado_en "
+        String sql = "SELECT id, nombre, apellido, correo, password, rol, telefono, estado, creado_en "
                 + "FROM usuario WHERE id = ?";
         try (Connection conn = ConexionDB.obtenerConexion(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -68,8 +68,6 @@ public class UsuarioDAOImpl implements UsuarioDAO {
         return null;
     }
 
-    // FIX: usa RETURN_GENERATED_KEYS y setea usuario.setId(...) tras el insert.
-    // Sin esto, UsuarioService no puede crear la fila en "cliente" (necesita el id).
     @Override
     public boolean registrar(Usuario usuario) {
         String sql = "INSERT INTO usuario (nombre, apellido, correo, password, rol, telefono) "
@@ -103,7 +101,7 @@ public class UsuarioDAOImpl implements UsuarioDAO {
     @Override
     public List<Usuario> listarTodos() {
         List<Usuario> lista = new ArrayList<>();
-        String sql = "SELECT id, nombre, apellido, correo, password, rol, telefono, creado_en "
+        String sql = "SELECT id, nombre, apellido, correo, password, rol, telefono, estado, creado_en "
                 + "FROM usuario ORDER BY id";
         try (Connection conn = ConexionDB.obtenerConexion(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
@@ -119,7 +117,7 @@ public class UsuarioDAOImpl implements UsuarioDAO {
 
     private Usuario mapearUsuario(ResultSet rs) throws SQLException {
         Timestamp timestamp = rs.getTimestamp("creado_en");
-        return new Usuario(
+        Usuario u = new Usuario(
                 rs.getInt("id"),
                 rs.getString("nombre"),
                 rs.getString("apellido"),
@@ -129,6 +127,8 @@ public class UsuarioDAOImpl implements UsuarioDAO {
                 rs.getString("telefono"),
                 timestamp != null ? timestamp.toLocalDateTime() : null
         );
+        u.setEstado(rs.getString("estado"));
+        return u;
     }
 
     @Override

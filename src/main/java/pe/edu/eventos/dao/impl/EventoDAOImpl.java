@@ -3,6 +3,7 @@ package pe.edu.eventos.dao.impl;
 import pe.edu.eventos.dao.EventoDAO;
 import pe.edu.eventos.model.Evento;
 import pe.edu.eventos.model.EventoArticulo;
+import pe.edu.eventos.util.BusquedaUtil;
 import pe.edu.eventos.util.ConexionDB;
 
 import java.math.BigDecimal;
@@ -15,15 +16,36 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class EventoDAOImpl implements EventoDAO {
 
+    // Columnas y joins comunes a todas las consultas que devuelven eventos listos para mostrar
+    private static final String SELECT_EVENTO =
+            "SELECT e.id_evento, e.nombre, e.id_cliente, e.id_empleado, e.id_tipo_evento, " +
+                    "e.fecha_evento, e.hora_evento, e.lugar, e.num_invitados, e.presupuesto, " +
+                    "e.descripcion, e.estado, e.creado_en, e.id_cita, " +
+                    "te.nombre AS tipo_celebracion, " +
+                    "CONCAT(uc.nombre, ' ', uc.apellido) AS cliente_nombre, " +
+                    "CONCAT(ue.nombre, ' ', ue.apellido) AS coordinador_nombre ";
+
+    private static final String FROM_EVENTO =
+            "FROM public.evento e " +
+                    "LEFT JOIN public.tipo_evento te ON e.id_tipo_evento = te.id_tipo_evento " +
+                    "LEFT JOIN public.cliente c ON e.id_cliente = c.id_cliente " +
+                    "LEFT JOIN public.usuario uc ON c.id_usuario = uc.id " +
+                    "LEFT JOIN public.empleado emp ON e.id_empleado = emp.id_empleado " +
+                    "LEFT JOIN public.usuario ue ON emp.id_usuario = ue.id ";
+
     @Override
     public boolean registrarEventoCompleto(Evento evento, List<EventoArticulo> insumos, List<Integer> idEmpleadosPersonal) {
+        // FIX: se agrega id_cita al INSERT (columna 12) para enlazar el evento con la cita de origen
         String sqlEvento = "INSERT INTO public.evento " +
                 "(nombre, id_cliente, id_empleado, id_tipo_evento, fecha_evento, hora_evento, lugar, num_invitados, presupuesto, descripcion, estado, id_cita) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -33,6 +55,7 @@ public class EventoDAOImpl implements EventoDAO {
         String sqlEventoArticulo = "INSERT INTO public.evento_articulo (id_evento, id_articulo, cantidad, precio_unitario, subtotal) VALUES (?, ?, ?, ?, ?)";
         String sqlEventoEmpleado = "INSERT INTO public.evento_empleado (id_evento, id_empleado, rol_en_evento) VALUES (?, ?, ?) ON CONFLICT (id_evento, id_empleado) DO NOTHING";
 
+        // FIX: si el evento viene de una cita, esa cita pasa a FINALIZADA (ya se convirtió en evento)
         String sqlActualizarCita = "UPDATE public.cita SET estado = 'FINALIZADA' WHERE id_cita = ?";
 
         Connection conn = null;
@@ -199,18 +222,7 @@ public class EventoDAOImpl implements EventoDAO {
     @Override
     public List<Evento> listarEventosActivos() {
         List<Evento> lista = new ArrayList<>();
-        String sql = "SELECT e.id_evento, e.nombre, e.id_cliente, e.id_empleado, e.id_tipo_evento, " +
-                "e.fecha_evento, e.hora_evento, e.lugar, e.num_invitados, e.presupuesto, " +
-                "e.descripcion, e.estado, e.creado_en, e.id_cita, " +
-                "te.nombre AS tipo_celebracion, " +
-                "CONCAT(uc.nombre, ' ', uc.apellido) AS cliente_nombre, " +
-                "CONCAT(ue.nombre, ' ', ue.apellido) AS coordinador_nombre " +
-                "FROM public.evento e " +
-                "LEFT JOIN public.tipo_evento te ON e.id_tipo_evento = te.id_tipo_evento " +
-                "LEFT JOIN public.cliente c ON e.id_cliente = c.id_cliente " +
-                "LEFT JOIN public.usuario uc ON c.id_usuario = uc.id " +
-                "LEFT JOIN public.empleado emp ON e.id_empleado = emp.id_empleado " +
-                "LEFT JOIN public.usuario ue ON emp.id_usuario = ue.id " +
+        String sql = SELECT_EVENTO + FROM_EVENTO +
                 "ORDER BY e.creado_en DESC, e.fecha_evento ASC";
 
         try (Connection conn = ConexionDB.obtenerConexion();
@@ -229,19 +241,7 @@ public class EventoDAOImpl implements EventoDAO {
 
     @Override
     public Evento buscarPorId(int idEvento) {
-        String sql = "SELECT e.id_evento, e.nombre, e.id_cliente, e.id_empleado, e.id_tipo_evento, " +
-                "e.fecha_evento, e.hora_evento, e.lugar, e.num_invitados, e.presupuesto, " +
-                "e.descripcion, e.estado, e.creado_en, e.id_cita, " +
-                "te.nombre AS tipo_celebracion, " +
-                "CONCAT(uc.nombre, ' ', uc.apellido) AS cliente_nombre, " +
-                "CONCAT(ue.nombre, ' ', ue.apellido) AS coordinador_nombre " +
-                "FROM public.evento e " +
-                "LEFT JOIN public.tipo_evento te ON e.id_tipo_evento = te.id_tipo_evento " +
-                "LEFT JOIN public.cliente c ON e.id_cliente = c.id_cliente " +
-                "LEFT JOIN public.usuario uc ON c.id_usuario = uc.id " +
-                "LEFT JOIN public.empleado emp ON e.id_empleado = emp.id_empleado " +
-                "LEFT JOIN public.usuario ue ON emp.id_usuario = ue.id " +
-                "WHERE e.id_evento = ?";
+        String sql = SELECT_EVENTO + FROM_EVENTO + "WHERE e.id_evento = ?";
         try (Connection conn = ConexionDB.obtenerConexion();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -292,6 +292,127 @@ public class EventoDAOImpl implements EventoDAO {
         return lista;
     }
 
+    @Override
+    public List<Evento> listarEventosRecientes(int limite) {
+        int tope = Math.max(1, Math.min(limite, 100));
+        List<Evento> lista = new ArrayList<>();
+        String sql = SELECT_EVENTO + FROM_EVENTO +
+                "ORDER BY e.creado_en DESC, e.fecha_evento ASC LIMIT ?";
+        try (Connection conn = ConexionDB.obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, tope);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapearEvento(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error en EventoDAOImpl.listarEventosRecientes: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
+    @Override
+    public List<Evento> buscarEventos(String texto, String filtro) {
+        List<Evento> lista = new ArrayList<>();
+        List<Object> params = new ArrayList<>();
+        String sql = construirConsultaBusqueda(texto, filtro, LocalDate.now(ZONA_NEGOCIO), params);
+        try (Connection conn = ConexionDB.obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            for (int i = 0; i < params.size(); i++) {
+                Object p = params.get(i);
+                if (p instanceof Date) {
+                    ps.setDate(i + 1, (Date) p);
+                } else {
+                    ps.setString(i + 1, (String) p);
+                }
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapearEvento(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error en EventoDAOImpl.buscarEventos: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
+    /**
+     * Arma el SQL del cronograma y llena params en el orden de los "?" (separado para poder probarlo).
+     * "hoy" entra como parámetro (el primero) y se usa vía h.hoy, así la fecha de referencia es una sola
+     * y no depende de la zona horaria del servidor de base de datos.
+     */
+    static String construirConsultaBusqueda(String texto, String filtro, LocalDate hoy, List<Object> params) {
+        StringBuilder sql = new StringBuilder(SELECT_EVENTO + FROM_EVENTO +
+                "CROSS JOIN (SELECT CAST(? AS date) AS hoy) h WHERE 1=1 ");
+        params.add(Date.valueOf(hoy));
+
+        String f = filtro == null ? "" : filtro.trim().toUpperCase();
+        if (FILTRO_PROXIMOS.equals(f)) {
+            sql.append("AND e.fecha_evento >= h.hoy ");
+        } else if (FILTRO_PASADOS.equals(f)) {
+            sql.append("AND e.fecha_evento < h.hoy ");
+        }
+
+        // Cada palabra debe coincidir en al menos uno de estos campos (AND entre palabras)
+        for (String palabra : BusquedaUtil.tokenizar(texto)) {
+            sql.append("AND (").append(BusquedaUtil.sinTildesSql("e.nombre")).append(" ILIKE ? ")
+                    .append("OR ").append(BusquedaUtil.sinTildesSql("CONCAT(uc.nombre, ' ', uc.apellido)")).append(" ILIKE ? ")
+                    .append("OR c.dni ILIKE ? ")
+                    .append("OR ").append(BusquedaUtil.sinTildesSql("te.nombre")).append(" ILIKE ? ")
+                    .append("OR ").append(BusquedaUtil.sinTildesSql("e.lugar")).append(" ILIKE ? ")
+                    .append("OR ").append(BusquedaUtil.sinTildesSql("CONCAT(ue.nombre, ' ', ue.apellido)")).append(" ILIKE ? ")
+                    .append("OR e.estado ILIKE ? ")
+                    .append("OR TO_CHAR(e.fecha_evento, 'YYYY-MM-DD') ILIKE ? ")
+                    .append("OR TO_CHAR(e.fecha_evento, 'DD/MM/YYYY') ILIKE ?) ");
+            // El patrón también va sin tildes: "salon" encuentra "Salón" y "salón" también
+            String patron = BusquedaUtil.patronContieneSinTildes(palabra);
+            for (int i = 0; i < 9; i++) {
+                params.add(patron);
+            }
+        }
+
+        // Próximos primero (el más cercano arriba); después los pasados (el más reciente arriba)
+        sql.append("ORDER BY (e.fecha_evento < h.hoy), ")
+                .append("CASE WHEN e.fecha_evento >= h.hoy THEN e.fecha_evento END ASC, ")
+                .append("e.fecha_evento DESC, e.hora_evento ASC");
+        return sql.toString();
+    }
+
+    @Override
+    public Map<String, Integer> contarPorPeriodo() {
+        Map<String, Integer> conteo = new HashMap<>();
+        conteo.put(FILTRO_TODOS, 0);
+        conteo.put(FILTRO_PROXIMOS, 0);
+        conteo.put(FILTRO_PASADOS, 0);
+
+        String sql = "SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE fecha_evento >= ?) AS proximos " +
+                "FROM public.evento";
+        try (Connection conn = ConexionDB.obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setDate(1, Date.valueOf(LocalDate.now(ZONA_NEGOCIO)));
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int total = rs.getInt("total");
+                    int proximos = rs.getInt("proximos");
+                    conteo.put(FILTRO_TODOS, total);
+                    conteo.put(FILTRO_PROXIMOS, proximos);
+                    conteo.put(FILTRO_PASADOS, total - proximos);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error en EventoDAOImpl.contarPorPeriodo: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return conteo;
+    }
+
     private Evento mapearEvento(ResultSet rs) throws SQLException {
         Evento ev = new Evento();
         ev.setIdEvento(rs.getInt("id_evento"));
@@ -315,6 +436,7 @@ public class EventoDAOImpl implements EventoDAO {
         Timestamp ts = rs.getTimestamp("creado_en");
         if (ts != null) ev.setCreadoEn(ts.toLocalDateTime());
 
+        // FIX: antes no se leía id_cita de vuelta
         int idCita = rs.getInt("id_cita");
         ev.setIdCita(rs.wasNull() ? null : idCita);
 

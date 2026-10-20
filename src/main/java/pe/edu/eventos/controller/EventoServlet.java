@@ -9,12 +9,16 @@ import jakarta.servlet.http.HttpSession;
 import pe.edu.eventos.dto.UsuarioDTO;
 import pe.edu.eventos.model.Evento;
 import pe.edu.eventos.model.EventoArticulo;
+import pe.edu.eventos.dao.EventoDAO;
 import pe.edu.eventos.service.EventoService;
+import pe.edu.eventos.util.BusquedaUtil;
 import pe.edu.eventos.util.Constantes;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -40,6 +44,12 @@ public class EventoServlet extends HttpServlet {
         String rol = usuario.getRol() != null ? usuario.getRol().toUpperCase() : "";
         if (!Constantes.ROL_ADMIN.equals(rol) && !Constantes.ROL_EMPLEADO.equals(rol)) {
             response.sendRedirect(request.getContextPath() + "/cliente/dashboard.jsp");
+            return;
+        }
+
+        // /evento?accion=cronograma -> lista completa de eventos con búsqueda
+        if ("cronograma".equalsIgnoreCase(request.getParameter("accion"))) {
+            mostrarCronograma(request, response);
             return;
         }
 
@@ -100,7 +110,6 @@ public class EventoServlet extends HttpServlet {
                 evento.setIdEmpleado(Integer.parseInt(idCoordinadorStr.trim()));
             }
 
-            // FIX: id_cita de origen (opcional) — antes no se leía, por eso siempre llegaba vacío
             String idCitaStr = request.getParameter("idCita");
             if (idCitaStr != null && !idCitaStr.trim().isEmpty()) {
                 evento.setIdCita(Integer.parseInt(idCitaStr.trim()));
@@ -155,6 +164,35 @@ public class EventoServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             out.print("{\"success\":false,\"mensaje\":\"Error interno al procesar el evento: " + escapeJson(e.getMessage()) + "\"}");
         }
+    }
+
+    /**
+     * Pantalla "Eventos en Cronograma": todos los eventos, con búsqueda y filtro por período.
+     * Parámetros: q (texto libre) y filtro (PROXIMOS por defecto, PASADOS o TODOS).
+     */
+    private void mostrarCronograma(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String q = BusquedaUtil.normalizar(request.getParameter("q"));
+        String filtro = leerFiltroCronograma(request.getParameter("filtro"));
+
+        request.setAttribute("eventos", eventoService.buscarEventos(q, filtro));
+        request.setAttribute("conteos", eventoService.contarEventosPorPeriodo());
+        request.setAttribute("busqueda", q);
+        request.setAttribute("filtro", filtro);
+        request.setAttribute("hoy", java.time.LocalDate.now(EventoDAO.ZONA_NEGOCIO));
+        // Fragmento ya codificado para armar los links de los filtros en la vista
+        request.setAttribute("qParamHtml", q.isEmpty() ? "" : "&amp;q=" + URLEncoder.encode(q, StandardCharsets.UTF_8));
+
+        request.getRequestDispatcher("/empleado/eventos.jsp").forward(request, response);
+    }
+
+    /** PROXIMOS (por defecto), PASADOS o TODOS. */
+    private String leerFiltroCronograma(String valor) {
+        if (valor == null) return EventoDAO.FILTRO_PROXIMOS;
+        String f = valor.trim().toUpperCase();
+        if (EventoDAO.FILTRO_PASADOS.equals(f) || EventoDAO.FILTRO_TODOS.equals(f)) return f;
+        return EventoDAO.FILTRO_PROXIMOS;
     }
 
     private String escapeJson(String s) {

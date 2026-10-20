@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -76,7 +77,21 @@ public class EventoService {
         return eventoDAO.listarEventosActivos();
     }
 
-    // FIX: nuevo — citas confirmadas listas para convertirse en evento
+    /** Los últimos eventos registrados, para el panel "Eventos en Ejecución" del dashboard. */
+    public List<Evento> listarEventosRecientes(int limite) {
+        return eventoDAO.listarEventosRecientes(limite);
+    }
+
+    /** Búsqueda del cronograma. filtro: PROXIMOS, PASADOS o TODOS. */
+    public List<Evento> buscarEventos(String texto, String filtro) {
+        return eventoDAO.buscarEventos(texto, filtro);
+    }
+
+    /** Cantidad de eventos por período (claves TODOS, PROXIMOS y PASADOS). */
+    public Map<String, Integer> contarEventosPorPeriodo() {
+        return eventoDAO.contarPorPeriodo();
+    }
+
     public List<Cita> listarCitasDisponibles() {
         return citaDAO.listarConfirmadasSinEvento();
     }
@@ -149,6 +164,7 @@ public class EventoService {
             throw new IllegalArgumentException("Debe asignar al menos un responsable o personal en la pestaña 'Personal'.");
         }
 
+        //Regla 4 — si se indicó una cita de origen, que exista y le pertenezca al cliente seleccionado
         if (evento.getIdCita() != null && evento.getIdCita() > 0) {
             Cita citaOrigen = citaDAO.buscarPorId(evento.getIdCita());
             if (citaOrigen == null) {

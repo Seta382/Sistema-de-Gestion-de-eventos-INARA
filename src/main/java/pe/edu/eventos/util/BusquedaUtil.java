@@ -46,4 +46,33 @@ public final class BusquedaUtil {
     public static String patronContiene(String palabra) {
         return "%" + escaparLike(palabra) + "%";
     }
+
+    // Vocales con tilde (y la ü) y su equivalente sin tilde. La ñ se conserva ("año" y "ano" son palabras
+    // distintas), pero la Ñ mayúscula se lleva a minúscula para que la búsqueda no dependa de la
+    // configuración regional de la base de datos (ILIKE solo pliega mayúsculas ASCII en algunas).
+    private static final String CON_TILDE = "áéíóúüÁÉÍÓÚÜÑ";
+    private static final String SIN_TILDE = "aeiouuAEIOUUñ";
+
+    /**
+     * Envuelve una columna o expresión SQL para compararla sin tildes (usa translate, de PostgreSQL).
+     * Se usa junto con patronContieneSinTildes: la columna y el patrón deben normalizarse igual.
+     */
+    public static String sinTildesSql(String expresion) {
+        return "translate(" + expresion + ", '" + CON_TILDE + "', '" + SIN_TILDE + "')";
+    }
+
+    /** Quita las tildes de las vocales (misma tabla que sinTildesSql). */
+    public static String quitarTildes(String texto) {
+        StringBuilder sb = new StringBuilder(texto.length());
+        for (char c : texto.toCharArray()) {
+            int i = CON_TILDE.indexOf(c);
+            sb.append(i >= 0 ? SIN_TILDE.charAt(i) : c);
+        }
+        return sb.toString();
+    }
+
+    /** Patrón "contiene" sin tildes, para usar contra sinTildesSql(columna). */
+    public static String patronContieneSinTildes(String palabra) {
+        return "%" + escaparLike(quitarTildes(palabra)) + "%";
+    }
 }

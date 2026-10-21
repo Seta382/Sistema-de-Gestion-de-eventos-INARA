@@ -38,7 +38,11 @@
     List<Cliente> listaClientes = eventoService.listarClientes();
     List<Articulo> listaInsumos = eventoService.listarInsumosDisponibles();
     List<Empleado> listaPersonal = eventoService.listarPersonalOperativo();
-    List<Evento> listaEventosActivos = eventoService.listarEventosActivos();
+    // El panel del dashboard muestra solo los últimos eventos; el resto está en el cronograma
+    final int EVENTOS_EN_DASHBOARD = 4;
+    List<Evento> listaEventosRecientes = eventoService.listarEventosRecientes(EVENTOS_EN_DASHBOARD);
+    java.util.Map<String, Integer> conteoEventos = eventoService.contarEventosPorPeriodo();
+    int totalEventos = conteoEventos.get("TODOS") != null ? conteoEventos.get("TODOS") : 0;
     List<Cita> listaCitas = eventoService.listarCitasDisponibles(); // FIX: nuevo
     int citasPendientes = new CitaService().contarPorEstado("PENDIENTE");
     // Llega desde "Convertir en evento" en el panel de citas (?idCita=X)
@@ -319,9 +323,31 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
-            max-height: 680px;
-            overflow-y: auto;
-            padding-right: 6px;
+            /* Sin max-height ni scroll interno: el dashboard ya muestra pocos eventos
+               (EVENTOS_EN_DASHBOARD) y el resto se ve en el cronograma. */
+        }
+
+        .stream-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border-soft);
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+        }
+
+        .stream-footer a {
+            color: var(--rose-dark);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .stream-footer a:hover {
+            color: var(--rose-deep);
         }
 
         .events-stream::-webkit-scrollbar {
@@ -334,6 +360,7 @@
         }
 
         .event-live-card {
+            flex-shrink: 0; /* FIX: en una columna flex con max-height las tarjetas se comprimían y recortaban su contenido */
             background: #FAF8F6;
             border: 1.5px solid rgba(239, 232, 226, 0.8);
             border-radius: 16px;
@@ -760,11 +787,44 @@
 
         @media (max-width: 992px) {
             .split-workspace {
-                grid-template-columns: 1fr;
+                grid-template-columns: minmax(0, 1fr);
             }
+            .split-workspace > * { min-width: 0; }
             .form-row-2 {
                 grid-template-columns: 1fr;
             }
+        }
+
+        /* ===== Responsive celular ===== */
+        @media (max-width: 640px) {
+            .navbar-container {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+                padding: 12px 16px;
+            }
+            .nav-brand-group { justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+            .brand-name { font-size: 1.5rem; letter-spacing: 3px; }
+            .admin-user-profile { justify-content: space-between; gap: 10px; }
+            .admin-chip { text-align: left; min-width: 0; }
+            .admin-name, .admin-role { overflow-wrap: anywhere; }
+            .btn-exit { padding: 10px 16px; min-height: 40px; display: inline-flex; align-items: center; flex-shrink: 0; }
+            .admin-main { padding: 0 12px; margin: 16px auto 28px auto; }
+            .kpi-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+            .kpi-card { padding: 14px 14px; }
+            .split-workspace { gap: 18px; }
+            .col-events-monitor, .col-register-center { padding: 18px 14px; border-radius: 16px; }
+            .section-header { flex-wrap: wrap; gap: 8px; }
+            .section-title { font-size: 1.2rem; }
+            .event-top-info { flex-wrap: wrap; gap: 6px; }
+            .event-details-row { gap: 6px 12px; }
+            .operation-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .tab-btn { flex: 0 0 auto; padding: 12px 14px; min-height: 44px; }
+            .field-group input, .field-group select, .field-group textarea { min-height: 44px; font-size: 16px; }
+            .nav-buttons-row { flex-direction: column-reverse; gap: 10px; }
+            .btn-step-next, .btn-step-prev, .btn-register-action { min-height: 46px; width: 100%; }
+            .insumo-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .toast-notification { left: 12px; right: 12px; max-width: none; }
         }
     </style>
 </head>
@@ -781,7 +841,7 @@
         <div class="admin-user-profile">
             <div class="admin-chip">
                 <div>
-                    <div class="admin-name"><%= usuario.getNombreCompleto()%></div>
+                    <div class="admin-name"><%= esc(usuario.getNombreCompleto())%></div>
                     <div class="admin-role">👑 <%= usuario.getRol()%> &bull; Supabase Cloud</div>
                 </div>
             </div>
@@ -798,13 +858,18 @@
 
     <!-- Métricas Rápidas -->
     <section class="kpi-row">
-        <div class="kpi-card">
-            <div>
-                <div class="kpi-label">Eventos en Cronograma</div>
-                <div class="kpi-value" id="count-eventos"><%= listaEventosActivos.size()%> Activos</div>
+        <a href="<%= request.getContextPath()%>/evento?accion=cronograma&amp;filtro=TODOS"
+           style="text-decoration: none; color: inherit; display: block;">
+
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">Eventos en Cronograma</div>
+                    <div class="kpi-value" id="count-eventos"><%= totalEventos%> Activos</div>
+                </div>
+                <div class="kpi-icon">&#127878;</div>
             </div>
-            <div class="kpi-icon">&#127878;</div>
-        </div>
+
+        </a>
 
         <a href="<%= request.getContextPath()%>/articulo?accion=registro"
            style="text-decoration: none; color: inherit; display: block;">
@@ -871,7 +936,7 @@
             </div>
 
             <div class="events-stream" id="eventsStream">
-                <% if (listaEventosActivos.isEmpty()) { %>
+                <% if (listaEventosRecientes.isEmpty()) { %>
                 <div style="text-align: center; padding: 48px 20px; color: var(--text-secondary);">
                     <div style="font-size: 2.8rem; margin-bottom: 12px;">✨</div>
                     <h3 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 8px;">No hay eventos en producción aún</h3>
@@ -880,16 +945,16 @@
                     </p>
                 </div>
                 <% } else { %>
-                <% for (Evento ev : listaEventosActivos) {%>
+                <% for (Evento ev : listaEventosRecientes) {%>
                 <article class="event-live-card">
                     <div class="event-top-info">
                         <div>
-                            <h3 class="event-name">✨ <%= ev.getNombre() != null ? ev.getNombre() : "Evento INARA"%></h3>
+                            <h3 class="event-name">✨ <%= ev.getNombre() != null ? esc(ev.getNombre()) : "Evento INARA"%></h3>
                             <p style="font-size: 0.82rem; color: var(--rose-dark); font-weight: 600; margin-top: 2px;">
-                                Titular: <%= ev.getNombreCliente() != null ? ev.getNombreCliente() : "Cliente General"%>
+                                Titular: <%= ev.getNombreCliente() != null ? esc(ev.getNombreCliente()) : "Cliente General"%>
                             </p>
                         </div>
-                        <span class="event-category-badge gold"><%= ev.getTipoCelebracion() != null ? ev.getTipoCelebracion() : "Evento"%></span>
+                        <span class="event-category-badge gold"><%= ev.getTipoCelebracion() != null ? esc(ev.getTipoCelebracion()) : "Evento"%></span>
                     </div>
 
                     <div class="event-details-row">
@@ -900,12 +965,12 @@
                     </div>
 
                     <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px;">
-                        👤 Coordinador: <strong><%= ev.getNombreCoordinador() != null ? ev.getNombreCoordinador() : "Staff Asignado"%></strong>
+                        👤 Coordinador: <strong><%= ev.getNombreCoordinador() != null ? esc(ev.getNombreCoordinador()) : "Staff Asignado"%></strong>
                     </div>
 
                     <div class="progress-container">
                         <div class="progress-header">
-                            <span>🟢 Fase: <%= ev.getEstado()%></span>
+                            <span>🟢 Fase: <%= esc(ev.getEstado())%></span>
                             <span>100% Confirmado</span>
                         </div>
                         <div class="progress-bar-bg">
@@ -916,6 +981,19 @@
                 <% } %>
                 <% } %>
             </div>
+
+            <% if (totalEventos > 0) { %>
+            <div class="stream-footer">
+                <span>
+                    <% if (totalEventos > listaEventosRecientes.size()) { %>
+                    Mostrando los <strong><%= listaEventosRecientes.size()%></strong> más recientes de <strong><%= totalEventos%></strong>
+                    <% } else { %>
+                    <strong><%= totalEventos%></strong> evento(s) registrado(s)
+                    <% } %>
+                </span>
+                <a href="<%= request.getContextPath()%>/evento?accion=cronograma&amp;filtro=TODOS">Ver cronograma completo &rarr;</a>
+            </div>
+            <% } %>
         </section>
 
         <!-- MITAD DERECHA: Centro de Registro en Vivo -->
@@ -946,7 +1024,7 @@
                             <label>Tipo de Celebración *</label>
                             <select id="ev-tipo" required>
                                 <% for (TipoEvento te : listaTipos) {%>
-                                <option value="<%= te.getIdTipoEvento()%>"><%= te.getNombre()%></option>
+                                <option value="<%= te.getIdTipoEvento()%>"><%= esc(te.getNombre())%></option>
                                 <% } %>
                             </select>
                         </div>
@@ -956,7 +1034,7 @@
                                 <option value="">-- Selecciona el Cliente --</option>
                                 <% for (Cliente cli : listaClientes) {%>
                                 <option value="<%= cli.getIdCliente()%>">
-                                    <%= cli.getNombre()%> <%= cli.getApellido()%> (DNI: <%= cli.getDni() != null ? cli.getDni() : "S/D"%>)
+                                    <%= esc(cli.getNombre())%> <%= esc(cli.getApellido())%> (DNI: <%= cli.getDni() != null ? esc(cli.getDni()) : "S/D"%>)
                                 </option>
                                 <% } %>
                             </select>
@@ -1039,18 +1117,18 @@
                             <td style="text-align: center;">
                                 <input type="checkbox" class="chk-insumo"
                                        data-id="<%= art.getIdArticulo()%>"
-                                       data-nombre="<%= art.getNombre()%>"
+                                       data-nombre="<%= esc(art.getNombre())%>"
                                        data-precio="<%= art.getPrecio()%>"
                                        data-stock="<%= art.getStock()%>"
                                        data-prov-id="<%= art.getIdProveedor()%>"
-                                       data-prov-nombre="<%= art.getNombreProveedor() != null ? art.getNombreProveedor() : "Proveedor General"%>"
+                                       data-prov-nombre="<%= art.getNombreProveedor() != null ? esc(art.getNombreProveedor()) : "Proveedor General"%>"
                                        onchange="toggleInsumo(this)">
                             </td>
                             <td>
-                                <strong><%= art.getNombre()%></strong>
+                                <strong><%= esc(art.getNombre())%></strong>
                             </td>
                             <td>
-                                <span class="badge-prov"><%= art.getNombreProveedor() != null ? art.getNombreProveedor() : "General"%></span>
+                                <span class="badge-prov"><%= art.getNombreProveedor() != null ? esc(art.getNombreProveedor()) : "General"%></span>
                             </td>
                             <td>
                                 <%= nf.format(art.getPrecio())%>
@@ -1113,7 +1191,7 @@
                         <option value="">-- Selecciona el Coordinador General --</option>
                         <% for (Empleado emp : listaPersonal) {%>
                         <option value="<%= emp.getIdEmpleado()%>">
-                            <%= emp.getNombreCompleto()%> &bull; <%= emp.getCargo() != null ? emp.getCargo() : "Staff"%> (<%= emp.getArea() != null ? emp.getArea() : "Operaciones"%>)
+                            <%= esc(emp.getNombreCompleto())%> &bull; <%= emp.getCargo() != null ? esc(emp.getCargo()) : "Staff"%> (<%= emp.getArea() != null ? esc(emp.getArea()) : "Operaciones"%>)
                         </option>
                         <% } %>
                     </select>
@@ -1128,8 +1206,8 @@
                     <label class="staff-card">
                         <input type="checkbox" class="chk-staff" value="<%= emp.getIdEmpleado()%>" onchange="actualizarResumenStaff()">
                         <div>
-                            <div style="font-weight: 600; font-size: 0.88rem; color: var(--text-primary);"><%= emp.getNombreCompleto()%></div>
-                            <div style="font-size: 0.76rem; color: var(--text-secondary);"><%= emp.getCargo() != null ? emp.getCargo() : "Colaborador"%> &bull; <%= emp.getArea() != null ? emp.getArea() : "Protocolo"%></div>
+                            <div style="font-weight: 600; font-size: 0.88rem; color: var(--text-primary);"><%= esc(emp.getNombreCompleto())%></div>
+                            <div style="font-size: 0.76rem; color: var(--text-secondary);"><%= emp.getCargo() != null ? esc(emp.getCargo()) : "Colaborador"%> &bull; <%= emp.getArea() != null ? esc(emp.getArea()) : "Protocolo"%></div>
                         </div>
                     </label>
                     <% }%>
@@ -1284,6 +1362,13 @@
         switchTab('tab-proveedor');
     }
 
+    // Escapa texto antes de insertarlo con innerHTML (los nombres vienen de la base de datos)
+    function escaparHtml(texto) {
+        return String(texto === null || texto === undefined ? '' : texto)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
     function generarProveedoresDerivados() {
         var chks = document.querySelectorAll('.chk-insumo:checked');
         var contenedor = document.getElementById('contenedor-proveedores-derivados');
@@ -1318,12 +1403,12 @@
         for (var pId in proveedoresMap) {
             var prov = proveedoresMap[pId];
             var listaInsumosTxt = prov.insumos.map(function (item) {
-                return item.nombre + ' (' + item.cantidad + ' u.)';
+                return escaparHtml(item.nombre) + ' (' + escaparHtml(item.cantidad) + ' u.)';
             }).join(', ');
 
             html += '<div class="prov-card">' +
                 '<div>' +
-                '<h4>🚚 ' + prov.nombre + '</h4>' +
+                '<h4>🚚 ' + escaparHtml(prov.nombre) + '</h4>' +
                 '<p><strong>Insumos abastecidos:</strong> ' + listaInsumosTxt + '</p>' +
                 '</div>' +
                 '<span class="badge-stock" style="background: rgba(198, 161, 91, 0.2); color: #8C6A29;">VINCULADO AUTOMÁTICO</span>' +

@@ -621,6 +621,30 @@
                 gap: 4px;
             }
         }
+
+        @media (max-width: 560px) {
+            .navbar-content { padding: 12px 14px; }
+            .nav-brand { flex-direction: column; align-items: center; gap: 2px; }
+            .nav-logo-title { font-size: 1.5rem; letter-spacing: 3px; }
+            .nav-user-area { width: 100%; justify-content: space-between; gap: 10px; }
+            .user-chip { min-width: 0; }
+            .user-info-text { min-width: 0; text-align: left; }
+            .user-name, .user-role-badge { overflow-wrap: anywhere; }
+            .btn-logout { padding: 10px 14px; min-height: 40px; display: inline-flex; align-items: center; flex-shrink: 0; }
+            .portal-main { padding: 0 12px; margin: 18px auto; }
+            .hero-banner { padding: 24px 18px; border-radius: 16px; }
+            .hero-title { font-size: 1.6rem; overflow-wrap: anywhere; }
+            .card-panel, .services-section { padding: 20px 16px; border-radius: 16px; }
+            .detail-value { overflow-wrap: anywhere; }
+            .stat-box { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .stat-action-btn { padding: 11px 18px; min-height: 42px; }
+            .cita-item { flex-wrap: wrap; padding: 14px; gap: 12px; }
+            .cita-info { flex-basis: calc(100% - 90px); min-width: 0; overflow-wrap: anywhere; }
+            .estado-badge { margin-left: auto; }
+            .portal-main .card-panel > div[style*="display: flex"] { flex-direction: column; }
+            .portal-main .card-panel > div[style*="display: flex"] .stat-action-btn { text-align: center; }
+            .services-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>

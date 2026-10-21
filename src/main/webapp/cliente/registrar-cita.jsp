@@ -9,66 +9,69 @@
     <style>
         .form-row { display: flex; gap: 12px; }
         .form-row .form-group { flex: 1; }
+        @media (max-width: 560px) {
+            input, select, button, .btn-submit { min-height: 46px; font-size: 16px; }
+            .link-footer a, form a { display: inline-block; padding: 8px 0; }
+        }
     </style>
 </head>
 <body>
 
-<div class="login-container" style="max-width: 480px;">
-    <div class="login-header">
-        <h1>INARA</h1>
-        <p>Agendar una cita</p>
-    </div>
+    <div class="login-container" style="max-width: 480px;">
+        <div class="login-header">
+            <h1>INARA</h1>
+            <p>Agendar una cita</p>
+        </div>
 
-    <%
-        String error = (String) request.getAttribute("error");
-        if (error != null) {
-    %>
-    <div class="alert alert-danger">
-        <%= error %>
-    </div>
-    <%
-        }
-    %>
-
-    <form action="${pageContext.request.contextPath}/citas" method="post" class="login-form">
-
-        <div class="form-row">
-            <div class="form-group">
-                <label for="fecha">Fecha: *</label>
-                <input type="date" id="fecha" name="fecha" required>
+        <%
+            String error = (String) request.getAttribute("error");
+            if (error != null) {
+        %>
+            <div class="alert alert-danger">
+                <%= error %>
             </div>
-            <div class="form-group">
-                <label for="hora">Hora: *</label>
-                <input type="time" id="hora" name="hora" required>
+        <%
+            }
+        %>
+
+        <form action="${pageContext.request.contextPath}/citas" method="post" class="login-form">
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="fecha">Fecha: *</label>
+                    <input type="date" id="fecha" name="fecha" required>
+                </div>
+                <div class="form-group">
+                    <label for="hora">Hora: *</label>
+                    <input type="time" id="hora" name="hora" required>
+                </div>
             </div>
-        </div>
 
-        <div class="form-group">
-            <label for="modalidad">Modalidad:</label>
-            <select id="modalidad" name="modalidad">
-                <option value="PRESENCIAL">Presencial</option>
-                <option value="VIRTUAL">Virtual</option>
-            </select>
-        </div>
+            <div class="form-group">
+                <label for="modalidad">Modalidad:</label>
+                <select id="modalidad" name="modalidad">
+                    <option value="PRESENCIAL">Presencial</option>
+                    <option value="VIRTUAL">Virtual</option>
+                </select>
+            </div>
 
-        <div class="form-group">
-            <label for="lugar">Lugar (si es presencial):</label>
-            <input type="text" id="lugar" name="lugar" placeholder="Ej. Oficina INARA - San Isidro">
-        </div>
+            <div class="form-group">
+                <label for="lugar">Lugar (si es presencial):</label>
+                <input type="text" id="lugar" name="lugar" placeholder="Ej. Oficina INARA - San Isidro">
+            </div>
 
-        <div class="form-group">
-            <label for="motivo">Motivo / tipo de evento a tratar:</label>
-            <input type="text" id="motivo" name="motivo" placeholder="Ej. Cotización para boda en diciembre">
-        </div>
+            <div class="form-group">
+                <label for="motivo">Motivo / tipo de evento a tratar:</label>
+                <input type="text" id="motivo" name="motivo" placeholder="Ej. Cotización para boda en diciembre">
+            </div>
 
-        <button type="submit" class="btn-submit">Agendar cita</button>
+            <button type="submit" class="btn-submit">Agendar cita</button>
 
-        <div class="link-footer">
-            <a href="${pageContext.request.contextPath}/citas">Volver a mis citas</a>
-            <a href="${pageContext.request.contextPath}/cliente/dashboard.jsp">&larr; Volver al dashboard</a>
-        </div>
-    </form>
-</div>
+            <div class="link-footer">
+                <a href="${pageContext.request.contextPath}/citas">Volver a mis citas</a>
+            </div>
+        </form>
+    </div>
 
 </body>
 </html>

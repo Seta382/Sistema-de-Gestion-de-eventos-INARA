@@ -56,6 +56,30 @@
         .a-cancelar  { color: #923838; }
         .empty-msg { text-align: center; padding: 30px; color: var(--text-secondary); }
         .link-back { display: inline-block; margin-top: 22px; font-size: 0.85rem; color: var(--rose-dark); text-decoration: none; }
+
+        /* ===== Responsive: tabla -> tarjetas apiladas en celular ===== */
+        @media (max-width: 720px) {
+            body { padding: 16px 12px; }
+            .search-bar input[type="search"] { min-width: 0; flex-basis: 100%; }
+            .search-bar button, .filters a { min-height: 40px; display: inline-flex; align-items: center; }
+            .wrapper { padding: 22px 16px; border-radius: 18px; }
+            table, tbody { display: block; width: 100%; }
+            table tr:first-child { display: none; }
+            table tr { display: block; background: #FAF8F6; border: 1px solid #EFE8E2;
+                       border-radius: 14px; padding: 10px 14px; margin-bottom: 12px; }
+            table td { display: flex; justify-content: space-between; align-items: center;
+                       gap: 14px; text-align: right; border: none; padding: 6px 0; word-break: break-word; }
+            table td[data-label]::before { content: attr(data-label); flex-shrink: 0; text-align: left;
+                       font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+                       letter-spacing: 0.5px; color: #706464; }
+            table td:not([data-label]) { display: block; text-align: center; }
+            table td.actions { flex-wrap: wrap; justify-content: flex-start; gap: 8px;
+                       border-top: 1px dashed #EFE8E2; margin-top: 6px; padding-top: 10px; }
+            table td.actions::before { display: none; }
+            table td.actions:not(:has(a)) { display: none; }
+            .actions a { display: inline-flex; align-items: center; justify-content: center; min-height: 40px;
+                       padding: 0 14px; margin: 0; border: 1px solid #EFE8E2; border-radius: 10px; background: #fff; }
+        }
     </style>
 </head>
 <body>
@@ -103,14 +127,14 @@
             </tr>
             <c:forEach var="cita" items="${citas}">
                 <tr>
-                    <td><c:out value="${cita.nombreCliente}"/></td>
-                    <td>${cita.fecha}</td>
-                    <td>${cita.hora}</td>
-                    <td><c:out value="${cita.modalidad}"/></td>
-                    <td><c:out value="${cita.lugar}"/></td>
-                    <td><c:out value="${cita.motivo}"/></td>
-                    <td><span class="badge estado-${cita.estado}">${cita.estado}</span></td>
-                    <td class="actions">
+                    <td data-label="Cliente"><c:out value="${cita.nombreCliente}"/></td>
+                    <td data-label="Fecha">${cita.fecha}</td>
+                    <td data-label="Hora">${cita.hora}</td>
+                    <td data-label="Modalidad"><c:out value="${cita.modalidad}"/></td>
+                    <td data-label="Lugar"><c:out value="${cita.lugar}"/></td>
+                    <td data-label="Motivo"><c:out value="${cita.motivo}"/></td>
+                    <td data-label="Estado"><span class="badge estado-${cita.estado}">${cita.estado}</span></td>
+                    <td class="actions" data-label="Acciones">
                         <c:if test="${cita.estado == 'PENDIENTE' || cita.estado == 'REPROGRAMADA'}">
                             <a class="a-confirmar"
                                href="${pageContext.request.contextPath}/citas-gestion?accion=confirmar&amp;id=${cita.idCita}&amp;estado=${filtroEstado}${qParamHtml}">Confirmar</a>

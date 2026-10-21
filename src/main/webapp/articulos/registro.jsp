@@ -116,6 +116,8 @@
             .fila { grid-template-columns: 1fr; }
             .card { padding: 24px 20px; }
             .navbar { padding: 14px 20px; }
+            input, select, button, .btn-volver { min-height: 44px; }
+            input, select, textarea { font-size: 16px; }
         }
     </style>
 </head>
@@ -456,4 +458,3 @@
 
 </body>
 </html>
-

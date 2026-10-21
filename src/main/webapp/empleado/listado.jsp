@@ -16,7 +16,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Montserrat', sans-serif; background-color: var(--bg-primary); padding: 40px 24px; }
         .wrapper { max-width: 1000px; margin: 0 auto; background: var(--white); border-radius: 24px;
-            padding: 36px 40px; border: 1px solid var(--border-soft); }
+                   padding: 36px 40px; border: 1px solid var(--border-soft); }
         .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
         h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.6rem; color: var(--text-primary); }
         .btn-new {
@@ -38,73 +38,97 @@
         .actions .a-reactivar { color: #2F6B4F; }
         .empty-msg { text-align: center; padding: 30px; color: var(--text-secondary); }
         .link-back { display: inline-block; margin-top: 20px; font-size: 0.85rem; color: var(--rose-dark); text-decoration: none; }
+
+        /* ===== Responsive: tabla -> tarjetas apiladas en celular ===== */
+        @media (max-width: 720px) {
+            body { padding: 16px 12px; }
+            .btn-new { display: block; width: 100%; text-align: center; padding: 14px 20px; }
+            .header-row { flex-direction: column; align-items: stretch; }
+            .wrapper { padding: 22px 16px; border-radius: 18px; }
+            table, tbody { display: block; width: 100%; }
+            table tr:first-child { display: none; }
+            table tr { display: block; background: #FAF8F6; border: 1px solid #EFE8E2;
+                       border-radius: 14px; padding: 10px 14px; margin-bottom: 12px; }
+            table td { display: flex; justify-content: space-between; align-items: center;
+                       gap: 14px; text-align: right; border: none; padding: 6px 0; word-break: break-word; }
+            table td[data-label]::before { content: attr(data-label); flex-shrink: 0; text-align: left;
+                       font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+                       letter-spacing: 0.5px; color: #706464; }
+            table td:not([data-label]) { display: block; text-align: center; }
+            table td.actions { flex-wrap: wrap; justify-content: flex-start; gap: 8px;
+                       border-top: 1px dashed #EFE8E2; margin-top: 6px; padding-top: 10px; }
+            table td.actions::before { display: none; }
+            table td.actions:not(:has(a)) { display: none; }
+            .actions a { display: inline-flex; align-items: center; justify-content: center; min-height: 40px;
+                       padding: 0 14px; margin: 0; border: 1px solid #EFE8E2; border-radius: 10px; background: #fff; }
+        }
     </style>
 </head>
 <body>
 
-<div class="wrapper">
-    <div class="header-row">
-        <h1>Personal Administrativo</h1>
-        <a href="${pageContext.request.contextPath}/empleado?accion=registro" class="btn-new">+ Nuevo personal</a>
-    </div>
-
-    <c:if test="${not empty errorGlobal}">
-        <div style="background:#FDF3F3; color:#923838; padding:12px 16px; border-radius:10px; font-size:0.85rem; margin-bottom:18px;">
-                ${errorGlobal}
+    <div class="wrapper">
+        <div class="header-row">
+            <h1>Personal Administrativo</h1>
+            <a href="${pageContext.request.contextPath}/empleado?accion=registro" class="btn-new">+ Nuevo personal</a>
         </div>
-    </c:if>
 
-    <table>
-        <tr>
-            <th>Nombre</th>
-            <th>Correo</th>
-            <th>DNI</th>
-            <th>Cargo</th>
-            <th>Área</th>
-            <th>Rol</th>
-            <th>Estado</th>
-            <th></th>
-        </tr>
-        <c:forEach var="emp" items="${listaPersonal}">
-            <tr>
-                <td>${emp.nombreCompleto}</td>
-                <td>${emp.correo}</td>
-                <td>${emp.dni}</td>
-                <td>${emp.cargo}</td>
-                <td>${emp.area}</td>
-                <td><span class="rol-badge">${emp.rol}</span></td>
-                <td>
-                    <c:choose>
-                        <c:when test="${emp.estado == 'INACTIVO'}">
-                            <span class="badge badge-inactivo">Inactivo</span>
-                        </c:when>
-                        <c:otherwise>
-                            <span class="badge badge-activo">Activo</span>
-                        </c:otherwise>
-                    </c:choose>
-                </td>
-                <td class="actions">
-                    <a class="a-editar" href="${pageContext.request.contextPath}/empleado?accion=editar&id=${emp.idEmpleado}">Editar</a>
-                    <c:choose>
-                        <c:when test="${emp.estado == 'INACTIVO'}">
-                            <a class="a-reactivar" href="${pageContext.request.contextPath}/empleado?accion=reactivar&idUsuario=${emp.idUsuario}"
-                               onclick="return confirm('¿Reactivar a este colaborador?')">Reactivar</a>
-                        </c:when>
-                        <c:otherwise>
-                            <a class="a-baja" href="${pageContext.request.contextPath}/empleado?accion=baja&idUsuario=${emp.idUsuario}"
-                               onclick="return confirm('¿Dar de baja a este colaborador? Podrás reactivarlo después.')">Dar de baja</a>
-                        </c:otherwise>
-                    </c:choose>
-                </td>
-            </tr>
-        </c:forEach>
-        <c:if test="${empty listaPersonal}">
-            <tr><td colspan="8" class="empty-msg">Todavía no hay personal registrado.</td></tr>
+        <c:if test="${not empty errorGlobal}">
+            <div style="background:#FDF3F3; color:#923838; padding:12px 16px; border-radius:10px; font-size:0.85rem; margin-bottom:18px;">
+                ${errorGlobal}
+            </div>
         </c:if>
-    </table>
 
-    <a href="${pageContext.request.contextPath}/empleado/dashboard.jsp" class="link-back">&larr; Volver al panel administrativo</a>
-</div>
+        <table>
+            <tr>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>DNI</th>
+                <th>Cargo</th>
+                <th>Área</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th></th>
+            </tr>
+            <c:forEach var="emp" items="${listaPersonal}">
+                <tr>
+                    <td data-label="Nombre">${emp.nombreCompleto}</td>
+                    <td data-label="Correo">${emp.correo}</td>
+                    <td data-label="DNI">${emp.dni}</td>
+                    <td data-label="Cargo">${emp.cargo}</td>
+                    <td data-label="Área">${emp.area}</td>
+                    <td data-label="Rol"><span class="rol-badge">${emp.rol}</span></td>
+                    <td data-label="Estado">
+                        <c:choose>
+                            <c:when test="${emp.estado == 'INACTIVO'}">
+                                <span class="badge badge-inactivo">Inactivo</span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="badge badge-activo">Activo</span>
+                            </c:otherwise>
+                        </c:choose>
+                    </td>
+                    <td class="actions" data-label="Acciones">
+                        <a class="a-editar" href="${pageContext.request.contextPath}/empleado?accion=editar&id=${emp.idEmpleado}">Editar</a>
+                        <c:choose>
+                            <c:when test="${emp.estado == 'INACTIVO'}">
+                                <a class="a-reactivar" href="${pageContext.request.contextPath}/empleado?accion=reactivar&idUsuario=${emp.idUsuario}"
+                                   onclick="return confirm('¿Reactivar a este colaborador?')">Reactivar</a>
+                            </c:when>
+                            <c:otherwise>
+                                <a class="a-baja" href="${pageContext.request.contextPath}/empleado?accion=baja&idUsuario=${emp.idUsuario}"
+                                   onclick="return confirm('¿Dar de baja a este colaborador? Podrás reactivarlo después.')">Dar de baja</a>
+                            </c:otherwise>
+                        </c:choose>
+                    </td>
+                </tr>
+            </c:forEach>
+            <c:if test="${empty listaPersonal}">
+                <tr><td colspan="8" class="empty-msg">Todavía no hay personal registrado.</td></tr>
+            </c:if>
+        </table>
+
+        <a href="${pageContext.request.contextPath}/empleado/dashboard.jsp" class="link-back">&larr; Volver al panel administrativo</a>
+    </div>
 
 </body>
 </html>

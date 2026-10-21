@@ -13,6 +13,14 @@
         }
         .form-row .form-group {
             flex: 1;
+            min-width: 0; /* sin esto los inputs no pueden encogerse y empujan el ancho de la página */
+        }
+        .form-row input { min-width: 0; width: 100%; box-sizing: border-box; }
+        @media (max-width: 520px) {
+            .form-row { flex-direction: column; gap: 0; }
+            .login-form input { min-height: 46px; font-size: 16px; }
+            .login-form .btn-submit { min-height: 48px; }
+            .link-footer a { display: inline-block; padding: 6px 0; }
         }
         .link-footer {
             text-align: center;

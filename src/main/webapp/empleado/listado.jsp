@@ -7,64 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personal Administrativo - INARA</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-primary: #F8F4F1; --rose-dark: #A66A6A; --rose-deep: #743E3E;
-            --gold: #C6A15B; --text-primary: #3D3333; --text-secondary: #706464;
-            --white: #FFFFFF; --border-soft: #EFE8E2;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Montserrat', sans-serif; background-color: var(--bg-primary); padding: 40px 24px; }
-        .wrapper { max-width: 1000px; margin: 0 auto; background: var(--white); border-radius: 24px;
-                   padding: 36px 40px; border: 1px solid var(--border-soft); }
-        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
-        h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.6rem; color: var(--text-primary); }
-        .btn-new {
-            background: linear-gradient(135deg, var(--gold) 0%, var(--rose-dark) 100%);
-            color: var(--white); padding: 11px 20px; border-radius: 10px;
-            text-decoration: none; font-size: 0.85rem; font-weight: 700;
-            text-transform: uppercase; letter-spacing: 0.5px;
-        }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border-soft); font-size: 0.88rem; }
-        th { text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.5px; color: var(--text-secondary); }
-        .badge { padding: 4px 11px; border-radius: 14px; font-size: 0.72rem; font-weight: 700; }
-        .badge-activo { background: #F4F8F4; color: #2F6B4F; }
-        .badge-inactivo { background: #F0F0F0; color: #706464; }
-        .rol-badge { padding: 3px 9px; border-radius: 8px; font-size: 0.7rem; font-weight: 600; background: #F5EDE3; color: var(--rose-deep); }
-        .actions a { font-size: 0.82rem; text-decoration: none; margin-right: 12px; font-weight: 600; }
-        .actions .a-editar { color: var(--rose-dark); }
-        .actions .a-baja { color: #923838; }
-        .actions .a-reactivar { color: #2F6B4F; }
-        .empty-msg { text-align: center; padding: 30px; color: var(--text-secondary); }
-        .link-back { display: inline-block; margin-top: 20px; font-size: 0.85rem; color: var(--rose-dark); text-decoration: none; }
-
-        /* ===== Responsive: tabla -> tarjetas apiladas en celular ===== */
-        @media (max-width: 720px) {
-            body { padding: 16px 12px; }
-            .btn-new { display: block; width: 100%; text-align: center; padding: 14px 20px; }
-            .header-row { flex-direction: column; align-items: stretch; }
-            .wrapper { padding: 22px 16px; border-radius: 18px; }
-            table, tbody { display: block; width: 100%; }
-            table tr:first-child { display: none; }
-            table tr { display: block; background: #FAF8F6; border: 1px solid #EFE8E2;
-                       border-radius: 14px; padding: 10px 14px; margin-bottom: 12px; }
-            table td { display: flex; justify-content: space-between; align-items: center;
-                       gap: 14px; text-align: right; border: none; padding: 6px 0; word-break: break-word; }
-            table td[data-label]::before { content: attr(data-label); flex-shrink: 0; text-align: left;
-                       font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
-                       letter-spacing: 0.5px; color: #706464; }
-            table td:not([data-label]) { display: block; text-align: center; }
-            table td.actions { flex-wrap: wrap; justify-content: flex-start; gap: 8px;
-                       border-top: 1px dashed #EFE8E2; margin-top: 6px; padding-top: 10px; }
-            table td.actions::before { display: none; }
-            table td.actions:not(:has(a)) { display: none; }
-            .actions a { display: inline-flex; align-items: center; justify-content: center; min-height: 40px;
-                       padding: 0 14px; margin: 0; border: 1px solid #EFE8E2; border-radius: 10px; background: #fff; }
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/empleado.css">
 </head>
-<body>
+<body class="page-listado">
 
     <div class="wrapper">
         <div class="header-row">

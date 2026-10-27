@@ -87,9 +87,44 @@ public class EventoService {
         return eventoDAO.buscarEventos(texto, filtro);
     }
 
+
+
+
     /** Cantidad de eventos por período (claves TODOS, PROXIMOS y PASADOS). */
     public Map<String, Integer> contarEventosPorPeriodo() {
         return eventoDAO.contarPorPeriodo();
+    }
+    /** Etapas del proceso, en orden. CANCELADO no está aquí: es una salida, no una etapa. */
+    public static final List<String> ETAPAS = java.util.Arrays.asList(
+            "SOLICITADO", "COTIZADO", "CONFIRMADO", "EN_PROCESO", "FINALIZADO");
+
+    /**
+     * Pasa el evento a la siguiente etapa. Solo avanza de a una, y nunca desde Finalizado o Cancelado.
+     *
+     * @return el nuevo estado (por ejemplo "EN_PROCESO")
+     */
+    public String avanzarEtapa(int idEvento) {
+        Evento evento = eventoDAO.buscarPorId(idEvento);
+        if (evento == null) {
+            throw new IllegalArgumentException("El evento ya no existe.");
+        }
+        String actual = evento.getEstado() == null ? "" : evento.getEstado().trim().toUpperCase();
+        if ("CANCELADO".equals(actual)) {
+            throw new IllegalArgumentException("Un evento cancelado no puede avanzar de etapa.");
+        }
+        int pos = ETAPAS.indexOf(actual);
+        if (pos < 0) {
+            throw new IllegalArgumentException("La etapa actual (" + evento.getEstado() + ") no se reconoce.");
+        }
+        if (pos == ETAPAS.size() - 1) {
+            throw new IllegalArgumentException("El evento ya está finalizado.");
+        }
+        String siguiente = ETAPAS.get(pos + 1);
+        // El DAO solo cambia el estado si nadie más lo modificó mientras tanto
+        if (!eventoDAO.cambiarEstado(idEvento, evento.getEstado(), siguiente)) {
+            throw new IllegalArgumentException("No se pudo actualizar la etapa. Recarga la página e inténtalo de nuevo.");
+        }
+        return siguiente;
     }
 
     public List<Cita> listarCitasDisponibles() {

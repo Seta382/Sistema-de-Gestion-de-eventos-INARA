@@ -4,48 +4,62 @@
    Clase que va en el <body> de cada JSP:
      dashboard.jsp (cliente)  ->  <body class="page-cliente-dashboard">
      mis-citas.jsp            ->  <body class="page-mis-citas">
-     registrar-cita.jsp       ->  <body class="page-registrar-cita">
+     registrar-cita.jsp       ->  <body class="page-agendar-cita">
      registro.jsp (cuenta)    ->  <body class="page-registro-cliente">
 
    Link en el <head>:
      <link rel="stylesheet" href="${pageContext.request.contextPath}/css/cliente.css">
 
-   IMPORTANTE: mis-citas y registrar-cita SIGUEN usando login.css. Deja su
-   <link> a login.css y pon cliente.css DESPUÉS:
+   IMPORTANTE: mis-citas SIGUE usando login.css. Deja su <link> a login.css
+   y pon cliente.css DESPUÉS:
      <link rel="stylesheet" href=".../css/login.css">
      <link rel="stylesheet" href=".../css/cliente.css">
    El dashboard NO usa login.css, solo este archivo.
-   El registro de cuenta usa Bootstrap 5.3 + este archivo (sin login.css).
+   El registro de cuenta y agendar cita usan Bootstrap 5.3 + este archivo (sin login.css).
    ===================================================================== */
-
 
 
 /* =====================================================================
-   1. registrar-cita.jsp  ->  <body class="page-registrar-cita">
-      (sigue sobre login.css: fila de dos columnas)
+   1. registrar-cita.jsp (Agendar cita)  ->  <body class="page-agendar-cita">
+      Usa la base de la sección 2; aquí solo lo propio de esta pantalla.
    ===================================================================== */
-.page-registrar-cita .form-row { display: flex; gap: 12px; }
-.page-registrar-cita .form-row .form-group { flex: 1; }
-
-@media (max-width: 560px) {
-    .page-registrar-cita input,
-    .page-registrar-cita select,
-    .page-registrar-cita button,
-    .page-registrar-cita .btn-submit {
-        min-height: 46px; font-size: 16px;
-    }
-    .page-registrar-cita .link-footer a,
-    .page-registrar-cita form a {
-        display: inline-block; padding: 8px 0;
-    }
+.page-agendar-cita .modalidad-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.page-agendar-cita .modalidad-opt {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border-soft);
+    border-radius: 12px;
+    background: #FAF7F5;
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.25s ease;
 }
+.page-agendar-cita .modalidad-opt:hover { border-color: var(--rose-light); color: var(--text-primary); }
+.page-agendar-cita .btn-check:checked + .modalidad-opt {
+    border-color: var(--rose-dark);
+    background: rgba(216, 167, 167, 0.18);
+    color: var(--rose-deep);
+    font-weight: 600;
+}
+.page-agendar-cita .btn-check:focus-visible + .modalidad-opt { box-shadow: 0 0 0 4px rgba(216, 167, 167, 0.25); }
+.page-agendar-cita .agendar-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px 24px; }
+
 
 /* =====================================================================
-   2. REGISTRO DE CUENTA  ->  <body class="page-registro-cliente">
-      Rediseñado con Bootstrap 5.3 (solo CSS). Ya NO usa login.css.
+   2. BASE DE FORMULARIOS DEL CLIENTE (Bootstrap 5.3, solo CSS)
+      Compartida por:
+        registro de cuenta  ->  <body class="page-registro-cliente">
+        agendar cita        ->  <body class="page-agendar-cita">
+      Ninguna de las dos usa login.css.
       Orden de links: Google Fonts -> Bootstrap -> cliente.css
    ===================================================================== */
-.page-registro-cliente {
+:is(.page-registro-cliente, .page-agendar-cita) {
     --bg-primary: #F8F4F1;
     --rose-light: #D8A7A7;
     --rose-dark: #A66A6A;
@@ -59,14 +73,14 @@
     font-family: 'Montserrat', sans-serif;
     background-color: var(--bg-primary);
     background-image:
-            radial-gradient(circle at 12% 18%, rgba(216, 167, 167, 0.22) 0%, transparent 45%),
-            radial-gradient(circle at 88% 82%, rgba(198, 161, 91, 0.18) 0%, transparent 45%);
+        radial-gradient(circle at 12% 18%, rgba(216, 167, 167, 0.22) 0%, transparent 45%),
+        radial-gradient(circle at 88% 82%, rgba(198, 161, 91, 0.18) 0%, transparent 45%);
     min-height: 100vh;
     color: var(--text-primary);
 }
 
 /* Tarjeta */
-.page-registro-cliente .registro-card {
+:is(.page-registro-cliente, .page-agendar-cita) .registro-card {
     position: relative;
     overflow: hidden;
     background: var(--white);
@@ -75,7 +89,7 @@
     padding: 44px 48px 36px;
     box-shadow: 0 25px 60px rgba(61, 51, 51, 0.10), 0 8px 25px rgba(198, 161, 91, 0.06);
 }
-.page-registro-cliente .registro-card::before {
+:is(.page-registro-cliente, .page-agendar-cita) .registro-card::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
@@ -84,7 +98,7 @@
 }
 
 /* Encabezado */
-.page-registro-cliente .registro-title {
+:is(.page-registro-cliente, .page-agendar-cita) .registro-title {
     font-family: 'Playfair Display', Georgia, serif;
     font-size: 2.6rem;
     font-weight: 700;
@@ -92,30 +106,30 @@
     color: var(--rose-dark);
     margin-bottom: 2px;
 }
-.page-registro-cliente .registro-heading {
+:is(.page-registro-cliente, .page-agendar-cita) .registro-heading {
     font-family: 'Playfair Display', Georgia, serif;
     font-size: 1.35rem;
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 4px;
 }
-.page-registro-cliente .registro-lead { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0; }
-.page-registro-cliente .golden-accent-bar {
+:is(.page-registro-cliente, .page-agendar-cita) .registro-lead { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0; }
+:is(.page-registro-cliente, .page-agendar-cita) .golden-accent-bar {
     width: 50px; height: 3px; border-radius: 2px;
     background: linear-gradient(90deg, var(--gold), var(--rose-light));
     margin: 14px auto 14px;
 }
 
 /* Campos (clases de Bootstrap personalizadas) */
-.page-registro-cliente .form-label {
+:is(.page-registro-cliente, .page-agendar-cita) .form-label {
     font-size: 0.8rem;
     font-weight: 600;
     letter-spacing: 0.4px;
     color: var(--text-primary);
     margin-bottom: 6px;
 }
-.page-registro-cliente .form-label .req { color: var(--rose-dark); }
-.page-registro-cliente .form-control {
+:is(.page-registro-cliente, .page-agendar-cita) .form-label .req { color: var(--rose-dark); }
+:is(.page-registro-cliente, .page-agendar-cita) .form-control {
     padding: 12px 14px;
     border: 1.5px solid var(--border-soft);
     border-radius: 12px;
@@ -125,17 +139,17 @@
     color: var(--text-primary);
     transition: all 0.25s ease;
 }
-.page-registro-cliente .form-control::placeholder { color: #A89E9E; }
-.page-registro-cliente .form-control:focus {
+:is(.page-registro-cliente, .page-agendar-cita) .form-control::placeholder { color: #A89E9E; }
+:is(.page-registro-cliente, .page-agendar-cita) .form-control:focus {
     background-color: var(--white);
     border-color: var(--rose-dark);
     box-shadow: 0 0 0 4px rgba(216, 167, 167, 0.25);
     color: var(--text-primary);
 }
-.page-registro-cliente .form-text { font-size: 0.78rem; color: var(--text-secondary); }
+:is(.page-registro-cliente, .page-agendar-cita) .form-text { font-size: 0.78rem; color: var(--text-secondary); }
 
 /* Botón principal */
-.page-registro-cliente .btn-registro {
+:is(.page-registro-cliente, .page-agendar-cita) .btn-registro {
     width: 100%;
     padding: 14px 22px;
     border: none;
@@ -149,8 +163,8 @@
     box-shadow: 0 8px 20px rgba(166, 106, 106, 0.32);
     transition: all 0.3s ease;
 }
-.page-registro-cliente .btn-registro:hover,
-.page-registro-cliente .btn-registro:focus-visible {
+:is(.page-registro-cliente, .page-agendar-cita) .btn-registro:hover,
+:is(.page-registro-cliente, .page-agendar-cita) .btn-registro:focus-visible {
     background: linear-gradient(135deg, #8E5252 0%, #7B4242 100%);
     box-shadow: 0 10px 26px rgba(166, 106, 106, 0.42);
     color: var(--white);
@@ -158,7 +172,7 @@
 }
 
 /* Alerta de error (Bootstrap .alert-danger con los colores de INARA) */
-.page-registro-cliente .alert-danger {
+:is(.page-registro-cliente, .page-agendar-cita) .alert-danger {
     background-color: #FDF3F3;
     color: #923838;
     border: 1px solid #F5D3D3;
@@ -167,8 +181,8 @@
 }
 
 /* Pie */
-.page-registro-cliente .registro-footer { text-align: center; margin-top: 24px; font-size: 0.88rem; color: var(--text-secondary); }
-.page-registro-cliente .registro-footer a {
+:is(.page-registro-cliente, .page-agendar-cita) .registro-footer { text-align: center; margin-top: 24px; font-size: 0.88rem; color: var(--text-secondary); }
+:is(.page-registro-cliente, .page-agendar-cita) .registro-footer a {
     color: var(--rose-dark);
     font-weight: 600;
     text-decoration: none;
@@ -176,15 +190,13 @@
     padding-bottom: 2px;
     transition: all 0.2s ease;
 }
-.page-registro-cliente .registro-footer a:hover { color: var(--gold); border-bottom-color: var(--rose-dark); }
+:is(.page-registro-cliente, .page-agendar-cita) .registro-footer a:hover { color: var(--gold); border-bottom-color: var(--rose-dark); }
 
 @media (max-width: 576px) {
-    .page-registro-cliente .registro-card { padding: 34px 22px 28px; border-radius: 20px; }
-    .page-registro-cliente .registro-title { font-size: 2.2rem; }
-    .page-registro-cliente .form-control { font-size: 16px; }
-    .page-registro-cliente .btn-registro { min-height: 48px; }
-    .page-registro-cliente .registro-footer a { display: inline-block; padding: 6px 0; }
+    :is(.page-registro-cliente, .page-agendar-cita) .registro-card { padding: 34px 22px 28px; border-radius: 20px; }
+    :is(.page-registro-cliente, .page-agendar-cita) .registro-title { font-size: 2.2rem; }
 }
+
 
 /* =====================================================================
    3. mis-citas.jsp  ->  <body class="page-mis-citas">
@@ -208,40 +220,6 @@
 .page-mis-citas .estado-CANCELADA    { background: #FDF3F3; color: #923838; }
 .page-mis-citas .estado-FINALIZADA   { background: #F0F0F0; color: #555; }
 
-/* --- Responsive: tabla -> tarjetas apiladas en celular --- */
-@media (max-width: 720px) {
-    .page-mis-citas { padding: 16px 12px; }
-    .page-mis-citas .citas-wrapper { padding: 22px 16px; border-radius: 18px; }
-    .page-mis-citas table,
-    .page-mis-citas tbody {
-        display: block; width: 100%;
-    }
-    .page-mis-citas table tr:first-child { display: none; }
-    .page-mis-citas table tr {
-        display: block; background: #FAF8F6; border: 1px solid #EFE8E2;
-        border-radius: 14px; padding: 10px 14px; margin-bottom: 12px;
-    }
-    .page-mis-citas table td {
-        display: flex; justify-content: space-between; align-items: center;
-        gap: 14px; text-align: right; border: none; padding: 6px 0; word-break: break-word;
-    }
-    .page-mis-citas table td[data-label]::before {
-        content: attr(data-label); flex-shrink: 0; text-align: left;
-        font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
-        letter-spacing: 0.5px; color: #706464;
-    }
-    .page-mis-citas table td:not([data-label]) { display: block; text-align: center; }
-    .page-mis-citas table td.actions {
-        flex-wrap: wrap; justify-content: flex-start; gap: 8px;
-        border-top: 1px dashed #EFE8E2; margin-top: 6px; padding-top: 10px;
-    }
-    .page-mis-citas table td.actions::before { display: none; }
-    .page-mis-citas table td.actions:not(:has(a)) { display: none; }
-    .page-mis-citas table td.actions a {
-        display: inline-flex; align-items: center; justify-content: center; min-height: 40px;
-        padding: 0 14px; margin: 0; border: 1px solid #EFE8E2; border-radius: 10px; background: #fff;
-    }
-}
 
 /* =====================================================================
    4. dashboard.jsp (cliente)  ->  <body class="page-cliente-dashboard">
@@ -265,8 +243,8 @@
     font-family: 'Montserrat', sans-serif;
     background-color: var(--bg-primary);
     background-image:
-            radial-gradient(circle at 10% 10%, rgba(216, 167, 167, 0.16) 0%, transparent 40%),
-            radial-gradient(circle at 90% 90%, rgba(198, 161, 91, 0.14) 0%, transparent 45%);
+        radial-gradient(circle at 10% 10%, rgba(216, 167, 167, 0.16) 0%, transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(198, 161, 91, 0.14) 0%, transparent 45%);
     min-height: 100vh;
     color: var(--text-primary);
     display: flex;
@@ -558,16 +536,10 @@
 }
 .stat-action-btn:hover { background-color: var(--rose-deep); transform: translateY(-1px); }
 
-/* Botón "Contactar" por WhatsApp (Estado de tu Evento) */
-.btn-whatsapp {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background-color: #17874A;
-    white-space: nowrap;
-}
-.btn-whatsapp:hover { background-color: #126F3D; }
-.btn-whatsapp svg { width: 18px; height: 18px; flex-shrink: 0; fill: currentColor; }
+/* Botón "Contactar" por WhatsApp (se combina con .stat-action-btn) */
+.btn-whatsapp { display: inline-flex; align-items: center; gap: 8px; background-color: #158A46; color: var(--white); }
+.btn-whatsapp:hover { background-color: #0F6F37; }
+.btn-whatsapp svg { width: 18px; height: 18px; fill: currentColor; flex-shrink: 0; }
 
 /* --- Mis próximas citas --- */
 .citas-list { display: flex; flex-direction: column; gap: 14px; margin-top: 20px; }
@@ -682,43 +654,3 @@
     .dashboard-grid { grid-template-columns: 1fr; }
     .detail-row { flex-direction: column; align-items: flex-start; gap: 4px; }
 }
-
-/* --- Responsive celular (<= 560px) --- */
-@media (max-width: 560px) {
-    .page-cliente-dashboard .navbar-content { padding: 12px 14px; }
-    .page-cliente-dashboard .nav-brand { flex-direction: column; align-items: center; gap: 2px; }
-    .page-cliente-dashboard .nav-logo-title { font-size: 1.5rem; letter-spacing: 3px; }
-    .page-cliente-dashboard .nav-user-area { width: 100%; justify-content: space-between; gap: 10px; }
-    .page-cliente-dashboard .user-chip { min-width: 0; }
-    .page-cliente-dashboard .user-info-text { min-width: 0; text-align: left; }
-    .page-cliente-dashboard .user-name,
-    .page-cliente-dashboard .user-role-badge {
-        overflow-wrap: anywhere;
-    }
-    .page-cliente-dashboard .btn-logout {
-        padding: 10px 14px; min-height: 40px; display: inline-flex; align-items: center; flex-shrink: 0;
-    }
-    .page-cliente-dashboard .portal-main { padding: 0 12px; margin: 18px auto; }
-    .page-cliente-dashboard .hero-banner { padding: 24px 18px; border-radius: 16px; }
-    .page-cliente-dashboard .hero-title { font-size: 1.6rem; overflow-wrap: anywhere; }
-    .page-cliente-dashboard .card-panel,
-    .page-cliente-dashboard .services-section {
-        padding: 20px 16px; border-radius: 16px;
-    }
-    .page-cliente-dashboard .detail-value { overflow-wrap: anywhere; }
-    .page-cliente-dashboard .stat-box { flex-direction: column; align-items: flex-start; gap: 10px; }
-    .page-cliente-dashboard .stat-action-btn { padding: 11px 18px; min-height: 42px; }
-    .page-cliente-dashboard .cita-item { flex-wrap: wrap; padding: 14px; gap: 12px; }
-    .page-cliente-dashboard .cita-info {
-        flex-basis: calc(100% - 90px); min-width: 0; overflow-wrap: anywhere;
-    }
-    .page-cliente-dashboard .estado-badge { margin-left: auto; }
-    .page-cliente-dashboard .portal-main .card-panel > div[style*="display: flex"] {
-        flex-direction: column;
-    }
-    .page-cliente-dashboard .portal-main .card-panel > div[style*="display: flex"] .stat-action-btn {
-        text-align: center;
-    }
-    .page-cliente-dashboard .services-grid { grid-template-columns: 1fr; }
-}
-

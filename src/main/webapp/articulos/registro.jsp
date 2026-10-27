@@ -28,8 +28,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>INARA — Insumos y Proveedores</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/articulo.css">
-
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/css/articulo.css">
 </head>
 <body class="page-articulo">
 
@@ -205,22 +204,22 @@
                     </tr>
                     <c:forEach var="a" items="${articulos}">
                         <tr class="${a.estado == 'INACTIVO' ? 'fila-inactiva' : ''}">
-                            <td>
+                            <td class="celda-titulo">
                                 <span class="nombre"><c:out value="${a.nombre}"/></span>
                                 <c:if test="${not empty a.descripcion}">
                                     <span class="desc"><c:out value="${a.descripcion}"/></span>
                                 </c:if>
                             </td>
-                            <td><c:out value="${a.nombreProveedor}"/></td>
-                            <td>S/ ${a.precio}</td>
-                            <td>
+                            <td data-label="Proveedor"><c:out value="${a.nombreProveedor}"/></td>
+                            <td data-label="Precio">S/ ${a.precio}</td>
+                            <td data-label="Stock">
                                 <c:choose>
                                     <c:when test="${a.stock == 0}"><span class="badge stock-cero">Sin stock</span></c:when>
                                     <c:when test="${a.stock <= umbralStockBajo}"><span class="badge stock-bajo">${a.stock} &middot; bajo</span></c:when>
                                     <c:otherwise>${a.stock}</c:otherwise>
                                 </c:choose>
                             </td>
-                            <td>
+                            <td data-label="Estado">
                                 <span class="badge ${a.estado == 'INACTIVO' ? 'badge-inactivo' : 'badge-activo'}">${a.estado == 'INACTIVO' ? 'Inactivo' : 'Activo'}</span>
                             </td>
                             <td class="actions">
@@ -339,12 +338,12 @@
                     </tr>
                     <c:forEach var="p" items="${proveedores}">
                         <tr class="${p.estado == 'INACTIVO' ? 'fila-inactiva' : ''}">
-                            <td><span class="nombre"><c:out value="${p.razonSocial}"/></span></td>
-                            <td><c:out value="${p.ruc}"/></td>
-                            <td><c:out value="${p.correo}"/></td>
-                            <td><c:out value="${p.telefono}"/></td>
-                            <td><c:out value="${p.direccion}"/></td>
-                            <td>
+                            <td class="celda-titulo"><span class="nombre"><c:out value="${p.razonSocial}"/></span></td>
+                            <td data-label="RUC"><c:out value="${p.ruc}"/></td>
+                            <td data-label="Correo"><c:out value="${p.correo}"/></td>
+                            <td data-label="Teléfono"><c:out value="${p.telefono}"/></td>
+                            <td data-label="Dirección"><c:out value="${p.direccion}"/></td>
+                            <td data-label="Estado">
                                 <span class="badge ${p.estado == 'INACTIVO' ? 'badge-inactivo' : 'badge-activo'}">${p.estado == 'INACTIVO' ? 'Inactivo' : 'Activo'}</span>
                             </td>
                         </tr>
@@ -368,4 +367,3 @@
 
 </body>
 </html>
-

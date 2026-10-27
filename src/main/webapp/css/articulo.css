@@ -1,1 +1,213 @@
 
+/* =====================================================================
+   articulo.css — Estilos del módulo ARTÍCULO / Insumos y Proveedores (INARA)
+
+   Clase que va en el <body> del JSP:
+     registro.jsp (articulo)  ->  <body class="page-articulo">
+
+   Link en el <head>:
+     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/articulo.css">
+
+   Si más adelante agregas otro JSP a este módulo, ponle otra clase
+   (por ejemplo "page-articulo-detalle") y agrega su sección al final.
+   ===================================================================== */
+
+
+/* =====================================================================
+   1. BASE COMÚN (variables, reset, tipografía)
+   ===================================================================== */
+:root {
+    --bg-primary: #F8F4F1;
+    --rose-dark: #A66A6A;
+    --rose-deep: #743E3E;
+    --rose-light: #D8A7A7;
+    --gold: #C6A15B;
+    --text-primary: #3D3333;
+    --text-secondary: #706464;
+    --white: #FFFFFF;
+    --border-soft: #EFE8E2;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body { font-family: 'Montserrat', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+
+
+/* =====================================================================
+   2. PÁGINA: Insumos y Proveedores  ->  <body class="page-articulo">
+   ===================================================================== */
+
+/* --- Barra superior --- */
+.page-articulo .navbar {
+    background: var(--white); padding: 18px 40px; border-bottom: 1px solid var(--border-soft);
+    display: flex; justify-content: space-between; align-items: center;
+}
+.page-articulo .logo { font-size: 1.7rem; font-weight: 700; letter-spacing: 3px; color: var(--rose-dark); }
+.page-articulo .btn-volver {
+    text-decoration: none; color: var(--rose-dark); border: 1px solid var(--rose-light);
+    padding: 8px 16px; border-radius: 20px; font-size: 0.85rem;
+}
+
+/* --- Contenedor y tarjeta principal --- */
+.page-articulo .contenedor { max-width: 1100px; margin: 36px auto; padding: 0 20px; }
+.page-articulo .card {
+    background: var(--white); padding: 36px 40px; border-radius: 24px; border: 1px solid var(--border-soft);
+}
+.page-articulo h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.6rem; margin-bottom: 4px; }
+.page-articulo .subtitulo { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 22px; }
+
+/* --- Pestañas (Insumos / Proveedores) --- */
+.page-articulo .tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--border-soft); margin-bottom: 22px; }
+.page-articulo .tabs a {
+    padding: 10px 22px; text-decoration: none; font-size: 0.88rem; font-weight: 600;
+    color: var(--text-secondary); border-bottom: 3px solid transparent; margin-bottom: -1px;
+}
+.page-articulo .tabs a.active { color: var(--rose-dark); border-bottom-color: var(--rose-dark); }
+
+/* --- Mensajes de éxito / error --- */
+.page-articulo .mensaje { padding: 12px 16px; border-radius: 10px; margin-bottom: 18px; font-size: 0.85rem; }
+.page-articulo .exito { background: #E8F5E9; color: #2E7D32; }
+.page-articulo .error { background: #FFEBEE; color: #C62828; }
+
+/* --- Buscador --- */
+.page-articulo .search-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.page-articulo .search-bar input[type="search"] {
+    flex: 1; min-width: 240px; padding: 12px 16px; border: 1.5px solid var(--border-soft);
+    border-radius: 12px; background: #FAF8F6; font-size: 0.9rem; font-family: inherit;
+    color: var(--text-primary); outline: none;
+}
+.page-articulo .search-bar input[type="search"]:focus {
+    border-color: var(--rose-dark); background: var(--white);
+    box-shadow: 0 0 0 3px rgba(216, 167, 167, 0.25);
+}
+.page-articulo .btn-primary {
+    padding: 12px 22px; border: none; border-radius: 12px; cursor: pointer;
+    background: linear-gradient(135deg, var(--gold), var(--rose-dark)); color: var(--white);
+    font-size: 0.82rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; font-family: inherit;
+}
+.page-articulo .clear { font-size: 0.82rem; color: var(--rose-dark); text-decoration: none; font-weight: 600; }
+.page-articulo .results-info { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px; }
+
+/* --- Formulario desplegable "Nuevo ..." --- */
+.page-articulo details.nuevo { margin-bottom: 18px; border: 1px solid var(--border-soft); border-radius: 14px; background: #FDFBFA; }
+.page-articulo details.nuevo > summary {
+    cursor: pointer; padding: 13px 18px; font-size: 0.88rem; font-weight: 700;
+    color: var(--rose-deep); list-style: none;
+}
+.page-articulo details.nuevo > summary::-webkit-details-marker { display: none; }
+.page-articulo details.nuevo[open] > summary { border-bottom: 1px solid var(--border-soft); }
+.page-articulo .form-nuevo { padding: 20px 18px 22px; }
+
+/* --- Campos de formulario --- */
+.page-articulo .campo { margin-bottom: 16px; }
+.page-articulo .campo label {
+    display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.78rem;
+    text-transform: uppercase; letter-spacing: 0.4px;
+}
+.page-articulo .campo input,
+.page-articulo .campo textarea,
+.page-articulo .campo select {
+    width: 100%; padding: 11px 12px; border: 1px solid var(--border-soft);
+    border-radius: 9px; font-size: 0.9rem; font-family: inherit; background: var(--white);
+}
+.page-articulo .campo textarea { min-height: 80px; resize: vertical; }
+.page-articulo .campo small { display: block; margin-top: 6px; font-size: 0.78rem; color: var(--text-secondary); }
+.page-articulo .campo small a { color: var(--rose-dark); font-weight: 600; }
+.page-articulo .fila { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* --- Filtros --- */
+.page-articulo .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.page-articulo .filters a {
+    padding: 7px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; text-decoration: none;
+    color: var(--text-secondary); background: #FAF8F6; border: 1px solid var(--border-soft);
+}
+.page-articulo .filters a.active { background: var(--rose-dark); color: var(--white); border-color: var(--rose-dark); }
+
+/* --- Tabla --- */
+.page-articulo .tabla-wrap { overflow-x: auto; }
+.page-articulo table { width: 100%; border-collapse: collapse; }
+.page-articulo th,
+.page-articulo td {
+    text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border-soft);
+    font-size: 0.86rem; vertical-align: middle;
+}
+.page-articulo th { text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.5px; color: var(--text-secondary); }
+.page-articulo .nombre { display: block; font-weight: 600; }
+.page-articulo .desc {
+    display: block; font-size: 0.78rem; color: var(--text-secondary); max-width: 320px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.page-articulo .fila-inactiva td { opacity: 0.6; }
+.page-articulo .empty-msg { text-align: center; padding: 30px; color: var(--text-secondary); }
+
+/* --- Badges de estado y stock --- */
+.page-articulo .badge { padding: 4px 11px; border-radius: 14px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+.page-articulo .badge-activo   { background: #F4F8F4; color: #2F6B4F; }
+.page-articulo .badge-inactivo { background: #F0F0F0; color: #706464; }
+.page-articulo .stock-cero { background: #FDF3F3; color: #923838; }
+.page-articulo .stock-bajo { background: #FDF3E3; color: #8C6A29; }
+
+/* --- Acciones de cada fila --- */
+.page-articulo .actions form { display: inline; }
+.page-articulo .actions a.btn-editar {
+    color: var(--rose-dark); font-size: 0.8rem; font-weight: 600; text-decoration: none; margin-right: 12px;
+}
+.page-articulo .btn-link {
+    background: none; border: none; cursor: pointer; font-family: inherit;
+    font-size: 0.8rem; font-weight: 600; padding: 0;
+}
+.page-articulo .btn-baja     { color: #923838; }
+.page-articulo .btn-reactivar { color: #2F6B4F; }
+
+/* --- Panel de edición de insumo --- */
+.page-articulo .panel-edicion {
+    border: 1px solid var(--gold); border-left-width: 5px; border-radius: 14px;
+    background: #FFFDF8; padding: 20px 22px 22px; margin-bottom: 22px;
+}
+.page-articulo .panel-edicion h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.15rem; margin-bottom: 14px; }
+.page-articulo .panel-edicion .acciones-form { display: flex; align-items: center; gap: 16px; }
+
+/* --- Responsive --- */
+@media (max-width: 640px) {
+    .page-articulo .fila { grid-template-columns: 1fr; }
+    .page-articulo .card { padding: 24px 20px; }
+    .page-articulo .navbar { padding: 14px 20px; }
+    .page-articulo input,
+    .page-articulo select,
+    .page-articulo button,
+    .page-articulo .btn-volver {
+        min-height: 44px;
+    }
+    .page-articulo input,
+    .page-articulo select,
+    .page-articulo textarea {
+        font-size: 16px;
+    }
+}
+
+/* Tablas -> tarjetas apiladas en celular */
+@media (max-width: 720px) {
+    .page-articulo table, .page-articulo tbody { display: block; width: 100%; }
+    .page-articulo table tr:first-child { display: none; }
+    .page-articulo table tr { display: block; background: #FAF8F6; border: 1px solid #EFE8E2;
+        border-radius: 14px; padding: 10px 14px; margin-bottom: 12px; }
+    .page-articulo table td { display: flex; justify-content: space-between; align-items: center; gap: 14px;
+        text-align: right; border: none; padding: 6px 0; word-break: break-word; white-space: normal; }
+    .page-articulo table td[data-label]::before { content: attr(data-label); flex-shrink: 0; text-align: left;
+        font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #706464; }
+    .page-articulo table td:not([data-label]) { display: block; text-align: center; }
+    .page-articulo table td.celda-titulo { text-align: left; padding-bottom: 8px; margin-bottom: 4px; border-bottom: 1px dashed #EFE8E2; }
+    .page-articulo table td.actions { flex-wrap: wrap; justify-content: flex-start; gap: 8px;
+        border-top: 1px dashed #EFE8E2; margin-top: 6px; padding-top: 10px; }
+    .page-articulo table td.actions::before { display: none; }
+    .page-articulo table td.actions:not(:has(a, button)) { display: none; }
+    .page-articulo .actions a,
+    .page-articulo .actions .btn-link { display: inline-flex; align-items: center; justify-content: center; min-height: 40px;
+        padding: 0 14px; margin: 0; border: 1px solid #EFE8E2; border-radius: 10px; background: #fff; }
+    .page-articulo .desc { white-space: normal; max-width: none; }
+    .page-articulo table td.celda-titulo .nombre { font-size: 1rem; }
+    .page-articulo .actions form { display: inline-flex; }
+    .page-articulo .tabs { overflow-x: auto; }
+    .page-articulo .tabs a { white-space: nowrap; }
+    .page-articulo .panel-edicion .acciones-form { flex-wrap: wrap; }
+}

@@ -1,1 +1,724 @@
+/* =====================================================================
+   cliente.css — Estilos del módulo CLIENTE (INARA)
+
+   Clase que va en el <body> de cada JSP:
+     dashboard.jsp (cliente)  ->  <body class="page-cliente-dashboard">
+     mis-citas.jsp            ->  <body class="page-mis-citas">
+     registrar-cita.jsp       ->  <body class="page-registrar-cita">
+     registro.jsp (cuenta)    ->  <body class="page-registro-cliente">
+
+   Link en el <head>:
+     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/cliente.css">
+
+   IMPORTANTE: mis-citas y registrar-cita SIGUEN usando login.css. Deja su
+   <link> a login.css y pon cliente.css DESPUÉS:
+     <link rel="stylesheet" href=".../css/login.css">
+     <link rel="stylesheet" href=".../css/cliente.css">
+   El dashboard NO usa login.css, solo este archivo.
+   El registro de cuenta usa Bootstrap 5.3 + este archivo (sin login.css).
+   ===================================================================== */
+
+
+
+/* =====================================================================
+   1. registrar-cita.jsp  ->  <body class="page-registrar-cita">
+      (sigue sobre login.css: fila de dos columnas)
+   ===================================================================== */
+.page-registrar-cita .form-row { display: flex; gap: 12px; }
+.page-registrar-cita .form-row .form-group { flex: 1; }
+
+@media (max-width: 560px) {
+    .page-registrar-cita input,
+    .page-registrar-cita select,
+    .page-registrar-cita button,
+    .page-registrar-cita .btn-submit {
+        min-height: 46px; font-size: 16px;
+    }
+    .page-registrar-cita .link-footer a,
+    .page-registrar-cita form a {
+        display: inline-block; padding: 8px 0;
+    }
+}
+
+/* =====================================================================
+   2. REGISTRO DE CUENTA  ->  <body class="page-registro-cliente">
+      Rediseñado con Bootstrap 5.3 (solo CSS). Ya NO usa login.css.
+      Orden de links: Google Fonts -> Bootstrap -> cliente.css
+   ===================================================================== */
+.page-registro-cliente {
+    --bg-primary: #F8F4F1;
+    --rose-light: #D8A7A7;
+    --rose-dark: #A66A6A;
+    --rose-deep: #7D4848;
+    --gold: #C6A15B;
+    --text-primary: #3D3333;
+    --text-secondary: #706464;
+    --white: #FFFFFF;
+    --border-soft: #EFE8E2;
+
+    font-family: 'Montserrat', sans-serif;
+    background-color: var(--bg-primary);
+    background-image:
+            radial-gradient(circle at 12% 18%, rgba(216, 167, 167, 0.22) 0%, transparent 45%),
+            radial-gradient(circle at 88% 82%, rgba(198, 161, 91, 0.18) 0%, transparent 45%);
+    min-height: 100vh;
+    color: var(--text-primary);
+}
+
+/* Tarjeta */
+.page-registro-cliente .registro-card {
+    position: relative;
+    overflow: hidden;
+    background: var(--white);
+    border: 1px solid rgba(239, 232, 226, 0.9);
+    border-radius: 24px;
+    padding: 44px 48px 36px;
+    box-shadow: 0 25px 60px rgba(61, 51, 51, 0.10), 0 8px 25px rgba(198, 161, 91, 0.06);
+}
+.page-registro-cliente .registro-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, var(--gold), var(--rose-dark) 55%, var(--rose-light));
+}
+
+/* Encabezado */
+.page-registro-cliente .registro-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 2.6rem;
+    font-weight: 700;
+    letter-spacing: 5px;
+    color: var(--rose-dark);
+    margin-bottom: 2px;
+}
+.page-registro-cliente .registro-heading {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+.page-registro-cliente .registro-lead { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0; }
+.page-registro-cliente .golden-accent-bar {
+    width: 50px; height: 3px; border-radius: 2px;
+    background: linear-gradient(90deg, var(--gold), var(--rose-light));
+    margin: 14px auto 14px;
+}
+
+/* Campos (clases de Bootstrap personalizadas) */
+.page-registro-cliente .form-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+.page-registro-cliente .form-label .req { color: var(--rose-dark); }
+.page-registro-cliente .form-control {
+    padding: 12px 14px;
+    border: 1.5px solid var(--border-soft);
+    border-radius: 12px;
+    background-color: #FAF7F5;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    transition: all 0.25s ease;
+}
+.page-registro-cliente .form-control::placeholder { color: #A89E9E; }
+.page-registro-cliente .form-control:focus {
+    background-color: var(--white);
+    border-color: var(--rose-dark);
+    box-shadow: 0 0 0 4px rgba(216, 167, 167, 0.25);
+    color: var(--text-primary);
+}
+.page-registro-cliente .form-text { font-size: 0.78rem; color: var(--text-secondary); }
+
+/* Botón principal */
+.page-registro-cliente .btn-registro {
+    width: 100%;
+    padding: 14px 22px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--rose-dark) 0%, #915454 100%);
+    color: var(--white);
+    font-size: 0.92rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    box-shadow: 0 8px 20px rgba(166, 106, 106, 0.32);
+    transition: all 0.3s ease;
+}
+.page-registro-cliente .btn-registro:hover,
+.page-registro-cliente .btn-registro:focus-visible {
+    background: linear-gradient(135deg, #8E5252 0%, #7B4242 100%);
+    box-shadow: 0 10px 26px rgba(166, 106, 106, 0.42);
+    color: var(--white);
+    transform: translateY(-2px);
+}
+
+/* Alerta de error (Bootstrap .alert-danger con los colores de INARA) */
+.page-registro-cliente .alert-danger {
+    background-color: #FDF3F3;
+    color: #923838;
+    border: 1px solid #F5D3D3;
+    border-radius: 12px;
+    font-size: 0.88rem;
+}
+
+/* Pie */
+.page-registro-cliente .registro-footer { text-align: center; margin-top: 24px; font-size: 0.88rem; color: var(--text-secondary); }
+.page-registro-cliente .registro-footer a {
+    color: var(--rose-dark);
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1.5px solid var(--gold);
+    padding-bottom: 2px;
+    transition: all 0.2s ease;
+}
+.page-registro-cliente .registro-footer a:hover { color: var(--gold); border-bottom-color: var(--rose-dark); }
+
+@media (max-width: 576px) {
+    .page-registro-cliente .registro-card { padding: 34px 22px 28px; border-radius: 20px; }
+    .page-registro-cliente .registro-title { font-size: 2.2rem; }
+    .page-registro-cliente .form-control { font-size: 16px; }
+    .page-registro-cliente .btn-registro { min-height: 48px; }
+    .page-registro-cliente .registro-footer a { display: inline-block; padding: 6px 0; }
+}
+
+/* =====================================================================
+   3. mis-citas.jsp  ->  <body class="page-mis-citas">
+   ===================================================================== */
+.page-mis-citas { display: block; padding: 40px 24px; }
+
+.page-mis-citas .citas-wrapper {
+    max-width: 900px; margin: 0 auto; background: var(--white, #fff);
+    border-radius: 24px; padding: 36px 40px;
+}
+
+.page-mis-citas table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+.page-mis-citas th,
+.page-mis-citas td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #EFE8E2; font-size: 0.9rem; }
+.page-mis-citas th { text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; color: #706464; }
+
+.page-mis-citas .estado-badge { padding: 4px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 600; }
+.page-mis-citas .estado-PENDIENTE    { background: #FDF3E3; color: #8C6A29; }
+.page-mis-citas .estado-CONFIRMADA   { background: #F4F8F4; color: #2F6B4F; }
+.page-mis-citas .estado-REPROGRAMADA { background: #EFE8F5; color: #5B3E8C; }
+.page-mis-citas .estado-CANCELADA    { background: #FDF3F3; color: #923838; }
+.page-mis-citas .estado-FINALIZADA   { background: #F0F0F0; color: #555; }
+
+/* --- Responsive: tabla -> tarjetas apiladas en celular --- */
+@media (max-width: 720px) {
+    .page-mis-citas { padding: 16px 12px; }
+    .page-mis-citas .citas-wrapper { padding: 22px 16px; border-radius: 18px; }
+    .page-mis-citas table,
+    .page-mis-citas tbody {
+        display: block; width: 100%;
+    }
+    .page-mis-citas table tr:first-child { display: none; }
+    .page-mis-citas table tr {
+        display: block; background: #FAF8F6; border: 1px solid #EFE8E2;
+        border-radius: 14px; padding: 10px 14px; margin-bottom: 12px;
+    }
+    .page-mis-citas table td {
+        display: flex; justify-content: space-between; align-items: center;
+        gap: 14px; text-align: right; border: none; padding: 6px 0; word-break: break-word;
+    }
+    .page-mis-citas table td[data-label]::before {
+        content: attr(data-label); flex-shrink: 0; text-align: left;
+        font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+        letter-spacing: 0.5px; color: #706464;
+    }
+    .page-mis-citas table td:not([data-label]) { display: block; text-align: center; }
+    .page-mis-citas table td.actions {
+        flex-wrap: wrap; justify-content: flex-start; gap: 8px;
+        border-top: 1px dashed #EFE8E2; margin-top: 6px; padding-top: 10px;
+    }
+    .page-mis-citas table td.actions::before { display: none; }
+    .page-mis-citas table td.actions:not(:has(a)) { display: none; }
+    .page-mis-citas table td.actions a {
+        display: inline-flex; align-items: center; justify-content: center; min-height: 40px;
+        padding: 0 14px; margin: 0; border: 1px solid #EFE8E2; border-radius: 10px; background: #fff;
+    }
+}
+
+/* =====================================================================
+   4. dashboard.jsp (cliente)  ->  <body class="page-cliente-dashboard">
+      Las variables y el reset van acotados a esta página para no
+      afectar a las páginas que usan login.css.
+   ===================================================================== */
+.page-cliente-dashboard {
+    --bg-primary: #F8F4F1;
+    --rose-light: #D8A7A7;
+    --rose-medium: #C08585;
+    --rose-dark: #A66A6A;
+    --rose-deep: #743E3E;
+    --gold: #C6A15B;
+    --gold-light: #E7D5B3;
+    --text-primary: #3D3333;
+    --text-secondary: #706464;
+    --white: #FFFFFF;
+    --border-soft: #EFE8E2;
+    --shadow-card: 0 12px 30px rgba(61, 51, 51, 0.06), 0 2px 8px rgba(198, 161, 91, 0.04);
+
+    font-family: 'Montserrat', sans-serif;
+    background-color: var(--bg-primary);
+    background-image:
+            radial-gradient(circle at 10% 10%, rgba(216, 167, 167, 0.16) 0%, transparent 40%),
+            radial-gradient(circle at 90% 90%, rgba(198, 161, 91, 0.14) 0%, transparent 45%);
+    min-height: 100vh;
+    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+}
+
+.page-cliente-dashboard,
+.page-cliente-dashboard * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* --- Barra de navegación superior --- */
+.portal-navbar {
+    background-color: var(--white);
+    border-bottom: 1px solid var(--border-soft);
+    box-shadow: 0 4px 15px rgba(61, 51, 51, 0.03);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.portal-navbar::after {
+    content: '';
+    display: block;
+    height: 3px;
+    background: linear-gradient(90deg, var(--rose-light) 0%, var(--gold) 50%, var(--rose-light) 100%);
+}
+.navbar-content {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.nav-brand { display: flex; align-items: baseline; gap: 12px; text-decoration: none; }
+.nav-logo-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: var(--rose-dark);
+    text-transform: uppercase;
+}
+.nav-logo-subtitle {
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 600;
+}
+.nav-user-area { display: flex; align-items: center; gap: 18px; }
+.user-chip { display: flex; align-items: center; gap: 12px; }
+.user-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--rose-dark) 0%, var(--rose-deep) 100%);
+    color: var(--white);
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--gold-light);
+    box-shadow: 0 4px 10px rgba(166, 106, 106, 0.25);
+}
+.user-info-text { display: flex; flex-direction: column; text-align: left; }
+.user-name { font-size: 0.92rem; font-weight: 600; color: var(--text-primary); }
+.user-role-badge {
+    font-size: 0.72rem;
+    color: var(--gold);
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+.btn-logout {
+    color: var(--rose-dark);
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border: 1.5px solid var(--rose-light);
+    transition: all 0.25s ease;
+    letter-spacing: 0.5px;
+}
+.btn-logout:hover {
+    background-color: var(--rose-dark);
+    color: var(--white);
+    border-color: var(--rose-dark);
+    box-shadow: 0 4px 12px rgba(166, 106, 106, 0.25);
+    transform: translateY(-1px);
+}
+
+/* --- Contenido principal --- */
+.portal-main {
+    max-width: 1140px;
+    margin: 32px auto;
+    padding: 0 24px;
+    flex: 1;
+    width: 100%;
+}
+
+/* --- Banner de bienvenida --- */
+.hero-banner {
+    background: linear-gradient(135deg, #743E3E 0%, #A66A6A 55%, #B88566 100%);
+    color: var(--white);
+    border-radius: 20px;
+    padding: 38px 42px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 16px 36px rgba(116, 62, 62, 0.18);
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.hero-banner::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 180px;
+    height: 180px;
+    background: radial-gradient(circle, rgba(231, 213, 179, 0.3) 0%, transparent 70%);
+    border-radius: 50%;
+}
+.hero-banner::after {
+    content: '';
+    position: absolute;
+    bottom: -50px;
+    left: 20%;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+    border-radius: 50%;
+}
+.hero-text { position: relative; z-index: 2; }
+.hero-greeting {
+    font-size: 0.82rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold-light);
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: inline-block;
+}
+.hero-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+}
+.hero-tagline {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--gold-light);
+    margin-bottom: 12px;
+}
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 0.78rem;
+    color: #FFF6EE;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #48BB78;
+    box-shadow: 0 0 8px #48BB78;
+}
+
+/* --- Grilla de secciones y tarjetas --- */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 28px;
+    margin-bottom: 32px;
+}
+.card-panel {
+    background-color: var(--white);
+    border-radius: 18px;
+    padding: 32px;
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--border-soft);
+    position: relative;
+}
+.card-header-styled {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-soft);
+}
+.card-header-styled h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.card-icon-badge {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(216, 167, 167, 0.2);
+    color: var(--rose-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+/* --- Perfil del cliente --- */
+.profile-details-list { display: flex; flex-direction: column; gap: 16px; }
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background-color: #FAF8F6;
+    border-radius: 12px;
+    border: 1px solid rgba(239, 232, 226, 0.6);
+    transition: all 0.2s ease;
+}
+.detail-row:hover {
+    background-color: var(--white);
+    border-color: var(--rose-light);
+    box-shadow: 0 4px 12px rgba(61, 51, 51, 0.04);
+}
+.detail-label {
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.detail-value { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
+.role-tag {
+    background: linear-gradient(135deg, var(--rose-light) 0%, var(--rose-dark) 100%);
+    color: var(--white);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+/* --- Estado del evento --- */
+.events-summary-cards { display: flex; flex-direction: column; gap: 16px; }
+.stat-box {
+    background: #FAF8F6;
+    padding: 18px 20px;
+    border-radius: 14px;
+    border-left: 4px solid var(--rose-dark);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.stat-box.gold-accent { border-left-color: var(--gold); }
+.stat-label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 500; margin-bottom: 4px; }
+.stat-main { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
+.stat-action-btn {
+    background-color: var(--rose-dark);
+    color: var(--white);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+.stat-action-btn:hover { background-color: var(--rose-deep); transform: translateY(-1px); }
+
+/* Botón "Contactar" por WhatsApp (Estado de tu Evento) */
+.btn-whatsapp {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #17874A;
+    white-space: nowrap;
+}
+.btn-whatsapp:hover { background-color: #126F3D; }
+.btn-whatsapp svg { width: 18px; height: 18px; flex-shrink: 0; fill: currentColor; }
+
+/* --- Mis próximas citas --- */
+.citas-list { display: flex; flex-direction: column; gap: 14px; margin-top: 20px; }
+.cita-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    background-color: #FAF8F6;
+    border-radius: 14px;
+    padding: 16px 20px;
+    border: 1px solid rgba(239, 232, 226, 0.6);
+}
+.cita-fecha-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 64px;
+    background: var(--white);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 8px 6px;
+}
+.cita-fecha-box .dia {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--rose-dark);
+    line-height: 1;
+}
+.cita-fecha-box .hora { font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px; }
+.cita-info { flex: 1; }
+.cita-motivo { font-weight: 600; font-size: 0.92rem; color: var(--text-primary); }
+.cita-detalle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px; }
+
+.page-cliente-dashboard .estado-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+.page-cliente-dashboard .estado-PENDIENTE    { background: #FDF3E3; color: #8C6A29; }
+.page-cliente-dashboard .estado-CONFIRMADA   { background: #F4F8F4; color: #2F6B4F; }
+.page-cliente-dashboard .estado-REPROGRAMADA { background: #EFE8F5; color: #5B3E8C; }
+.page-cliente-dashboard .estado-CANCELADA    { background: #FDF3F3; color: #923838; }
+.page-cliente-dashboard .estado-FINALIZADA   { background: #F0F0F0; color: #555555; }
+
+.citas-empty { text-align: center; padding: 30px 10px; color: var(--text-secondary); font-size: 0.9rem; }
+
+/* --- Servicios INARA --- */
+.services-section {
+    background-color: var(--white);
+    border-radius: 18px;
+    padding: 32px;
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--border-soft);
+    margin-bottom: 32px;
+}
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+.service-card {
+    background-color: #FAF8F6;
+    padding: 24px 20px;
+    border-radius: 14px;
+    text-align: center;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+.service-card:hover {
+    background-color: var(--white);
+    border-color: var(--gold);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(198, 161, 91, 0.12);
+}
+.service-icon { font-size: 2.2rem; margin-bottom: 12px; display: inline-block; }
+.service-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+.service-desc { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; }
+
+/* --- Pie de página --- */
+.portal-footer {
+    background-color: var(--white);
+    border-top: 1px solid var(--border-soft);
+    padding: 24px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: auto;
+}
+.portal-footer strong {
+    color: var(--rose-dark);
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1rem;
+}
+
+/* --- Responsive --- */
+@media (max-width: 860px) {
+    .navbar-content { flex-direction: column; gap: 14px; text-align: center; }
+    .hero-banner { flex-direction: column; padding: 30px 24px; text-align: center; gap: 18px; }
+    .dashboard-grid { grid-template-columns: 1fr; }
+    .detail-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+}
+
+/* --- Responsive celular (<= 560px) --- */
+@media (max-width: 560px) {
+    .page-cliente-dashboard .navbar-content { padding: 12px 14px; }
+    .page-cliente-dashboard .nav-brand { flex-direction: column; align-items: center; gap: 2px; }
+    .page-cliente-dashboard .nav-logo-title { font-size: 1.5rem; letter-spacing: 3px; }
+    .page-cliente-dashboard .nav-user-area { width: 100%; justify-content: space-between; gap: 10px; }
+    .page-cliente-dashboard .user-chip { min-width: 0; }
+    .page-cliente-dashboard .user-info-text { min-width: 0; text-align: left; }
+    .page-cliente-dashboard .user-name,
+    .page-cliente-dashboard .user-role-badge {
+        overflow-wrap: anywhere;
+    }
+    .page-cliente-dashboard .btn-logout {
+        padding: 10px 14px; min-height: 40px; display: inline-flex; align-items: center; flex-shrink: 0;
+    }
+    .page-cliente-dashboard .portal-main { padding: 0 12px; margin: 18px auto; }
+    .page-cliente-dashboard .hero-banner { padding: 24px 18px; border-radius: 16px; }
+    .page-cliente-dashboard .hero-title { font-size: 1.6rem; overflow-wrap: anywhere; }
+    .page-cliente-dashboard .card-panel,
+    .page-cliente-dashboard .services-section {
+        padding: 20px 16px; border-radius: 16px;
+    }
+    .page-cliente-dashboard .detail-value { overflow-wrap: anywhere; }
+    .page-cliente-dashboard .stat-box { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .page-cliente-dashboard .stat-action-btn { padding: 11px 18px; min-height: 42px; }
+    .page-cliente-dashboard .cita-item { flex-wrap: wrap; padding: 14px; gap: 12px; }
+    .page-cliente-dashboard .cita-info {
+        flex-basis: calc(100% - 90px); min-width: 0; overflow-wrap: anywhere;
+    }
+    .page-cliente-dashboard .estado-badge { margin-left: auto; }
+    .page-cliente-dashboard .portal-main .card-panel > div[style*="display: flex"] {
+        flex-direction: column;
+    }
+    .page-cliente-dashboard .portal-main .card-panel > div[style*="display: flex"] .stat-action-btn {
+        text-align: center;
+    }
+    .page-cliente-dashboard .services-grid { grid-template-columns: 1fr; }
+}
 

@@ -413,6 +413,23 @@ public class EventoDAOImpl implements EventoDAO {
         return conteo;
     }
 
+        @Override
+    public boolean cambiarEstado(int idEvento, String estadoActual, String estadoNuevo) {
+        String sql = "UPDATE public.evento SET estado = ? WHERE id_evento = ? AND estado = ?";
+        try (Connection conn = ConexionDB.obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, estadoNuevo);
+            ps.setInt(2, idEvento);
+            ps.setString(3, estadoActual);
+            return ps.executeUpdate() == 1;
+        } catch (SQLException e) {
+            System.err.println("Error en EventoDAOImpl.cambiarEstado: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
     private Evento mapearEvento(ResultSet rs) throws SQLException {
         Evento ev = new Evento();
         ev.setIdEvento(rs.getInt("id_evento"));

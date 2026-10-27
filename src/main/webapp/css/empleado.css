@@ -1162,3 +1162,18 @@ h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.6rem; color: 
     .page-eventos .search-bar .btn-primary, .page-eventos .filters a { min-height: 40px; display: inline-flex; align-items: center; }
     .page-eventos .navbar { gap: 10px; }
 }
+.evd-avanzar {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #A66A6A 0%, #743E3E 100%);
+    color: #FFFFFF;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.evd-avanzar:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(116, 62, 62, 0.28); }
+.evd-avanzar:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+@media (max-width: 560px) { .evd-avanzar { flex: 1 1 100%; } }

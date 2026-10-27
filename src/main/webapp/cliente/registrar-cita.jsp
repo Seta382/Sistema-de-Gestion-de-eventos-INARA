@@ -6,16 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agendar Cita - INARA</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/login.css">
-    <style>
-        .form-row { display: flex; gap: 12px; }
-        .form-row .form-group { flex: 1; }
-        @media (max-width: 560px) {
-            input, select, button, .btn-submit { min-height: 46px; font-size: 16px; }
-            .link-footer a, form a { display: inline-block; padding: 8px 0; }
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/cliente.css">
 </head>
-<body>
+<body class="page-registrar-cita">
 
     <div class="login-container" style="max-width: 480px;">
         <div class="login-header">

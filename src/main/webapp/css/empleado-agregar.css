@@ -206,3 +206,19 @@
     .evd-wa-nota { margin: 0 22px; }
     .evd-wa, .evd-footer .btn-step-prev { flex: 1 1 100%; justify-content: center; }
 }
+
+
+/* Evitar numeración duplicada en las etapas */
+.evd-steps {
+    list-style: none !important;
+    padding: 0 !important;
+    margin-left: 0 !important;
+}
+
+.evd-steps li::marker {
+    content: "";
+}
+
+.evd-steps .evd-dot {
+    list-style: none;
+}

@@ -1177,3 +1177,221 @@ h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.6rem; color: 
 .evd-avanzar:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(116, 62, 62, 0.28); }
 .evd-avanzar:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 @media (max-width: 560px) { .evd-avanzar { flex: 1 1 100%; } }
+
+
+/* ===== MEJORA DE VENTANA EMERGENTE INARA ===== */
+
+.evento-dialog {
+    width: min(620px, calc(100% - 32px));
+    max-width: 620px;
+    max-height: 90vh;
+    padding: 0;
+    border: none;
+    border-radius: 20px;
+    overflow: auto;
+    background: #FFFFFF;
+    color: #443A38;
+    box-shadow: 0 24px 70px rgba(45, 27, 27, 0.25);
+}
+
+.evento-dialog::backdrop {
+    background: rgba(42, 30, 30, 0.48);
+    backdrop-filter: blur(4px);
+}
+
+.evd-header {
+    padding: 24px 58px 22px 28px;
+    background: linear-gradient(135deg, #875050, #B7836A);
+    color: #FFFFFF;
+}
+
+.evd-title {
+    margin: 8px 0;
+    font-size: clamp(1.25rem, 3vw, 1.65rem);
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.evd-body {
+    padding: 22px 28px 8px;
+}
+
+/* Etapas del evento */
+.evd-steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.evd-steps li {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    text-align: center;
+}
+
+.evd-dot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid #DCCBC5;
+    background: #FFFFFF;
+    color: #806F69;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.evd-steps li.done .evd-dot {
+    background: #875050;
+    border-color: #875050;
+    color: #FFFFFF;
+}
+
+.evd-steps li.current .evd-dot {
+    border-color: #875050;
+    box-shadow: 0 0 0 4px #F0E2DE;
+    color: #875050;
+}
+
+.evd-steplabel {
+    font-size: 0.72rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.evd-progress {
+    height: 7px;
+    margin-top: 16px;
+    overflow: hidden;
+    border-radius: 99px;
+    background: #EEE7E3;
+}
+
+.evd-progress-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #875050, #C18B70);
+    transition: width 0.3s ease;
+}
+
+.evd-progress-text {
+    margin: 8px 0 16px;
+    color: #806F69;
+    font-size: 0.8rem;
+}
+
+/* Datos del evento */
+.evd-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.evd-item {
+    min-width: 0;
+    padding: 13px 15px;
+    border: 1px solid #EEE3DE;
+    border-radius: 12px;
+    background: #FAF8F6;
+}
+
+.evd-item dd {
+    margin: 4px 0 0;
+    overflow-wrap: anywhere;
+}
+
+/* Pie y WhatsApp */
+.evd-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 28px 24px;
+}
+
+.evd-wa {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    max-width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #DCEBDD;
+    border-radius: 10px;
+    background: #F0F8F0;
+    color: #247A43;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.evd-wa svg {
+    display: block;
+    width: 25px;
+    height: 25px;
+    flex: 0 0 25px;
+    fill: currentColor;
+}
+
+.evd-wa:hover {
+    background: #E2F2E4;
+}
+
+.evd-footer button {
+    min-height: 44px;
+    border-radius: 10px;
+}
+
+/* Pantallas pequeñas */
+@media (max-width: 560px) {
+    .evento-dialog {
+        width: calc(100% - 20px);
+        max-height: 92vh;
+        border-radius: 16px;
+    }
+
+    .evd-header {
+        padding: 22px 54px 20px 20px;
+    }
+
+    .evd-body {
+        padding: 20px 18px 8px;
+    }
+
+    .evd-steps {
+        gap: 4px;
+    }
+
+    .evd-dot {
+        width: 26px;
+        height: 26px;
+    }
+
+    .evd-steplabel {
+        font-size: 0.65rem;
+    }
+
+    .evd-grid {
+        gap: 9px;
+    }
+
+    .evd-item {
+        padding: 11px;
+    }
+
+    .evd-footer {
+        flex-wrap: wrap;
+        padding: 14px 18px 20px;
+    }
+}
+

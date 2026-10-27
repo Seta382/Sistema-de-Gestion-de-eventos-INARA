@@ -178,8 +178,26 @@
                     </p>
                 </div>
                 <% } else { %>
-                <% for (Evento ev : listaEventosRecientes) {%>
-                <article class="event-live-card">
+                <% for (Evento ev : listaEventosRecientes) {
+                    // Datos que se muestran en la ventana de detalle al hacer clic en la tarjeta
+                    String evNombre = ev.getNombre() != null ? String.valueOf(ev.getNombre()) : "Evento INARA";
+                    String evCliente = ev.getNombreCliente() != null ? String.valueOf(ev.getNombreCliente()) : "Cliente General";
+                    String evTipo = ev.getTipoCelebracion() != null ? String.valueOf(ev.getTipoCelebracion()) : "Evento";
+                    String evFecha = ev.getFechaEvento() != null ? String.valueOf(ev.getFechaEvento()) : "Próximo";
+                    String evHora = ev.getHoraEvento() != null ? String.valueOf(ev.getHoraEvento()) : "18:00";
+                    String evPresupuesto = ev.getPresupuesto() != null ? nf.format(ev.getPresupuesto()) : "S/ 0.00";
+                    String evCoordinador = ev.getNombreCoordinador() != null ? String.valueOf(ev.getNombreCoordinador()) : "Staff Asignado";
+                %>
+                <article class="event-live-card" role="button" tabindex="0" title="Ver detalle del evento"
+                         data-nombre="<%= esc(evNombre) %>"
+                         data-cliente="<%= esc(evCliente) %>"
+                         data-tipo="<%= esc(evTipo) %>"
+                         data-fecha="<%= esc(evFecha) %>"
+                         data-hora="<%= esc(evHora) %>"
+                         data-invitados="<%= ev.getNumInvitados() %>"
+                         data-presupuesto="<%= esc(evPresupuesto) %>"
+                         data-coordinador="<%= esc(evCoordinador) %>"
+                         data-estado="<%= esc(String.valueOf(ev.getEstado())) %>">
                     <div class="event-top-info">
                         <div>
                             <h3 class="event-name">✨ <%= ev.getNombre() != null ? esc(ev.getNombre()) : "Evento INARA"%></h3>
@@ -485,6 +503,33 @@
     </div>
 
 </main>
+
+<!-- Ventana flotante: detalle del evento (se abre al hacer clic en una tarjeta) -->
+<dialog id="evento-dialog" class="evento-dialog" aria-labelledby="evd-nombre">
+    <div class="evd-header">
+        <button type="button" class="evd-close" aria-label="Cerrar"
+                onclick="document.getElementById('evento-dialog').close()">&times;</button>
+        <span class="evd-tipo" id="evd-tipo"></span>
+        <h2 class="evd-title" id="evd-nombre"></h2>
+        <p class="evd-cliente">Titular: <strong id="evd-cliente"></strong></p>
+    </div>
+
+    <div class="evd-body">
+        <dl class="evd-grid">
+            <div class="evd-item"><dt>Fecha</dt><dd id="evd-fecha"></dd></div>
+            <div class="evd-item"><dt>Hora de inicio</dt><dd id="evd-hora"></dd></div>
+            <div class="evd-item"><dt>Aforo</dt><dd id="evd-invitados"></dd></div>
+            <div class="evd-item"><dt>Presupuesto</dt><dd id="evd-presupuesto"></dd></div>
+            <div class="evd-item"><dt>Coordinador</dt><dd id="evd-coordinador"></dd></div>
+            <div class="evd-item"><dt>Fase</dt><dd id="evd-estado"></dd></div>
+        </dl>
+    </div>
+
+    <div class="evd-footer">
+        <button type="button" class="btn-step-prev"
+                onclick="document.getElementById('evento-dialog').close()">Cerrar</button>
+    </div>
+</dialog>
 
 <!-- Notificación Toast -->
 <div id="toast" class="toast-notification">
@@ -811,6 +856,45 @@
             toast.style.display = 'none';
         }, 3500);
     }
+</script>
+
+<!-- Ventana flotante de detalle del evento -->
+<script>
+(function () {
+    var dlg = document.getElementById('evento-dialog');
+    if (!dlg || typeof dlg.showModal !== 'function') return;
+
+    function set(id, texto) { document.getElementById(id).textContent = texto; }
+
+    function abrirDetalleEvento(card) {
+        var d = card.dataset;
+        set('evd-tipo', d.tipo);
+        set('evd-nombre', d.nombre);
+        set('evd-cliente', d.cliente);
+        set('evd-fecha', d.fecha);
+        set('evd-hora', d.hora + ' hrs');
+        set('evd-invitados', d.invitados + ' invitados');
+        set('evd-presupuesto', d.presupuesto);
+        set('evd-coordinador', d.coordinador);
+        set('evd-estado', d.estado);
+        dlg.showModal();
+    }
+
+    document.querySelectorAll('.event-live-card[data-nombre]').forEach(function (card) {
+        card.addEventListener('click', function () { abrirDetalleEvento(card); });
+        card.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                abrirDetalleEvento(card);
+            }
+        });
+    });
+
+    // Clic en el fondo oscuro cierra la ventana
+    dlg.addEventListener('click', function (e) {
+        if (e.target === dlg) dlg.close();
+    });
+})();
 </script>
 </body>
 </html>

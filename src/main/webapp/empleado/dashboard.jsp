@@ -12,12 +12,78 @@
 <%@ page import="java.util.List" %>
 <%@ page import="java.text.NumberFormat" %>
 <%@ page import="java.util.Locale" %>
+<%@ page import="java.util.*" %>
 <%!
     // Escapa texto escrito por usuarios antes de imprimirlo en HTML
     private static String esc(String s) {
         if (s == null) return "";
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
                 .replace("\"", "&quot;").replace("'", "&#39;");
+    }
+
+    // ---- Etapas del evento (avance) ----
+    private static final String[] ETAPAS = {"SOLICITADO", "COTIZADO", "CONFIRMADO", "EN_PROCESO", "FINALIZADO"};
+
+    /** Posición de la etapa (0 a 4). -1 si está cancelado o no se reconoce. */
+    private static int etapaIndex(String estado) {
+        if (estado == null) return -1;
+        for (int i = 0; i < ETAPAS.length; i++) {
+            if (ETAPAS[i].equalsIgnoreCase(estado.trim())) return i;
+        }
+        return -1;
+    }
+
+    private static String etapaTxt(String estado) {
+        if (estado == null) return "Sin etapa";
+        switch (estado.trim().toUpperCase()) {
+            case "SOLICITADO": return "Solicitado";
+            case "COTIZADO": return "Cotizado";
+            case "CONFIRMADO": return "Confirmado";
+            case "EN_PROCESO": return "En proceso";
+            case "FINALIZADO": return "Finalizado";
+            case "CANCELADO": return "Cancelado";
+            default: return estado;
+        }
+    }
+
+    // ---- Utilidades para los gráficos ----
+    private static void sumar(Map<String, Integer> m, String clave) {
+        Integer v = m.get(clave);
+        m.put(clave, v == null ? 1 : v + 1);
+    }
+
+    /** Lista de textos como arreglo de JavaScript seguro: ["a","b"] */
+    private static String jsonTexts(Collection<String> items) {
+        StringBuilder sb = new StringBuilder("[");
+        boolean primero = true;
+        for (String s : items) {
+            if (!primero) sb.append(',');
+            primero = false;
+            String x = s == null ? "" : s.replace("\\", "\\\\").replace("\"", "\\\"")
+                    .replace("\n", " ").replace("\r", "").replace("<", "\\x3C");
+            sb.append('"').append(x).append('"');
+        }
+        return sb.append(']').toString();
+    }
+
+    private static String jsonNums(Collection<Integer> items) {
+        StringBuilder sb = new StringBuilder("[");
+        boolean primero = true;
+        for (Integer n : items) {
+            if (!primero) sb.append(',');
+            primero = false;
+            sb.append(n == null ? 0 : n);
+        }
+        return sb.append(']').toString();
+    }
+
+    /** Teléfono listo para wa.me: solo dígitos, con 51 si es un celular de 9 dígitos. Vacío si no sirve. */
+    private static String telefonoWa(String tel) {
+        if (tel == null) return "";
+        String d = tel.replaceAll("\\D", "");
+        if (d.length() == 9) return d.startsWith("9") ? "51" + d : ""; // celular peruano
+        if (d.length() < 10 || d.length() > 15) return "";
+        return d;
     }
 %>
 <%
@@ -48,6 +114,63 @@
     // Llega desde "Convertir en evento" en el panel de citas (?idCita=X)
     String idCitaPreseleccionada = request.getParameter("idCita");
     NumberFormat nf = NumberFormat.getCurrencyInstance(new Locale("es", "PE"));
+
+    // ---------- Teléfono de cada cliente (para el reporte por WhatsApp) ----------
+    Map<Integer, String> telefonosCliente = new HashMap<>();
+    for (Cliente c : listaClientes) {
+        if (c.getIdCliente() != null) {
+            telefonosCliente.put(c.getIdCliente(), c.getTelefono());
+        }
+    }
+
+    // ---------- Datos para los gráficos del dashboard ----------
+    List<Evento> todosEventos = eventoService.buscarEventos("", "TODOS");
+
+    Map<String, Integer> porEtapa = new LinkedHashMap<>();
+    for (String et : ETAPAS) porEtapa.put(et, 0);
+    porEtapa.put("CANCELADO", 0);
+    Map<String, Integer> porMes = new TreeMap<>();
+    Map<String, Integer> porTipo = new LinkedHashMap<>();
+    for (Evento e : todosEventos) {
+        sumar(porEtapa, e.getEstado() != null ? e.getEstado().trim().toUpperCase() : "CONFIRMADO");
+        if (e.getFechaEvento() != null) {
+            sumar(porMes, e.getFechaEvento().toString().substring(0, 7)); // yyyy-MM
+        }
+        sumar(porTipo, e.getTipoCelebracion() != null ? e.getTipoCelebracion() : "Otro");
+    }
+
+    // Etapas: solo las que tienen eventos
+    List<String> etapaClaves = new ArrayList<>();
+    List<String> etapaLabels = new ArrayList<>();
+    List<Integer> etapaVals = new ArrayList<>();
+    for (Map.Entry<String, Integer> en : porEtapa.entrySet()) {
+        if (en.getValue() > 0) {
+            etapaClaves.add(en.getKey());
+            etapaLabels.add(etapaTxt(en.getKey()));
+            etapaVals.add(en.getValue());
+        }
+    }
+
+    // Meses: los últimos 12
+    List<String> mesesKeys = new ArrayList<>(porMes.keySet());
+    if (mesesKeys.size() > 12) mesesKeys = mesesKeys.subList(mesesKeys.size() - 12, mesesKeys.size());
+    List<Integer> mesesVals = new ArrayList<>();
+    for (String mk : mesesKeys) mesesVals.add(porMes.get(mk));
+
+    // Insumos con menos stock (los 6 más bajos)
+    List<Articulo> menorStock = new ArrayList<>(listaInsumos);
+    Collections.sort(menorStock, new Comparator<Articulo>() {
+        public int compare(Articulo a, Articulo b) {
+            return Integer.compare(a.getStock(), b.getStock());
+        }
+    });
+    if (menorStock.size() > 6) menorStock = new ArrayList<>(menorStock.subList(0, 6));
+    List<String> stockLabels = new ArrayList<>();
+    List<Integer> stockVals = new ArrayList<>();
+    for (Articulo ar : menorStock) {
+        stockLabels.add(ar.getNombre());
+        stockVals.add(ar.getStock());
+    }
 %>
 <!DOCTYPE html>
 <html lang="es">
@@ -155,6 +278,38 @@
         </a>
     </section>
 
+    <!-- Resumen estadístico (gráficos) -->
+    <h2 class="stats-heading">Resumen estadístico</h2>
+    <section class="stats-row">
+        <% if (!todosEventos.isEmpty()) { %>
+        <article class="chart-card">
+            <h3 class="chart-title">Eventos por etapa</h3>
+            <p class="chart-sub">En qué punto del proceso está cada evento</p>
+            <div class="chart-box"><canvas id="chart-etapas" role="img" aria-label="Gráfico de eventos por etapa"></canvas></div>
+        </article>
+        <article class="chart-card">
+            <h3 class="chart-title">Eventos por mes</h3>
+            <p class="chart-sub">Carga de trabajo según la fecha del evento</p>
+            <div class="chart-box"><canvas id="chart-meses" role="img" aria-label="Gráfico de eventos por mes"></canvas></div>
+        </article>
+        <article class="chart-card">
+            <h3 class="chart-title">Tipo de celebración</h3>
+            <p class="chart-sub">Qué es lo que más se contrata</p>
+            <div class="chart-box"><canvas id="chart-tipos" role="img" aria-label="Gráfico de eventos por tipo de celebración"></canvas></div>
+        </article>
+        <% } %>
+        <% if (!menorStock.isEmpty()) { %>
+        <article class="chart-card">
+            <h3 class="chart-title">Insumos con menos stock</h3>
+            <p class="chart-sub">Los que conviene reponer primero</p>
+            <div class="chart-box"><canvas id="chart-stock" role="img" aria-label="Gráfico de insumos con menor stock"></canvas></div>
+        </article>
+        <% } %>
+        <% if (todosEventos.isEmpty() && menorStock.isEmpty()) { %>
+        <div class="chart-card chart-vacio">Aún no hay datos suficientes para mostrar gráficos.</div>
+        <% } %>
+    </section>
+
     <!-- Espacio Dividido -->
     <div class="split-workspace">
 
@@ -187,8 +342,14 @@
                     String evHora = ev.getHoraEvento() != null ? String.valueOf(ev.getHoraEvento()) : "18:00";
                     String evPresupuesto = ev.getPresupuesto() != null ? nf.format(ev.getPresupuesto()) : "S/ 0.00";
                     String evCoordinador = ev.getNombreCoordinador() != null ? String.valueOf(ev.getNombreCoordinador()) : "Staff Asignado";
+                    // Avance por etapas (20% por etapa; cancelado = 0%)
+                    int evIdx = etapaIndex(ev.getEstado());
+                    int evPct = evIdx >= 0 ? (evIdx + 1) * 20 : 0;
+                    String evEtapa = etapaTxt(ev.getEstado());
+                    String evTel = telefonoWa(telefonosCliente.get(ev.getIdCliente()));
                 %>
                 <article class="event-live-card" role="button" tabindex="0" title="Ver detalle del evento"
+                         data-id="<%= ev.getIdEvento() %>"
                          data-nombre="<%= esc(evNombre) %>"
                          data-cliente="<%= esc(evCliente) %>"
                          data-tipo="<%= esc(evTipo) %>"
@@ -197,7 +358,11 @@
                          data-invitados="<%= ev.getNumInvitados() %>"
                          data-presupuesto="<%= esc(evPresupuesto) %>"
                          data-coordinador="<%= esc(evCoordinador) %>"
-                         data-estado="<%= esc(String.valueOf(ev.getEstado())) %>">
+                         data-estado="<%= esc(String.valueOf(ev.getEstado())) %>"
+                         data-etapa="<%= esc(evEtapa) %>"
+                         data-idx="<%= evIdx %>"
+                         data-pct="<%= evPct %>"
+                         data-telefono="<%= evTel %>">
                     <div class="event-top-info">
                         <div>
                             <h3 class="event-name">✨ <%= ev.getNombre() != null ? esc(ev.getNombre()) : "Evento INARA"%></h3>
@@ -221,11 +386,11 @@
 
                     <div class="progress-container">
                         <div class="progress-header">
-                            <span>🟢 Fase: <%= esc(ev.getEstado())%></span>
-                            <span>100% Confirmado</span>
+                            <span>🟢 Etapa: <%= esc(evEtapa) %></span>
+                            <span><%= evIdx >= 0 ? (evPct + "% del proceso") : "—" %></span>
                         </div>
                         <div class="progress-bar-bg">
-                            <div class="progress-bar-fill" style="width: 100%; background: linear-gradient(90deg, var(--gold), var(--rose-dark));"></div>
+                            <div class="progress-bar-fill" style="width: <%= evPct %>%; background: linear-gradient(90deg, var(--gold), var(--rose-dark));"></div>
                         </div>
                     </div>
                 </article>
@@ -515,17 +680,35 @@
     </div>
 
     <div class="evd-body">
+        <ol class="evd-steps" id="evd-steps" aria-label="Etapas del evento">
+            <li><span class="evd-dot">1</span><span class="evd-steplabel">Solicitado</span></li>
+            <li><span class="evd-dot">2</span><span class="evd-steplabel">Cotizado</span></li>
+            <li><span class="evd-dot">3</span><span class="evd-steplabel">Confirmado</span></li>
+            <li><span class="evd-dot">4</span><span class="evd-steplabel">En proceso</span></li>
+            <li><span class="evd-dot">5</span><span class="evd-steplabel">Finalizado</span></li>
+        </ol>
+        <div class="evd-progress"><div class="evd-progress-fill" id="evd-progress-fill"></div></div>
+        <p class="evd-progress-text" id="evd-progress-text"></p>
+
         <dl class="evd-grid">
             <div class="evd-item"><dt>Fecha</dt><dd id="evd-fecha"></dd></div>
             <div class="evd-item"><dt>Hora de inicio</dt><dd id="evd-hora"></dd></div>
             <div class="evd-item"><dt>Aforo</dt><dd id="evd-invitados"></dd></div>
             <div class="evd-item"><dt>Presupuesto</dt><dd id="evd-presupuesto"></dd></div>
             <div class="evd-item"><dt>Coordinador</dt><dd id="evd-coordinador"></dd></div>
-            <div class="evd-item"><dt>Fase</dt><dd id="evd-estado"></dd></div>
+            <div class="evd-item"><dt>Etapa actual</dt><dd id="evd-estado"></dd></div>
         </dl>
     </div>
 
+    <p class="evd-wa-nota" id="evd-wa-nota" hidden>
+        Este cliente no tiene teléfono registrado: en WhatsApp elige a quién enviarlo.
+    </p>
     <div class="evd-footer">
+        <a id="evd-wa" class="evd-wa" href="#" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+            Enviar reporte por WhatsApp
+        </a>
+        <button type="button" class="evd-avanzar" id="evd-avanzar" hidden>Avanzar etapa</button>
         <button type="button" class="btn-step-prev"
                 onclick="document.getElementById('evento-dialog').close()">Cerrar</button>
     </div>
@@ -866,6 +1049,13 @@
 
     function set(id, texto) { document.getElementById(id).textContent = texto; }
 
+    var ETAPAS_TXT = ['Solicitado', 'Cotizado', 'Confirmado', 'En proceso', 'Finalizado'];
+
+    function fechaCorta(iso) {
+        var p = (iso || '').split('-');
+        return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : iso;
+    }
+
     function abrirDetalleEvento(card) {
         var d = card.dataset;
         set('evd-tipo', d.tipo);
@@ -876,7 +1066,43 @@
         set('evd-invitados', d.invitados + ' invitados');
         set('evd-presupuesto', d.presupuesto);
         set('evd-coordinador', d.coordinador);
-        set('evd-estado', d.estado);
+        set('evd-estado', d.etapa);
+
+        // Avance por etapas
+        var idx = parseInt(d.idx, 10);
+        var pct = parseInt(d.pct, 10) || 0;
+        var lista = document.getElementById('evd-steps');
+        lista.querySelectorAll('li').forEach(function (li, i) {
+            li.classList.toggle('done', idx >= 0 && (i < idx || idx === 4));
+            li.classList.toggle('current', idx >= 0 && i === idx && idx < 4);
+        });
+        lista.classList.toggle('cancelado', idx < 0);
+        document.getElementById('evd-progress-fill').style.width = pct + '%';
+        set('evd-progress-text', idx >= 0 ? 'Etapa ' + (idx + 1) + ' de 5 · ' + pct + '% completado' : d.etapa);
+
+        // Reporte rápido por WhatsApp
+        var llenos = idx >= 0 ? idx + 1 : 0;
+        var texto = [
+            '*INARA – Avance de tu evento*',
+            'Evento: ' + d.nombre,
+            'Fecha: ' + fechaCorta(d.fecha) + ' · ' + d.hora,
+            idx >= 0 ? 'Etapa: ' + d.etapa + ' (' + (idx + 1) + ' de 5)' : 'Estado: ' + d.etapa,
+            idx >= 0 ? '▓'.repeat(llenos) + '░'.repeat(5 - llenos) + ' ' + pct + '%' : '',
+            'Coordinador: ' + d.coordinador
+        ].filter(Boolean).join('\n');
+        var base = d.telefono ? 'https://wa.me/' + d.telefono : 'https://wa.me/';
+        document.getElementById('evd-wa').href = base + '?text=' + encodeURIComponent(texto);
+        document.getElementById('evd-wa-nota').hidden = !!d.telefono;
+
+        // Botón "Avanzar etapa": solo si el evento no está finalizado ni cancelado
+        var btnAv = document.getElementById('evd-avanzar');
+        var puedeAvanzar = idx >= 0 && idx < ETAPAS_TXT.length - 1;
+        btnAv.hidden = !puedeAvanzar;
+        btnAv.disabled = false;
+        btnAv.dataset.idEvento = d.id;
+        btnAv.dataset.destino = puedeAvanzar ? ETAPAS_TXT[idx + 1] : '';
+        btnAv.textContent = puedeAvanzar ? 'Avanzar a ' + ETAPAS_TXT[idx + 1] : '';
+
         dlg.showModal();
     }
 
@@ -894,6 +1120,129 @@
     dlg.addEventListener('click', function (e) {
         if (e.target === dlg) dlg.close();
     });
+
+    // Avanzar el evento a la siguiente etapa (se guarda en la base de datos)
+    document.getElementById('evd-avanzar').addEventListener('click', function () {
+        var btn = this;
+        var destino = btn.dataset.destino;
+        if (!confirm('¿Pasar este evento a la etapa "' + destino + '"?')) return;
+
+        var textoOriginal = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Guardando...';
+
+        var params = new URLSearchParams();
+        params.append('accion', 'avanzarEtapa');
+        params.append('idEvento', btn.dataset.idEvento);
+
+        fetch('<%= request.getContextPath()%>/evento', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'},
+            body: params.toString()
+        })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                if (data.success) {
+                    dlg.close();
+                    if (typeof showToast === 'function') showToast('Etapa actualizada a ' + destino);
+                    setTimeout(function () { window.location.reload(); }, 900);
+                } else {
+                    alert(data.mensaje || 'No se pudo cambiar la etapa.');
+                    btn.disabled = false;
+                    btn.textContent = textoOriginal;
+                }
+            })
+            .catch(function () {
+                alert('Ocurrió un error de comunicación con el servidor.');
+                btn.disabled = false;
+                btn.textContent = textoOriginal;
+            });
+    });
+})();
+</script>
+
+<!-- Gráficos del dashboard (Chart.js) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    if (typeof Chart === 'undefined') return;
+
+    var D = {
+        etapa: {claves: <%= jsonTexts(etapaClaves) %>, labels: <%= jsonTexts(etapaLabels) %>, valores: <%= jsonNums(etapaVals) %>},
+        mes:   {claves: <%= jsonTexts(mesesKeys) %>, valores: <%= jsonNums(mesesVals) %>},
+        tipo:  {labels: <%= jsonTexts(porTipo.keySet()) %>, valores: <%= jsonNums(porTipo.values()) %>},
+        stock: {labels: <%= jsonTexts(stockLabels) %>, valores: <%= jsonNums(stockVals) %>}
+    };
+
+    var COLOR_ETAPA = {SOLICITADO: '#E7D5B3', COTIZADO: '#C6A15B', CONFIRMADO: '#A66A6A',
+                       EN_PROCESO: '#743E3E', FINALIZADO: '#2F6B4F', CANCELADO: '#B9B1AC'};
+    var PALETA = ['#A66A6A', '#C6A15B', '#743E3E', '#D8A7A7', '#E7D5B3', '#B88566', '#2F6B4F'];
+    var MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+    Chart.defaults.font.family = "'Montserrat', sans-serif";
+    Chart.defaults.color = '#706464';
+
+    function lienzo(id) { return document.getElementById(id); }
+    function formatoMes(clave) {
+        var p = clave.split('-');
+        return MESES[parseInt(p[1], 10) - 1] + ' ' + p[0];
+    }
+    var ejeEnteros = {beginAtZero: true, ticks: {precision: 0}, grid: {color: '#F0EAE5'}};
+    var sinCuadricula = {grid: {display: false}};
+
+    if (lienzo('chart-etapas')) {
+        new Chart(lienzo('chart-etapas'), {
+            type: 'doughnut',
+            data: {
+                labels: D.etapa.labels,
+                datasets: [{
+                    data: D.etapa.valores,
+                    backgroundColor: D.etapa.claves.map(function (c) { return COLOR_ETAPA[c] || '#B9B1AC'; }),
+                    borderColor: '#FFFFFF', borderWidth: 3
+                }]
+            },
+            options: {maintainAspectRatio: false, cutout: '62%',
+                      plugins: {legend: {position: 'bottom', labels: {boxWidth: 12, padding: 14}}}}
+        });
+    }
+
+    if (lienzo('chart-meses')) {
+        new Chart(lienzo('chart-meses'), {
+            type: 'bar',
+            data: {
+                labels: D.mes.claves.map(formatoMes),
+                datasets: [{label: 'Eventos', data: D.mes.valores, backgroundColor: '#A66A6A', borderRadius: 8, maxBarThickness: 38}]
+            },
+            options: {maintainAspectRatio: false, plugins: {legend: {display: false}},
+                      scales: {y: ejeEnteros, x: sinCuadricula}}
+        });
+    }
+
+    if (lienzo('chart-tipos')) {
+        new Chart(lienzo('chart-tipos'), {
+            type: 'bar',
+            data: {
+                labels: D.tipo.labels,
+                datasets: [{label: 'Eventos', data: D.tipo.valores,
+                            backgroundColor: D.tipo.labels.map(function (_, i) { return PALETA[i % PALETA.length]; }),
+                            borderRadius: 8, maxBarThickness: 30}]
+            },
+            options: {indexAxis: 'y', maintainAspectRatio: false, plugins: {legend: {display: false}},
+                      scales: {x: ejeEnteros, y: sinCuadricula}}
+        });
+    }
+
+    if (lienzo('chart-stock')) {
+        new Chart(lienzo('chart-stock'), {
+            type: 'bar',
+            data: {
+                labels: D.stock.labels,
+                datasets: [{label: 'Unidades en stock', data: D.stock.valores, backgroundColor: '#C6A15B', borderRadius: 8, maxBarThickness: 30}]
+            },
+            options: {indexAxis: 'y', maintainAspectRatio: false, plugins: {legend: {display: false}},
+                      scales: {x: ejeEnteros, y: sinCuadricula}}
+        });
+    }
 })();
 </script>
 </body>

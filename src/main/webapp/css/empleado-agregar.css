@@ -130,23 +130,76 @@
 }
 
 /* --- Ventana de detalle: botón de WhatsApp --- */
-.evd-footer { flex-wrap: wrap; align-items: center; gap: 10px; }
+
+/* --- Ventana de detalle: botón de WhatsApp --- */
+.evd-footer {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
 .evd-wa {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    padding: 12px 20px;
+    padding: 10px 14px;
+    border: 1px solid #D7E9D9;
     border-radius: 10px;
-    background: #158A46;
-    color: #FFFFFF;
-    font-size: 0.85rem;
+    background: #EFF8F0;
+    color: #247A43;
+    font-size: 0.84rem;
     font-weight: 600;
     text-decoration: none;
     transition: background 0.2s ease, transform 0.2s ease;
 }
-.evd-wa:hover { background: #0F6F37; transform: translateY(-1px); }
-.evd-wa svg { width: 18px; height: 18px; fill: currentColor; flex-shrink: 0; }
-.evd-wa-nota { margin: 0 30px; font-size: 0.76rem; color: #706464; text-align: right; }
+
+.evd-wa:hover {
+    background: #DFF1E2;
+    transform: translateY(-1px);
+}
+
+.evd-wa svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+    flex-shrink: 0;
+}
+
+.evd-wa-nota {
+    margin: 0 28px;
+    font-size: 0.76rem;
+    color: #706464;
+    text-align: left;
+}
+
+.evd-footer button {
+    min-height: 44px;
+    border-radius: 10px;
+}
+
+@media (max-width: 560px) {
+    .evd-footer {
+        flex-wrap: wrap;
+    }
+
+    .evd-wa,
+    .evd-footer button {
+        flex: 1 1 100%;
+        justify-content: center;
+    }
+
+    .evd-steplabel {
+        font-size: 0.58rem;
+    }
+
+    .evd-wa-nota {
+        margin: 0 18px;
+    }
+}
+
 
 @media (max-width: 560px) {
     .evd-steplabel { font-size: 0.58rem; }

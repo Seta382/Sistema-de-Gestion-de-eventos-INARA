@@ -60,4 +60,12 @@ public interface EventoDAO {
 
     /** Cantidad de eventos por período. Claves: TODOS, PROXIMOS y PASADOS. */
     Map<String, Integer> contarPorPeriodo();
+
+        /**
+     * Cambia el estado (etapa) de un evento, pero solo si todavía está en "estadoActual".
+     * Así, si otra persona ya lo cambió, no se pisa su cambio.
+     *
+     * @return true si se actualizó el evento; false si ya cambió, no existe o hubo un error
+     */
+    boolean cambiarEstado(int idEvento, String estadoActual, String estadoNuevo);
 }

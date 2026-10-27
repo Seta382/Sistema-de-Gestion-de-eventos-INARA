@@ -78,7 +78,22 @@ public class EventoServlet extends HttpServlet {
             return;
         }
 
+        // [CAMBIO 1] Solo el personal (admin o empleado) puede registrar eventos o cambiar su etapa
+        UsuarioDTO usuario = (UsuarioDTO) session.getAttribute(Constantes.SESION_USUARIO);
+        String rol = usuario.getRol() != null ? usuario.getRol().toUpperCase() : "";
+        if (!Constantes.ROL_ADMIN.equals(rol) && !Constantes.ROL_EMPLEADO.equals(rol)) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            out.print("{\"success\":false,\"mensaje\":\"No tienes permiso para esta operación.\"}");
+            return;
+        }
+
         try {
+            // [CAMBIO 2] Cambio de etapa: POST /evento con accion=avanzarEtapa e idEvento
+            if ("avanzarEtapa".equals(request.getParameter("accion"))) {
+                avanzarEtapa(request, out);
+                return;
+            }
+
             // 1. Datos del evento
             String nombre = request.getParameter("nombre");
             String idTipoStr = request.getParameter("idTipoEvento");
@@ -167,6 +182,23 @@ public class EventoServlet extends HttpServlet {
     }
 
     /**
+     * [CAMBIO 3] Pasa un evento a la siguiente etapa.
+     * Los errores de validación los atrapa doPost (IllegalArgumentException).
+     */
+    private void avanzarEtapa(HttpServletRequest request, PrintWriter out) {
+        String idStr = request.getParameter("idEvento");
+        int idEvento;
+        try {
+            idEvento = Integer.parseInt(idStr == null ? "" : idStr.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Evento no válido.");
+        }
+        String nuevoEstado = eventoService.avanzarEtapa(idEvento);
+        out.print("{\"success\":true,\"mensaje\":\"Etapa actualizada\",\"idEvento\":" + idEvento
+                + ",\"estado\":\"" + escapeJson(nuevoEstado) + "\"}");
+    }
+
+    /**
      * Pantalla "Eventos en Cronograma": todos los eventos, con búsqueda y filtro por período.
      * Parámetros: q (texto libre) y filtro (PROXIMOS por defecto, PASADOS o TODOS).
      */
@@ -200,3 +232,4 @@ public class EventoServlet extends HttpServlet {
         return s.replace("\"", "\\\"").replace("\n", " ").replace("\r", "");
     }
 }
+

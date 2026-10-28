@@ -57,7 +57,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/cliente.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/cliente.css?v=<%= System.currentTimeMillis() %>">
+
 </head>
 <body class="page-cliente-dashboard">
 
@@ -232,39 +233,171 @@
         <div class="card-header-styled" style="border-bottom: none; margin-bottom: 0;">
             <div>
                 <h3>Experiencias que Diseñamos para Ti</h3>
-                <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">Servicios integrales para que tu celebración sea inolvidable</p>
+                <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">Haz clic en cualquier experiencia para ver fotos reales de nuestros eventos</p>
             </div>
             <div class="card-icon-badge" style="background: rgba(198, 161, 91, 0.2); color: var(--gold);">&#127881;</div>
         </div>
 
         <div class="services-grid">
-            <div class="service-card">
-                <span class="service-icon">&#128141;</span>
-                <h4 class="service-title">Bodas de Ensueño</h4>
-                <p class="service-desc">Diseño ceremonial, banquetes de gala y coordinación integral minuto a minuto.</p>
+            <div class="service-card service-card-interactive" onclick="mostrarGaleria('bodas')" id="card-bodas" role="button" tabindex="0">
+                <div class="service-img-cover">
+                    <img src="${pageContext.request.contextPath}/images/bodas.svg" alt="Bodas de Ensueño" onerror="this.style.display='none'">
+                    <span class="service-badge-pill">💍 Bodas</span>
+                </div>
+                <div class="service-card-body">
+                    <h4 class="service-title">Bodas de Ensueño</h4>
+                    <p class="service-desc">Diseño ceremonial, banquetes de gala y coordinación integral minuto a minuto.</p>
+                    <span class="service-ver-btn">📸 Ver Galería de Fotos &rarr;</span>
+                </div>
             </div>
 
-            <div class="service-card">
-                <span class="service-icon">&#127878;</span>
-                <h4 class="service-title">Quinceañeros & Proms</h4>
-                <p class="service-desc">Ambientaciones temáticas vanguardistas, efectos de iluminación y show en vivo.</p>
+            <div class="service-card service-card-interactive" onclick="mostrarGaleria('quince')" id="card-quince" role="button" tabindex="0">
+                <div class="service-img-cover">
+                    <img src="${pageContext.request.contextPath}/images/quince.svg" alt="Quinceañeros & Proms" onerror="this.style.display='none'">
+                    <span class="service-badge-pill">🎆 Quinceañeros</span>
+                </div>
+                <div class="service-card-body">
+                    <h4 class="service-title">Quinceañeros & Proms</h4>
+                    <p class="service-desc">Ambientaciones temáticas vanguardistas, efectos de iluminación y show en vivo.</p>
+                    <span class="service-ver-btn">📸 Ver Galería de Fotos &rarr;</span>
+                </div>
             </div>
 
-            <div class="service-card">
-                <span class="service-icon">&#127870;</span>
-                <h4 class="service-title">Catering de Autor</h4>
-                <p class="service-desc">Experiencias gastronómicas de primer nivel con maridaje y coctelería personalizada.</p>
+            <div class="service-card service-card-interactive" onclick="mostrarGaleria('catering')" id="card-catering" role="button" tabindex="0">
+                <div class="service-img-cover">
+                    <img src="${pageContext.request.contextPath}/images/catering.svg" alt="Catering de Autor" onerror="this.style.display='none'">
+                    <span class="service-badge-pill">🍾 Catering</span>
+                </div>
+                <div class="service-card-body">
+                    <h4 class="service-title">Catering de Autor</h4>
+                    <p class="service-desc">Experiencias gastronómicas de primer nivel con maridaje y coctelería personalizada.</p>
+                    <span class="service-ver-btn">📸 Ver Galería de Fotos &rarr;</span>
+                </div>
             </div>
 
-            <div class="service-card">
-                <span class="service-icon">&#127912;</span>
-                <h4 class="service-title">Diseño & Mobiliario</h4>
-                <p class="service-desc">Arreglos florales exclusivos, salas lounge, pistas led y toldos arquitectónicos.</p>
+            <div class="service-card service-card-interactive" onclick="mostrarGaleria('mobiliario')" id="card-mobiliario" role="button" tabindex="0">
+                <div class="service-img-cover">
+                    <img src="${pageContext.request.contextPath}/images/mobiliario.svg" alt="Diseño & Mobiliario" onerror="this.style.display='none'">
+                    <span class="service-badge-pill">🎨 Diseño</span>
+                </div>
+                <div class="service-card-body">
+                    <h4 class="service-title">Diseño & Mobiliario</h4>
+                    <p class="service-desc">Arreglos florales exclusivos, salas lounge, pistas led y toldos arquitectónicos.</p>
+                    <span class="service-ver-btn">📸 Ver Galería de Fotos &rarr;</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel desplegable con las fotos de la experiencia seleccionada -->
+        <div id="panelGaleria" class="galeria-desplegable" style="display: none;">
+            <div class="galeria-desplegable-header">
+                <div>
+                    <span id="galeriaBadge" class="galeria-badge"></span>
+                    <h3 id="galeriaTitulo" class="galeria-titulo-principal"></h3>
+                    <p id="galeriaDesc" class="galeria-subtitulo"></p>
+                </div>
+                <button type="button" class="btn-cerrar-galeria" onclick="cerrarGaleria()">✕ Cerrar fotos</button>
+            </div>
+
+            <div id="galeriaFotos" class="galeria-fotos-grid">
+                <!-- Se inyectan las fotos aquí -->
+            </div>
+
+            <div class="galeria-desplegable-footer">
+                <a href="${pageContext.request.contextPath}/citas?accion=nueva" class="btn-agendar-servicio">✨ Agendar Cita para este Servicio</a>
             </div>
         </div>
     </section>
 
 </main>
+
+<script>
+    const basePath = '${pageContext.request.contextPath}';
+    const EXPERIENCIAS = {
+        bodas: {
+            icono: '💍 Bodas de Ensueño',
+            titulo: 'Producción & Diseño Nupcial',
+            desc: 'Creamos ambientes llenos de magia y romanticismo con el más alto estándar estético.',
+            fotos: [
+                { url: basePath + '/images/boda-1.jpg', fallback: basePath + '/images/bodas.svg', titulo: 'Banquete Nupcial de Gala' },
+                { url: basePath + '/images/boda-2.jpg', fallback: basePath + '/images/bodas.svg', titulo: 'Altar & Ceremonia Floral' },
+                { url: basePath + '/images/boda-3.jpg', fallback: basePath + '/images/bodas.svg', titulo: 'Momentos Inolvidables' },
+                { url: basePath + '/images/boda-4.jpg', fallback: basePath + '/images/bodas.svg', titulo: 'Mesa de Honor Exclusiva' }
+            ]
+        },
+        quince: {
+            icono: '🎆 Quinceañeros & Proms',
+            titulo: 'Fiestas Temáticas & Graduaciones',
+            desc: 'Experiencias vibrantes con tecnología de iluminación, shows y ambientaciones personalizadas.',
+            fotos: [
+                { url: basePath + '/images/quince-1.jpg', fallback: basePath + '/images/quince.svg', titulo: 'Show de Luces & Celebración' },
+                { url: basePath + '/images/quince-2.jpg', fallback: basePath + '/images/quince.svg', titulo: 'Pistas LED & Música en Vivo' },
+                { url: basePath + '/images/quince-3.jpg', fallback: basePath + '/images/quince.svg', titulo: 'Ambientación Temática' },
+                { url: basePath + '/images/quince-4.jpg', fallback: basePath + '/images/quince.svg', titulo: 'Gala & Fiesta Juvenil' }
+            ]
+        },
+        catering: {
+            icono: '🍾 Catering de Autor',
+            titulo: 'Gastronomía & Coctelería Fina',
+            desc: 'Platos de autor, maridaje selecto, estaciones en vivo y servicio de meseros de etiqueta.',
+            fotos: [
+                { url: basePath + '/images/catering-1.jpg', fallback: basePath + '/images/catering.svg', titulo: 'Bocadillos & Canapés Gourmet' },
+                { url: basePath + '/images/catering-2.jpg', fallback: basePath + '/images/catering.svg', titulo: 'Barra Libre & Mixología' },
+                { url: basePath + '/images/catering-3.jpg', fallback: basePath + '/images/catering.svg', titulo: 'Cena Servida de 4 Tiempos' },
+                { url: basePath + '/images/catering-4.jpg', fallback: basePath + '/images/catering.svg', titulo: 'Estación de Postres Finos' }
+            ]
+        },
+        mobiliario: {
+            icono: '🎨 Diseño & Mobiliario',
+            titulo: 'Decoración, Estructuras & Confort',
+            desc: 'Salas lounge, chandeliers de cristal, pistas de baile y arquitectura de toldos.',
+            fotos: [
+                { url: basePath + '/images/mobiliario-1.jpg', fallback: basePath + '/images/mobiliario.svg', titulo: 'Centros Florales & Lámparas de Cristal' },
+                { url: basePath + '/images/mobiliario-2.jpg', fallback: basePath + '/images/mobiliario.svg', titulo: 'Salas Lounge & Mobiliario Dorado' },
+                { url: basePath + '/images/mobiliario-3.jpg', fallback: basePath + '/images/mobiliario.svg', titulo: 'Toldos Arquitectónicos & Velas' },
+                { url: basePath + '/images/mobiliario-4.jpg', fallback: basePath + '/images/mobiliario.svg', titulo: 'Ambientación Escénica Integral' }
+            ]
+        }
+    };
+
+    function mostrarGaleria(clave) {
+        const exp = EXPERIENCIAS[clave];
+        if (!exp) return;
+
+        // Quitar estado activo de otras tarjetas y marcar la actual
+        document.querySelectorAll('.service-card-interactive').forEach(c => c.classList.remove('activa'));
+        const cardActual = document.getElementById('card-' + clave);
+        if (cardActual) cardActual.classList.add('activa');
+
+        // Llenar datos en el panel desplegable
+        document.getElementById('galeriaBadge').textContent = exp.icono;
+        document.getElementById('galeriaTitulo').textContent = exp.titulo;
+        document.getElementById('galeriaDesc').textContent = exp.desc;
+
+        const contenedor = document.getElementById('galeriaFotos');
+        const fallbackDefault = basePath + '/images/' + clave + '.svg';
+        contenedor.innerHTML = exp.fotos.map(function(f) {
+            var imgUrl = f.url || fallbackDefault;
+            var fb = f.fallback || fallbackDefault;
+            return '<div class="foto-item-card">' +
+                '<img src="' + imgUrl + '" alt="' + f.titulo + '" loading="lazy" onerror="this.onerror=null; this.src=\'' + fb + '\';">' +
+                '<span class="foto-pie">' + f.titulo + '</span>' +
+                '</div>';
+        }).join('');
+
+        const panel = document.getElementById('panelGaleria');
+        panel.style.display = 'block';
+
+        // Desplazar suavemente la vista hacia el panel de fotos
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function cerrarGaleria() {
+        const panel = document.getElementById('panelGaleria');
+        if (panel) panel.style.display = 'none';
+        document.querySelectorAll('.service-card-interactive').forEach(c => c.classList.remove('activa'));
+    }
+</script>
 
 <!-- Pie de página -->
 <footer class="portal-footer">
@@ -273,5 +406,3 @@
 
 </body>
 </html>
-
-

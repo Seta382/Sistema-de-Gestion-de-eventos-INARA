@@ -1,0 +1,273 @@
+/* =====================================================================
+   acuerdo.css — Estilos del módulo ACUERDOS (INARA)
+
+   Clase que va en el <body> de los JSP:
+     acuerdo/evento.jsp     ->  <body class="page-acuerdo">
+     acuerdo/listado.jsp    ->  <body class="page-acuerdo">
+     cliente/acuerdos.jsp   ->  <body class="page-acuerdo">
+
+   Link en el <head>:
+     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/acuerdo.css">
+   ===================================================================== */
+
+
+/* =====================================================================
+   1. BASE COMÚN (variables, reset, tipografía)
+   ===================================================================== */
+:root {
+    --bg-primary: #F8F4F1;
+    --rose-dark: #A66A6A;
+    --rose-deep: #743E3E;
+    --rose-light: #D8A7A7;
+    --gold: #C6A15B;
+    --text-primary: #3D3333;
+    --text-secondary: #706464;
+    --white: #FFFFFF;
+    --border-soft: #EFE8E2;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body { font-family: 'Montserrat', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+
+
+/* =====================================================================
+   2. PÁGINA: Acuerdos  ->  <body class="page-acuerdo">
+   ===================================================================== */
+
+/* --- Barra superior --- */
+.page-acuerdo .navbar {
+    background: var(--white); padding: 18px 40px; border-bottom: 1px solid var(--border-soft);
+    display: flex; justify-content: space-between; align-items: center;
+}
+.page-acuerdo .logo { font-size: 1.7rem; font-weight: 700; letter-spacing: 3px; color: var(--rose-dark); }
+.page-acuerdo .btn-volver {
+    text-decoration: none; color: var(--rose-dark); border: 1px solid var(--rose-light);
+    padding: 8px 16px; border-radius: 20px; font-size: 0.85rem;
+}
+
+/* --- Contenedor y tarjeta principal --- */
+.page-acuerdo .contenedor { max-width: 1100px; margin: 36px auto; padding: 0 20px; }
+.page-acuerdo .card {
+    background: var(--white); padding: 36px 40px; border-radius: 24px; border: 1px solid var(--border-soft);
+}
+.page-acuerdo h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.6rem; margin-bottom: 4px; }
+.page-acuerdo .subtitulo { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 22px; }
+
+/* --- Mensajes de éxito / error --- */
+.page-acuerdo .mensaje { padding: 12px 16px; border-radius: 10px; margin-bottom: 18px; font-size: 0.85rem; }
+.page-acuerdo .exito { background: #E8F5E9; color: #2E7D32; }
+.page-acuerdo .error { background: #FFEBEE; color: #C62828; }
+
+/* --- Buscador --- */
+.page-acuerdo .search-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.page-acuerdo .search-bar input[type="search"] {
+    flex: 1; min-width: 240px; padding: 12px 16px; border: 1.5px solid var(--border-soft);
+    border-radius: 12px; background: #FAF8F6; font-size: 0.9rem; font-family: inherit;
+    color: var(--text-primary); outline: none;
+}
+.page-acuerdo .search-bar input[type="search"]:focus {
+    border-color: var(--rose-dark); background: var(--white);
+    box-shadow: 0 0 0 3px rgba(216, 167, 167, 0.25);
+}
+.page-acuerdo .btn-primary {
+    padding: 12px 22px; border: none; border-radius: 12px; cursor: pointer;
+    background: linear-gradient(135deg, var(--gold), var(--rose-dark)); color: var(--white);
+    font-size: 0.82rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; font-family: inherit;
+}
+.page-acuerdo .clear { font-size: 0.82rem; color: var(--rose-dark); text-decoration: none; font-weight: 600; }
+.page-acuerdo .results-info { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px; }
+
+/* --- Formulario desplegable "Nuevo ..." --- */
+.page-acuerdo details.nuevo { margin-bottom: 18px; border: 1px solid var(--border-soft); border-radius: 14px; background: #FDFBFA; }
+.page-acuerdo details.nuevo > summary {
+    cursor: pointer; padding: 13px 18px; font-size: 0.88rem; font-weight: 700;
+    color: var(--rose-deep); list-style: none;
+}
+.page-acuerdo details.nuevo > summary::-webkit-details-marker { display: none; }
+.page-acuerdo details.nuevo[open] > summary { border-bottom: 1px solid var(--border-soft); }
+.page-acuerdo .form-nuevo { padding: 20px 18px 22px; }
+
+/* --- Campos de formulario --- */
+.page-acuerdo .campo { margin-bottom: 16px; }
+.page-acuerdo .campo label {
+    display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.78rem;
+    text-transform: uppercase; letter-spacing: 0.4px;
+}
+.page-acuerdo .campo input,
+.page-acuerdo .campo textarea,
+.page-acuerdo .campo select {
+    width: 100%; padding: 11px 12px; border: 1px solid var(--border-soft);
+    border-radius: 9px; font-size: 0.9rem; font-family: inherit; background: var(--white);
+}
+.page-acuerdo .campo textarea { min-height: 80px; resize: vertical; }
+.page-acuerdo .campo small { display: block; margin-top: 6px; font-size: 0.78rem; color: var(--text-secondary); }
+.page-acuerdo .campo small a { color: var(--rose-dark); font-weight: 600; }
+.page-acuerdo .fila { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* --- Filtros --- */
+.page-acuerdo .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.page-acuerdo .filters a {
+    padding: 7px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; text-decoration: none;
+    color: var(--text-secondary); background: #FAF8F6; border: 1px solid var(--border-soft);
+}
+.page-acuerdo .filters a.active { background: var(--rose-dark); color: var(--white); border-color: var(--rose-dark); }
+
+/* --- Tabla --- */
+.page-acuerdo .tabla-wrap { overflow-x: auto; }
+.page-acuerdo table { width: 100%; border-collapse: collapse; }
+.page-acuerdo th,
+.page-acuerdo td {
+    text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border-soft);
+    font-size: 0.86rem; vertical-align: middle;
+}
+.page-acuerdo th { text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.5px; color: var(--text-secondary); }
+.page-acuerdo .nombre { display: block; font-weight: 600; }
+.page-acuerdo .desc {
+    display: block; font-size: 0.78rem; color: var(--text-secondary); max-width: 320px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.page-acuerdo .fila-inactiva td { opacity: 0.6; }
+.page-acuerdo .empty-msg { text-align: center; padding: 30px; color: var(--text-secondary); }
+
+/* --- Badges de estado --- */
+.page-acuerdo .badge { padding: 4px 11px; border-radius: 14px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+.page-acuerdo .badge-activo   { background: #F4F8F4; color: #2F6B4F; }
+.page-acuerdo .badge-inactivo { background: #F0F0F0; color: #706464; }
+
+/* --- Acciones de cada fila --- */
+.page-acuerdo .actions form { display: inline; }
+.page-acuerdo .actions a.btn-editar {
+    color: var(--rose-dark); font-size: 0.8rem; font-weight: 600; text-decoration: none; margin-right: 12px;
+}
+.page-acuerdo .btn-link {
+    background: none; border: none; cursor: pointer; font-family: inherit;
+    font-size: 0.8rem; font-weight: 600; padding: 0;
+}
+.page-acuerdo .btn-baja     { color: #923838; }
+.page-acuerdo .btn-reactivar { color: #2F6B4F; }
+
+/* --- Panel de edición --- */
+.page-acuerdo .panel-edicion {
+    border: 1px solid var(--gold); border-left-width: 5px; border-radius: 14px;
+    background: #FFFDF8; padding: 20px 22px 22px; margin-bottom: 22px;
+}
+.page-acuerdo .panel-edicion h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.15rem; margin-bottom: 14px; }
+.page-acuerdo .panel-edicion .acciones-form { display: flex; align-items: center; gap: 16px; }
+
+/* --- Responsive --- */
+@media (max-width: 640px) {
+    .page-acuerdo .fila { grid-template-columns: 1fr; }
+    .page-acuerdo .card { padding: 24px 20px; }
+    .page-acuerdo .navbar { padding: 14px 20px; }
+    .page-acuerdo input,
+    .page-acuerdo select,
+    .page-acuerdo button,
+    .page-acuerdo .btn-volver {
+        min-height: 44px;
+    }
+    .page-acuerdo input,
+    .page-acuerdo select,
+    .page-acuerdo textarea {
+        font-size: 16px;
+    }
+}
+
+/* Tablas -> tarjetas apiladas en celular */
+@media (max-width: 720px) {
+    .page-acuerdo table, .page-acuerdo tbody { display: block; width: 100%; }
+    .page-acuerdo table tr:first-child { display: none; }
+    .page-acuerdo table tr { display: block; background: #FAF8F6; border: 1px solid #EFE8E2;
+        border-radius: 14px; padding: 10px 14px; margin-bottom: 12px; }
+    .page-acuerdo table td { display: flex; justify-content: space-between; align-items: center; gap: 14px;
+        text-align: right; border: none; padding: 6px 0; word-break: break-word; white-space: normal; }
+    .page-acuerdo table td[data-label]::before { content: attr(data-label); flex-shrink: 0; text-align: left;
+        font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #706464; }
+    .page-acuerdo table td:not([data-label]) { display: block; text-align: center; }
+    .page-acuerdo table td.celda-titulo { text-align: left; padding-bottom: 8px; margin-bottom: 4px; border-bottom: 1px dashed #EFE8E2; }
+    .page-acuerdo table td.actions { flex-wrap: wrap; justify-content: flex-start; gap: 8px;
+        border-top: 1px dashed #EFE8E2; margin-top: 6px; padding-top: 10px; }
+    .page-acuerdo table td.actions::before { display: none; }
+    .page-acuerdo table td.actions:not(:has(a, button)) { display: none; }
+    .page-acuerdo .actions a,
+    .page-acuerdo .actions .btn-link { display: inline-flex; align-items: center; justify-content: center; min-height: 40px;
+        padding: 0 14px; margin: 0; border: 1px solid #EFE8E2; border-radius: 10px; background: #fff; }
+    .page-acuerdo .desc { white-space: normal; max-width: none; }
+    .page-acuerdo table td.celda-titulo .nombre { font-size: 1rem; }
+    .page-acuerdo .actions form { display: inline-flex; }
+    .page-acuerdo .panel-edicion .acciones-form { flex-wrap: wrap; }
+}
+
+
+/* Precio del servicio */
+.page-acuerdo .precio { font-weight: 700; color: var(--rose-deep); white-space: nowrap; }
+
+
+/* =====================================================================
+   3. ESPECÍFICO DE ACUERDOS
+   ===================================================================== */
+
+/* --- Ficha del evento --- */
+.page-acuerdo .evento-ficha {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px 22px;
+    background: #FAF8F6; border: 1px solid var(--border-soft); border-radius: 14px;
+    padding: 16px 20px; margin-bottom: 22px;
+}
+.page-acuerdo .evento-ficha .dato-label {
+    display: block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.5px;
+    text-transform: uppercase; color: var(--text-secondary); margin-bottom: 3px;
+}
+.page-acuerdo .evento-ficha .dato-valor { font-size: 0.9rem; font-weight: 600; word-break: break-word; }
+
+.page-acuerdo .aviso {
+    padding: 12px 16px; border-radius: 10px; margin-bottom: 18px; font-size: 0.85rem;
+    background: #FDF3E3; color: #8C6A29; border: 1px solid #F0DDB8;
+}
+.page-acuerdo .aviso a { color: inherit; font-weight: 700; }
+
+/* --- Estados de acuerdo --- */
+.page-acuerdo .estado-PENDIENTE { background: #FDF3E3; color: #8C6A29; }
+.page-acuerdo .estado-ACEPTADO  { background: #F4F8F4; color: #2F6B4F; }
+.page-acuerdo .estado-CANCELADO { background: #F0F0F0; color: #706464; }
+
+/* --- Texto de condiciones --- */
+.page-acuerdo textarea.condiciones { min-height: 320px; line-height: 1.5; font-size: 0.88rem; }
+.page-acuerdo .ayuda-borrador { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px; }
+.page-acuerdo .acuerdo-texto {
+    white-space: pre-line; font-size: 0.88rem; line-height: 1.6; background: #FAF8F6;
+    border: 1px solid var(--border-soft); border-radius: 12px; padding: 16px 18px; margin: 10px 0 4px;
+    word-break: break-word;
+}
+.page-acuerdo .acuerdo-card .acuerdo-texto { background: var(--white); }
+
+/* --- Una tarjeta por acuerdo --- */
+.page-acuerdo h2.seccion { font-family: 'Playfair Display', Georgia, serif; font-size: 1.2rem; margin: 26px 0 14px; }
+.page-acuerdo .acuerdo-card { border: 1px solid var(--border-soft); border-radius: 16px; padding: 18px 20px; margin-bottom: 16px; background: var(--white); }
+.page-acuerdo .acuerdo-card.acuerdo-pendiente { border-color: var(--gold); border-left-width: 5px; background: #FFFDF8; }
+.page-acuerdo .acuerdo-card.acuerdo-aceptado { border-color: #BFD8C8; border-left-width: 5px; }
+.page-acuerdo .acuerdo-card.acuerdo-inactivo { opacity: 0.75; }
+.page-acuerdo .acuerdo-cabecera { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+.page-acuerdo .acuerdo-titulo { font-weight: 700; font-size: 1rem; }
+.page-acuerdo .acuerdo-fecha { font-size: 0.78rem; color: var(--text-secondary); font-weight: 400; margin-left: 8px; }
+.page-acuerdo .acuerdo-meta { font-size: 0.78rem; color: var(--text-secondary); margin-top: 8px; }
+.page-acuerdo .acuerdo-acciones { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border-soft); }
+.page-acuerdo .acuerdo-acciones form { display: inline; }
+.page-acuerdo .btn-aceptar, .page-acuerdo .btn-rechazar, .page-acuerdo .btn-secundario {
+    padding: 10px 18px; border-radius: 10px; font-family: inherit; font-size: 0.8rem; font-weight: 700; cursor: pointer;
+    text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+}
+.page-acuerdo .btn-aceptar { background: #2F6B4F; color: var(--white); border: 1px solid #2F6B4F; }
+.page-acuerdo .btn-rechazar { background: var(--white); color: #923838; border: 1px solid #E5BEBE; }
+.page-acuerdo .btn-secundario { background: var(--white); color: var(--rose-dark); border: 1px solid var(--rose-light); }
+.page-acuerdo .nota-acciones { font-size: 0.76rem; color: var(--text-secondary); width: 100%; }
+.page-acuerdo .num { text-align: right; white-space: nowrap; }
+.page-acuerdo .precio { font-weight: 700; color: var(--rose-deep); white-space: nowrap; }
+
+@media (max-width: 720px) {
+    .page-acuerdo .acuerdo-card { padding: 16px 14px; }
+    .page-acuerdo textarea.condiciones { min-height: 280px; }
+    .page-acuerdo .acuerdo-acciones .btn-aceptar, .page-acuerdo .acuerdo-acciones .btn-rechazar,
+    .page-acuerdo .acuerdo-acciones .btn-secundario { min-height: 44px; flex: 1; }
+    .page-acuerdo .acuerdo-acciones form { flex: 1; display: flex; }
+    .page-acuerdo .num { text-align: right; }
+}

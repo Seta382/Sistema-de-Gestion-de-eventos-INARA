@@ -1,0 +1,301 @@
+/* =====================================================================
+   cotizacion.css — Estilos del módulo COTIZACIONES (INARA)
+
+   Clase que va en el <body> de los JSP:
+     cotizacion/evento.jsp    ->  <body class="page-cotizacion">
+     cotizacion/listado.jsp   ->  <body class="page-cotizacion">
+     cliente/cotizaciones.jsp ->  <body class="page-cotizacion">
+
+   Link en el <head>:
+     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/cotizacion.css">
+   ===================================================================== */
+
+
+/* =====================================================================
+   1. BASE COMÚN (variables, reset, tipografía)
+   ===================================================================== */
+:root {
+    --bg-primary: #F8F4F1;
+    --rose-dark: #A66A6A;
+    --rose-deep: #743E3E;
+    --rose-light: #D8A7A7;
+    --gold: #C6A15B;
+    --text-primary: #3D3333;
+    --text-secondary: #706464;
+    --white: #FFFFFF;
+    --border-soft: #EFE8E2;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body { font-family: 'Montserrat', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+
+
+/* =====================================================================
+   2. PÁGINA: Cotizaciones  ->  <body class="page-cotizacion">
+   ===================================================================== */
+
+/* --- Barra superior --- */
+.page-cotizacion .navbar {
+    background: var(--white); padding: 18px 40px; border-bottom: 1px solid var(--border-soft);
+    display: flex; justify-content: space-between; align-items: center;
+}
+.page-cotizacion .logo { font-size: 1.7rem; font-weight: 700; letter-spacing: 3px; color: var(--rose-dark); }
+.page-cotizacion .btn-volver {
+    text-decoration: none; color: var(--rose-dark); border: 1px solid var(--rose-light);
+    padding: 8px 16px; border-radius: 20px; font-size: 0.85rem;
+}
+
+/* --- Contenedor y tarjeta principal --- */
+.page-cotizacion .contenedor { max-width: 1100px; margin: 36px auto; padding: 0 20px; }
+.page-cotizacion .card {
+    background: var(--white); padding: 36px 40px; border-radius: 24px; border: 1px solid var(--border-soft);
+}
+.page-cotizacion h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.6rem; margin-bottom: 4px; }
+.page-cotizacion .subtitulo { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 22px; }
+
+/* --- Mensajes de éxito / error --- */
+.page-cotizacion .mensaje { padding: 12px 16px; border-radius: 10px; margin-bottom: 18px; font-size: 0.85rem; }
+.page-cotizacion .exito { background: #E8F5E9; color: #2E7D32; }
+.page-cotizacion .error { background: #FFEBEE; color: #C62828; }
+
+/* --- Buscador --- */
+.page-cotizacion .search-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.page-cotizacion .search-bar input[type="search"] {
+    flex: 1; min-width: 240px; padding: 12px 16px; border: 1.5px solid var(--border-soft);
+    border-radius: 12px; background: #FAF8F6; font-size: 0.9rem; font-family: inherit;
+    color: var(--text-primary); outline: none;
+}
+.page-cotizacion .search-bar input[type="search"]:focus {
+    border-color: var(--rose-dark); background: var(--white);
+    box-shadow: 0 0 0 3px rgba(216, 167, 167, 0.25);
+}
+.page-cotizacion .btn-primary {
+    padding: 12px 22px; border: none; border-radius: 12px; cursor: pointer;
+    background: linear-gradient(135deg, var(--gold), var(--rose-dark)); color: var(--white);
+    font-size: 0.82rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; font-family: inherit;
+}
+.page-cotizacion .clear { font-size: 0.82rem; color: var(--rose-dark); text-decoration: none; font-weight: 600; }
+.page-cotizacion .results-info { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px; }
+
+/* --- Formulario desplegable "Nuevo ..." --- */
+.page-cotizacion details.nuevo { margin-bottom: 18px; border: 1px solid var(--border-soft); border-radius: 14px; background: #FDFBFA; }
+.page-cotizacion details.nuevo > summary {
+    cursor: pointer; padding: 13px 18px; font-size: 0.88rem; font-weight: 700;
+    color: var(--rose-deep); list-style: none;
+}
+.page-cotizacion details.nuevo > summary::-webkit-details-marker { display: none; }
+.page-cotizacion details.nuevo[open] > summary { border-bottom: 1px solid var(--border-soft); }
+.page-cotizacion .form-nuevo { padding: 20px 18px 22px; }
+
+/* --- Campos de formulario --- */
+.page-cotizacion .campo { margin-bottom: 16px; }
+.page-cotizacion .campo label {
+    display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.78rem;
+    text-transform: uppercase; letter-spacing: 0.4px;
+}
+.page-cotizacion .campo input,
+.page-cotizacion .campo textarea,
+.page-cotizacion .campo select {
+    width: 100%; padding: 11px 12px; border: 1px solid var(--border-soft);
+    border-radius: 9px; font-size: 0.9rem; font-family: inherit; background: var(--white);
+}
+.page-cotizacion .campo textarea { min-height: 80px; resize: vertical; }
+.page-cotizacion .campo small { display: block; margin-top: 6px; font-size: 0.78rem; color: var(--text-secondary); }
+.page-cotizacion .campo small a { color: var(--rose-dark); font-weight: 600; }
+.page-cotizacion .fila { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* --- Filtros --- */
+.page-cotizacion .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.page-cotizacion .filters a {
+    padding: 7px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; text-decoration: none;
+    color: var(--text-secondary); background: #FAF8F6; border: 1px solid var(--border-soft);
+}
+.page-cotizacion .filters a.active { background: var(--rose-dark); color: var(--white); border-color: var(--rose-dark); }
+
+/* --- Tabla --- */
+.page-cotizacion .tabla-wrap { overflow-x: auto; }
+.page-cotizacion table { width: 100%; border-collapse: collapse; }
+.page-cotizacion th,
+.page-cotizacion td {
+    text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border-soft);
+    font-size: 0.86rem; vertical-align: middle;
+}
+.page-cotizacion th { text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.5px; color: var(--text-secondary); }
+.page-cotizacion .nombre { display: block; font-weight: 600; }
+.page-cotizacion .desc {
+    display: block; font-size: 0.78rem; color: var(--text-secondary); max-width: 320px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.page-cotizacion .fila-inactiva td { opacity: 0.6; }
+.page-cotizacion .empty-msg { text-align: center; padding: 30px; color: var(--text-secondary); }
+
+/* --- Badges de estado --- */
+.page-cotizacion .badge { padding: 4px 11px; border-radius: 14px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+.page-cotizacion .badge-activo   { background: #F4F8F4; color: #2F6B4F; }
+.page-cotizacion .badge-inactivo { background: #F0F0F0; color: #706464; }
+
+/* --- Acciones de cada fila --- */
+.page-cotizacion .actions form { display: inline; }
+.page-cotizacion .actions a.btn-editar {
+    color: var(--rose-dark); font-size: 0.8rem; font-weight: 600; text-decoration: none; margin-right: 12px;
+}
+.page-cotizacion .btn-link {
+    background: none; border: none; cursor: pointer; font-family: inherit;
+    font-size: 0.8rem; font-weight: 600; padding: 0;
+}
+.page-cotizacion .btn-baja     { color: #923838; }
+.page-cotizacion .btn-reactivar { color: #2F6B4F; }
+
+/* --- Panel de edición --- */
+.page-cotizacion .panel-edicion {
+    border: 1px solid var(--gold); border-left-width: 5px; border-radius: 14px;
+    background: #FFFDF8; padding: 20px 22px 22px; margin-bottom: 22px;
+}
+.page-cotizacion .panel-edicion h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.15rem; margin-bottom: 14px; }
+.page-cotizacion .panel-edicion .acciones-form { display: flex; align-items: center; gap: 16px; }
+
+/* --- Responsive --- */
+@media (max-width: 640px) {
+    .page-cotizacion .fila { grid-template-columns: 1fr; }
+    .page-cotizacion .card { padding: 24px 20px; }
+    .page-cotizacion .navbar { padding: 14px 20px; }
+    .page-cotizacion input,
+    .page-cotizacion select,
+    .page-cotizacion button,
+    .page-cotizacion .btn-volver {
+        min-height: 44px;
+    }
+    .page-cotizacion input,
+    .page-cotizacion select,
+    .page-cotizacion textarea {
+        font-size: 16px;
+    }
+}
+
+/* Tablas -> tarjetas apiladas en celular */
+@media (max-width: 720px) {
+    .page-cotizacion table, .page-cotizacion tbody { display: block; width: 100%; }
+    .page-cotizacion table tr:first-child { display: none; }
+    .page-cotizacion table tr { display: block; background: #FAF8F6; border: 1px solid #EFE8E2;
+        border-radius: 14px; padding: 10px 14px; margin-bottom: 12px; }
+    .page-cotizacion table td { display: flex; justify-content: space-between; align-items: center; gap: 14px;
+        text-align: right; border: none; padding: 6px 0; word-break: break-word; white-space: normal; }
+    .page-cotizacion table td[data-label]::before { content: attr(data-label); flex-shrink: 0; text-align: left;
+        font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #706464; }
+    .page-cotizacion table td:not([data-label]) { display: block; text-align: center; }
+    .page-cotizacion table td.celda-titulo { text-align: left; padding-bottom: 8px; margin-bottom: 4px; border-bottom: 1px dashed #EFE8E2; }
+    .page-cotizacion table td.actions { flex-wrap: wrap; justify-content: flex-start; gap: 8px;
+        border-top: 1px dashed #EFE8E2; margin-top: 6px; padding-top: 10px; }
+    .page-cotizacion table td.actions::before { display: none; }
+    .page-cotizacion table td.actions:not(:has(a, button)) { display: none; }
+    .page-cotizacion .actions a,
+    .page-cotizacion .actions .btn-link { display: inline-flex; align-items: center; justify-content: center; min-height: 40px;
+        padding: 0 14px; margin: 0; border: 1px solid #EFE8E2; border-radius: 10px; background: #fff; }
+    .page-cotizacion .desc { white-space: normal; max-width: none; }
+    .page-cotizacion table td.celda-titulo .nombre { font-size: 1rem; }
+    .page-cotizacion .actions form { display: inline-flex; }
+    .page-cotizacion .panel-edicion .acciones-form { flex-wrap: wrap; }
+}
+
+
+/* Precio del servicio */
+.page-cotizacion .precio { font-weight: 700; color: var(--rose-deep); white-space: nowrap; }
+
+
+/* =====================================================================
+   3. ESPECÍFICO DE COTIZACIONES
+   ===================================================================== */
+
+/* --- Ficha del evento --- */
+.page-cotizacion .evento-ficha {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px 22px;
+    background: #FAF8F6; border: 1px solid var(--border-soft); border-radius: 14px;
+    padding: 16px 20px; margin-bottom: 22px;
+}
+.page-cotizacion .evento-ficha .dato-label {
+    display: block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.5px;
+    text-transform: uppercase; color: var(--text-secondary); margin-bottom: 3px;
+}
+.page-cotizacion .evento-ficha .dato-valor { font-size: 0.9rem; font-weight: 600; word-break: break-word; }
+
+.page-cotizacion .aviso {
+    padding: 12px 16px; border-radius: 10px; margin-bottom: 18px; font-size: 0.85rem;
+    background: #FDF3E3; color: #8C6A29; border: 1px solid #F0DDB8;
+}
+
+/* --- Estados de cotización --- */
+.page-cotizacion .estado-PENDIENTE  { background: #FDF3E3; color: #8C6A29; }
+.page-cotizacion .estado-ACEPTADA   { background: #F4F8F4; color: #2F6B4F; }
+.page-cotizacion .estado-RECHAZADA  { background: #FDF3F3; color: #923838; }
+.page-cotizacion .estado-MODIFICADA { background: #F0F0F0; color: #706464; }
+
+/* --- Selector de servicios del formulario --- */
+.page-cotizacion .servicios-lista { border: 1px solid var(--border-soft); border-radius: 12px; background: var(--white); margin-bottom: 16px; }
+.page-cotizacion .srv-fila {
+    display: grid; grid-template-columns: minmax(0, 1fr) 110px 90px 110px; gap: 14px; align-items: center;
+    padding: 12px 14px; border-bottom: 1px solid var(--border-soft);
+}
+.page-cotizacion .srv-fila:last-child { border-bottom: none; }
+.page-cotizacion .srv-fila.srv-cabecera {
+    padding: 9px 14px; background: #FAF8F6; border-radius: 12px 12px 0 0;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-secondary);
+}
+.page-cotizacion .srv-fila.incluido { background: #FFFDF8; }
+.page-cotizacion .srv-nombre { font-weight: 600; font-size: 0.88rem; }
+.page-cotizacion .srv-desc { display: block; font-size: 0.76rem; color: var(--text-secondary); font-weight: 400; margin-top: 2px; }
+.page-cotizacion .srv-precio, .page-cotizacion .srv-subtotal { font-size: 0.86rem; white-space: nowrap; text-align: right; }
+.page-cotizacion .srv-subtotal { font-weight: 700; color: var(--rose-deep); }
+.page-cotizacion .srv-fila input[type="number"] { text-align: center; padding: 9px 6px; }
+.page-cotizacion .srv-etiqueta { display: none; }
+
+/* --- Resumen de totales --- */
+.page-cotizacion .resumen {
+    margin-left: auto; max-width: 340px; background: #FAF8F6; border: 1px solid var(--border-soft);
+    border-radius: 14px; padding: 14px 18px; margin-bottom: 18px;
+}
+.page-cotizacion .resumen .linea { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 5px 0; font-size: 0.88rem; }
+.page-cotizacion .resumen .linea input { width: 120px; text-align: right; padding: 8px 10px; }
+.page-cotizacion .resumen .linea.total {
+    border-top: 1px dashed var(--border-soft); margin-top: 6px; padding-top: 10px;
+    font-weight: 700; font-size: 1.05rem; color: var(--rose-deep);
+}
+
+/* --- Historial: una tarjeta por cotización --- */
+.page-cotizacion h2.seccion { font-family: 'Playfair Display', Georgia, serif; font-size: 1.2rem; margin: 26px 0 14px; }
+.page-cotizacion .cot-card { border: 1px solid var(--border-soft); border-radius: 16px; padding: 18px 20px; margin-bottom: 16px; background: var(--white); }
+.page-cotizacion .cot-card.cot-pendiente { border-color: var(--gold); border-left-width: 5px; background: #FFFDF8; }
+.page-cotizacion .cot-card.cot-inactiva { opacity: 0.75; }
+.page-cotizacion .cot-cabecera { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.page-cotizacion .cot-titulo { font-weight: 700; font-size: 1rem; }
+.page-cotizacion .cot-fecha { font-size: 0.78rem; color: var(--text-secondary); font-weight: 400; margin-left: 8px; }
+.page-cotizacion .cot-totales { margin-left: auto; max-width: 300px; margin-top: 8px; }
+.page-cotizacion .cot-totales .linea { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; font-size: 0.86rem; }
+.page-cotizacion .cot-totales .linea.total { border-top: 1px dashed var(--border-soft); margin-top: 4px; padding-top: 8px; font-weight: 700; color: var(--rose-deep); font-size: 1rem; }
+.page-cotizacion .cot-obs { font-size: 0.82rem; color: var(--text-secondary); margin-top: 10px; white-space: pre-line; }
+.page-cotizacion .cot-acciones { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border-soft); }
+.page-cotizacion .cot-acciones form { display: inline; }
+.page-cotizacion .btn-aceptar, .page-cotizacion .btn-rechazar {
+    padding: 10px 18px; border-radius: 10px; font-family: inherit; font-size: 0.8rem; font-weight: 700; cursor: pointer;
+}
+.page-cotizacion .btn-aceptar { background: #2F6B4F; color: var(--white); border: 1px solid #2F6B4F; }
+.page-cotizacion .btn-rechazar { background: var(--white); color: #923838; border: 1px solid #E5BEBE; }
+.page-cotizacion .nota-acciones { font-size: 0.76rem; color: var(--text-secondary); width: 100%; }
+.page-cotizacion table.lineas { margin-top: 4px; }
+.page-cotizacion .num { text-align: right; white-space: nowrap; }
+.page-cotizacion .evento-link { color: var(--rose-dark); font-weight: 600; text-decoration: none; }
+
+@media (max-width: 720px) {
+    .page-cotizacion .srv-fila.srv-cabecera { display: none; }
+    .page-cotizacion .srv-fila { grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+    .page-cotizacion .srv-info { grid-column: 1 / -1; }
+    .page-cotizacion .srv-precio { text-align: left; }
+    .page-cotizacion .srv-etiqueta { display: block; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-secondary); }
+    .page-cotizacion .srv-subtotal { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; }
+    .page-cotizacion .resumen, .page-cotizacion .cot-totales { max-width: none; }
+    .page-cotizacion .resumen .linea input { width: 130px; }
+    .page-cotizacion .cot-card { padding: 16px 14px; }
+    .page-cotizacion .cot-acciones .btn-aceptar, .page-cotizacion .cot-acciones .btn-rechazar { min-height: 44px; flex: 1; }
+    .page-cotizacion .cot-acciones form { flex: 1; display: flex; }
+    .page-cotizacion .num { text-align: right; }
+}

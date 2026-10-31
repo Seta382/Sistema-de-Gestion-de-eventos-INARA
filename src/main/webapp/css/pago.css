@@ -1,0 +1,269 @@
+/* =====================================================================
+   pago.css — Estilos del módulo PAGOS (INARA)
+
+   Clase que va en el <body> de los JSP:
+     pago/evento.jsp     ->  <body class="page-pago">
+     pago/listado.jsp     ->  <body class="page-pago">
+
+   Link en el <head>:
+     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/pago.css">
+   ===================================================================== */
+
+
+/* =====================================================================
+   1. BASE COMÚN (variables, reset, tipografía)
+   ===================================================================== */
+:root {
+    --bg-primary: #F8F4F1;
+    --rose-dark: #A66A6A;
+    --rose-deep: #743E3E;
+    --rose-light: #D8A7A7;
+    --gold: #C6A15B;
+    --text-primary: #3D3333;
+    --text-secondary: #706464;
+    --white: #FFFFFF;
+    --border-soft: #EFE8E2;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body { font-family: 'Montserrat', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+
+
+/* =====================================================================
+   2. PÁGINA: Acuerdos  ->  <body class="page-pago">
+   ===================================================================== */
+
+/* --- Barra superior --- */
+.page-pago .navbar {
+    background: var(--white); padding: 18px 40px; border-bottom: 1px solid var(--border-soft);
+    display: flex; justify-content: space-between; align-items: center;
+}
+.page-pago .logo { font-size: 1.7rem; font-weight: 700; letter-spacing: 3px; color: var(--rose-dark); }
+.page-pago .btn-volver {
+    text-decoration: none; color: var(--rose-dark); border: 1px solid var(--rose-light);
+    padding: 8px 16px; border-radius: 20px; font-size: 0.85rem;
+}
+
+/* --- Contenedor y tarjeta principal --- */
+.page-pago .contenedor { max-width: 1100px; margin: 36px auto; padding: 0 20px; }
+.page-pago .card {
+    background: var(--white); padding: 36px 40px; border-radius: 24px; border: 1px solid var(--border-soft);
+}
+.page-pago h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.6rem; margin-bottom: 4px; }
+.page-pago .subtitulo { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 22px; }
+
+/* --- Mensajes de éxito / error --- */
+.page-pago .mensaje { padding: 12px 16px; border-radius: 10px; margin-bottom: 18px; font-size: 0.85rem; }
+.page-pago .exito { background: #E8F5E9; color: #2E7D32; }
+.page-pago .error { background: #FFEBEE; color: #C62828; }
+
+/* --- Buscador --- */
+.page-pago .search-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.page-pago .search-bar input[type="search"] {
+    flex: 1; min-width: 240px; padding: 12px 16px; border: 1.5px solid var(--border-soft);
+    border-radius: 12px; background: #FAF8F6; font-size: 0.9rem; font-family: inherit;
+    color: var(--text-primary); outline: none;
+}
+.page-pago .search-bar input[type="search"]:focus {
+    border-color: var(--rose-dark); background: var(--white);
+    box-shadow: 0 0 0 3px rgba(216, 167, 167, 0.25);
+}
+.page-pago .btn-primary {
+    padding: 12px 22px; border: none; border-radius: 12px; cursor: pointer;
+    background: linear-gradient(135deg, var(--gold), var(--rose-dark)); color: var(--white);
+    font-size: 0.82rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; font-family: inherit;
+}
+.page-pago .clear { font-size: 0.82rem; color: var(--rose-dark); text-decoration: none; font-weight: 600; }
+.page-pago .results-info { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px; }
+
+/* --- Formulario desplegable "Nuevo ..." --- */
+.page-pago details.nuevo { margin-bottom: 18px; border: 1px solid var(--border-soft); border-radius: 14px; background: #FDFBFA; }
+.page-pago details.nuevo > summary {
+    cursor: pointer; padding: 13px 18px; font-size: 0.88rem; font-weight: 700;
+    color: var(--rose-deep); list-style: none;
+}
+.page-pago details.nuevo > summary::-webkit-details-marker { display: none; }
+.page-pago details.nuevo[open] > summary { border-bottom: 1px solid var(--border-soft); }
+.page-pago .form-nuevo { padding: 20px 18px 22px; }
+
+/* --- Campos de formulario --- */
+.page-pago .campo { margin-bottom: 16px; }
+.page-pago .campo label {
+    display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.78rem;
+    text-transform: uppercase; letter-spacing: 0.4px;
+}
+.page-pago .campo input,
+.page-pago .campo textarea,
+.page-pago .campo select {
+    width: 100%; padding: 11px 12px; border: 1px solid var(--border-soft);
+    border-radius: 9px; font-size: 0.9rem; font-family: inherit; background: var(--white);
+}
+.page-pago .campo textarea { min-height: 80px; resize: vertical; }
+.page-pago .campo small { display: block; margin-top: 6px; font-size: 0.78rem; color: var(--text-secondary); }
+.page-pago .campo small a { color: var(--rose-dark); font-weight: 600; }
+.page-pago .fila { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* --- Filtros --- */
+.page-pago .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.page-pago .filters a {
+    padding: 7px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; text-decoration: none;
+    color: var(--text-secondary); background: #FAF8F6; border: 1px solid var(--border-soft);
+}
+.page-pago .filters a.active { background: var(--rose-dark); color: var(--white); border-color: var(--rose-dark); }
+
+/* --- Tabla --- */
+.page-pago .tabla-wrap { overflow-x: auto; }
+.page-pago table { width: 100%; border-collapse: collapse; }
+.page-pago th,
+.page-pago td {
+    text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border-soft);
+    font-size: 0.86rem; vertical-align: middle;
+}
+.page-pago th { text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.5px; color: var(--text-secondary); }
+.page-pago .nombre { display: block; font-weight: 600; }
+.page-pago .desc {
+    display: block; font-size: 0.78rem; color: var(--text-secondary); max-width: 320px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.page-pago .fila-inactiva td { opacity: 0.6; }
+.page-pago .empty-msg { text-align: center; padding: 30px; color: var(--text-secondary); }
+
+/* --- Badges de estado --- */
+.page-pago .badge { padding: 4px 11px; border-radius: 14px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+.page-pago .badge-activo   { background: #F4F8F4; color: #2F6B4F; }
+.page-pago .badge-inactivo { background: #F0F0F0; color: #706464; }
+
+/* --- Acciones de cada fila --- */
+.page-pago .actions form { display: inline; }
+.page-pago .actions a.btn-editar {
+    color: var(--rose-dark); font-size: 0.8rem; font-weight: 600; text-decoration: none; margin-right: 12px;
+}
+.page-pago .btn-link {
+    background: none; border: none; cursor: pointer; font-family: inherit;
+    font-size: 0.8rem; font-weight: 600; padding: 0;
+}
+.page-pago .btn-baja     { color: #923838; }
+.page-pago .btn-reactivar { color: #2F6B4F; }
+
+/* --- Panel de edición --- */
+.page-pago .panel-edicion {
+    border: 1px solid var(--gold); border-left-width: 5px; border-radius: 14px;
+    background: #FFFDF8; padding: 20px 22px 22px; margin-bottom: 22px;
+}
+.page-pago .panel-edicion h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.15rem; margin-bottom: 14px; }
+.page-pago .panel-edicion .acciones-form { display: flex; align-items: center; gap: 16px; }
+
+/* --- Responsive --- */
+@media (max-width: 640px) {
+    .page-pago .fila { grid-template-columns: 1fr; }
+    .page-pago .card { padding: 24px 20px; }
+    .page-pago .navbar { padding: 14px 20px; }
+    .page-pago input,
+    .page-pago select,
+    .page-pago button,
+    .page-pago .btn-volver {
+        min-height: 44px;
+    }
+    .page-pago input,
+    .page-pago select,
+    .page-pago textarea {
+        font-size: 16px;
+    }
+}
+
+/* Tablas -> tarjetas apiladas en celular */
+@media (max-width: 720px) {
+    .page-pago table, .page-pago tbody { display: block; width: 100%; }
+    .page-pago table tr:first-child { display: none; }
+    .page-pago table tr { display: block; background: #FAF8F6; border: 1px solid #EFE8E2;
+        border-radius: 14px; padding: 10px 14px; margin-bottom: 12px; }
+    .page-pago table td { display: flex; justify-content: space-between; align-items: center; gap: 14px;
+        text-align: right; border: none; padding: 6px 0; word-break: break-word; white-space: normal; }
+    .page-pago table td[data-label]::before { content: attr(data-label); flex-shrink: 0; text-align: left;
+        font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #706464; }
+    .page-pago table td:not([data-label]) { display: block; text-align: center; }
+    .page-pago table td.celda-titulo { text-align: left; padding-bottom: 8px; margin-bottom: 4px; border-bottom: 1px dashed #EFE8E2; }
+    .page-pago table td.actions { flex-wrap: wrap; justify-content: flex-start; gap: 8px;
+        border-top: 1px dashed #EFE8E2; margin-top: 6px; padding-top: 10px; }
+    .page-pago table td.actions::before { display: none; }
+    .page-pago table td.actions:not(:has(a, button)) { display: none; }
+    .page-pago .actions a,
+    .page-pago .actions .btn-link { display: inline-flex; align-items: center; justify-content: center; min-height: 40px;
+        padding: 0 14px; margin: 0; border: 1px solid #EFE8E2; border-radius: 10px; background: #fff; }
+    .page-pago .desc { white-space: normal; max-width: none; }
+    .page-pago table td.celda-titulo .nombre { font-size: 1rem; }
+    .page-pago .actions form { display: inline-flex; }
+    .page-pago .panel-edicion .acciones-form { flex-wrap: wrap; }
+}
+
+
+/* Precio del servicio */
+.page-pago .precio { font-weight: 700; color: var(--rose-deep); white-space: nowrap; }
+
+
+
+/* =====================================================================
+   3. ESPECÍFICO DE PAGOS
+   ===================================================================== */
+
+/* --- Ficha del evento --- */
+.page-pago .evento-ficha {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px 22px;
+    background: #FAF8F6; border: 1px solid var(--border-soft); border-radius: 14px;
+    padding: 16px 20px; margin-bottom: 22px;
+}
+.page-pago .evento-ficha .dato-label {
+    display: block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.5px;
+    text-transform: uppercase; color: var(--text-secondary); margin-bottom: 3px;
+}
+.page-pago .evento-ficha .dato-valor { font-size: 0.9rem; font-weight: 600; word-break: break-word; }
+
+.page-pago .aviso {
+    padding: 12px 16px; border-radius: 10px; margin-bottom: 18px; font-size: 0.85rem;
+    background: #FDF3E3; color: #8C6A29; border: 1px solid #F0DDB8;
+}
+.page-pago .aviso a { color: inherit; font-weight: 700; }
+
+/* --- Estados de pago --- */
+.page-pago .estado-PENDIENTE  { background: #FDF3E3; color: #8C6A29; }
+.page-pago .estado-COMPLETADO { background: #F4F8F4; color: #2F6B4F; }
+.page-pago .estado-RECHAZADO  { background: #F0F0F0; color: #706464; }
+
+/* --- Resumen económico --- */
+.page-pago .resumen-pagos {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 14px;
+}
+.page-pago .resumen-pagos .dato {
+    background: #FAF8F6; border: 1px solid var(--border-soft); border-radius: 14px; padding: 14px 16px;
+}
+.page-pago .resumen-pagos .dato-label {
+    display: block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.5px;
+    text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px;
+}
+.page-pago .resumen-pagos .dato-monto { font-size: 1.2rem; font-weight: 700; color: var(--rose-deep); }
+.page-pago .resumen-pagos .dato.saldo { border-color: var(--gold); background: #FFFDF8; }
+.page-pago .resumen-pagos .dato.al-dia .dato-monto { color: #2F6B4F; }
+
+.page-pago .barra { height: 10px; border-radius: 6px; background: var(--border-soft); overflow: hidden; margin-bottom: 6px; }
+.page-pago .barra > span { display: block; height: 100%; background: linear-gradient(90deg, var(--gold), var(--rose-dark)); }
+.page-pago .barra-txt { font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 22px; }
+
+/* --- Pagos --- */
+.page-pago h2.seccion { font-family: 'Playfair Display', Georgia, serif; font-size: 1.2rem; margin: 26px 0 14px; }
+.page-pago .num { text-align: right; white-space: nowrap; }
+.page-pago .comprobante { color: var(--rose-dark); font-weight: 600; font-size: 0.8rem; text-decoration: none; }
+.page-pago .btn-aceptar, .page-pago .btn-rechazar {
+    padding: 8px 14px; border-radius: 10px; font-family: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+}
+.page-pago .btn-aceptar { background: #2F6B4F; color: var(--white); border: 1px solid #2F6B4F; }
+.page-pago .btn-rechazar { background: var(--white); color: #923838; border: 1px solid #E5BEBE; }
+.page-pago .actions form { margin-right: 6px; }
+
+@media (max-width: 720px) {
+    .page-pago .num { text-align: right; }
+    .page-pago .actions .btn-aceptar, .page-pago .actions .btn-rechazar { min-height: 44px; }
+    .page-pago .actions form { flex: 1; display: flex; margin-right: 0; }
+    .page-pago .actions form button { width: 100%; }
+}

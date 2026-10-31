@@ -1,0 +1,247 @@
+/* =====================================================================
+   seguimiento.css — Estilos del módulo SEGUIMIENTO (INARA)
+
+   Clase que va en el <body> de los JSP:
+     seguimiento/evento.jsp     ->  <body class="page-seguimiento">
+
+   Link en el <head>:
+     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/seguimiento.css">
+   ===================================================================== */
+
+
+/* =====================================================================
+   1. BASE COMÚN (variables, reset, tipografía)
+   ===================================================================== */
+:root {
+    --bg-primary: #F8F4F1;
+    --rose-dark: #A66A6A;
+    --rose-deep: #743E3E;
+    --rose-light: #D8A7A7;
+    --gold: #C6A15B;
+    --text-primary: #3D3333;
+    --text-secondary: #706464;
+    --white: #FFFFFF;
+    --border-soft: #EFE8E2;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body { font-family: 'Montserrat', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+
+
+/* =====================================================================
+   2. PÁGINA: Acuerdos  ->  <body class="page-seguimiento">
+   ===================================================================== */
+
+/* --- Barra superior --- */
+.page-seguimiento .navbar {
+    background: var(--white); padding: 18px 40px; border-bottom: 1px solid var(--border-soft);
+    display: flex; justify-content: space-between; align-items: center;
+}
+.page-seguimiento .logo { font-size: 1.7rem; font-weight: 700; letter-spacing: 3px; color: var(--rose-dark); }
+.page-seguimiento .btn-volver {
+    text-decoration: none; color: var(--rose-dark); border: 1px solid var(--rose-light);
+    padding: 8px 16px; border-radius: 20px; font-size: 0.85rem;
+}
+
+/* --- Contenedor y tarjeta principal --- */
+.page-seguimiento .contenedor { max-width: 1100px; margin: 36px auto; padding: 0 20px; }
+.page-seguimiento .card {
+    background: var(--white); padding: 36px 40px; border-radius: 24px; border: 1px solid var(--border-soft);
+}
+.page-seguimiento h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.6rem; margin-bottom: 4px; }
+.page-seguimiento .subtitulo { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 22px; }
+
+/* --- Mensajes de éxito / error --- */
+.page-seguimiento .mensaje { padding: 12px 16px; border-radius: 10px; margin-bottom: 18px; font-size: 0.85rem; }
+.page-seguimiento .exito { background: #E8F5E9; color: #2E7D32; }
+.page-seguimiento .error { background: #FFEBEE; color: #C62828; }
+
+/* --- Buscador --- */
+.page-seguimiento .search-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.page-seguimiento .search-bar input[type="search"] {
+    flex: 1; min-width: 240px; padding: 12px 16px; border: 1.5px solid var(--border-soft);
+    border-radius: 12px; background: #FAF8F6; font-size: 0.9rem; font-family: inherit;
+    color: var(--text-primary); outline: none;
+}
+.page-seguimiento .search-bar input[type="search"]:focus {
+    border-color: var(--rose-dark); background: var(--white);
+    box-shadow: 0 0 0 3px rgba(216, 167, 167, 0.25);
+}
+.page-seguimiento .btn-primary {
+    padding: 12px 22px; border: none; border-radius: 12px; cursor: pointer;
+    background: linear-gradient(135deg, var(--gold), var(--rose-dark)); color: var(--white);
+    font-size: 0.82rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; font-family: inherit;
+}
+.page-seguimiento .clear { font-size: 0.82rem; color: var(--rose-dark); text-decoration: none; font-weight: 600; }
+.page-seguimiento .results-info { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px; }
+
+/* --- Formulario desplegable "Nuevo ..." --- */
+.page-seguimiento details.nuevo { margin-bottom: 18px; border: 1px solid var(--border-soft); border-radius: 14px; background: #FDFBFA; }
+.page-seguimiento details.nuevo > summary {
+    cursor: pointer; padding: 13px 18px; font-size: 0.88rem; font-weight: 700;
+    color: var(--rose-deep); list-style: none;
+}
+.page-seguimiento details.nuevo > summary::-webkit-details-marker { display: none; }
+.page-seguimiento details.nuevo[open] > summary { border-bottom: 1px solid var(--border-soft); }
+.page-seguimiento .form-nuevo { padding: 20px 18px 22px; }
+
+/* --- Campos de formulario --- */
+.page-seguimiento .campo { margin-bottom: 16px; }
+.page-seguimiento .campo label {
+    display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.78rem;
+    text-transform: uppercase; letter-spacing: 0.4px;
+}
+.page-seguimiento .campo input,
+.page-seguimiento .campo textarea,
+.page-seguimiento .campo select {
+    width: 100%; padding: 11px 12px; border: 1px solid var(--border-soft);
+    border-radius: 9px; font-size: 0.9rem; font-family: inherit; background: var(--white);
+}
+.page-seguimiento .campo textarea { min-height: 80px; resize: vertical; }
+.page-seguimiento .campo small { display: block; margin-top: 6px; font-size: 0.78rem; color: var(--text-secondary); }
+.page-seguimiento .campo small a { color: var(--rose-dark); font-weight: 600; }
+.page-seguimiento .fila { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* --- Filtros --- */
+.page-seguimiento .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.page-seguimiento .filters a {
+    padding: 7px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; text-decoration: none;
+    color: var(--text-secondary); background: #FAF8F6; border: 1px solid var(--border-soft);
+}
+.page-seguimiento .filters a.active { background: var(--rose-dark); color: var(--white); border-color: var(--rose-dark); }
+
+/* --- Tabla --- */
+.page-seguimiento .tabla-wrap { overflow-x: auto; }
+.page-seguimiento table { width: 100%; border-collapse: collapse; }
+.page-seguimiento th,
+.page-seguimiento td {
+    text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border-soft);
+    font-size: 0.86rem; vertical-align: middle;
+}
+.page-seguimiento th { text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.5px; color: var(--text-secondary); }
+.page-seguimiento .nombre { display: block; font-weight: 600; }
+.page-seguimiento .desc {
+    display: block; font-size: 0.78rem; color: var(--text-secondary); max-width: 320px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.page-seguimiento .fila-inactiva td { opacity: 0.6; }
+.page-seguimiento .empty-msg { text-align: center; padding: 30px; color: var(--text-secondary); }
+
+/* --- Badges de estado --- */
+.page-seguimiento .badge { padding: 4px 11px; border-radius: 14px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+.page-seguimiento .badge-activo   { background: #F4F8F4; color: #2F6B4F; }
+.page-seguimiento .badge-inactivo { background: #F0F0F0; color: #706464; }
+
+/* --- Acciones de cada fila --- */
+.page-seguimiento .actions form { display: inline; }
+.page-seguimiento .actions a.btn-editar {
+    color: var(--rose-dark); font-size: 0.8rem; font-weight: 600; text-decoration: none; margin-right: 12px;
+}
+.page-seguimiento .btn-link {
+    background: none; border: none; cursor: pointer; font-family: inherit;
+    font-size: 0.8rem; font-weight: 600; padding: 0;
+}
+.page-seguimiento .btn-baja     { color: #923838; }
+.page-seguimiento .btn-reactivar { color: #2F6B4F; }
+
+/* --- Panel de edición --- */
+.page-seguimiento .panel-edicion {
+    border: 1px solid var(--gold); border-left-width: 5px; border-radius: 14px;
+    background: #FFFDF8; padding: 20px 22px 22px; margin-bottom: 22px;
+}
+.page-seguimiento .panel-edicion h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.15rem; margin-bottom: 14px; }
+.page-seguimiento .panel-edicion .acciones-form { display: flex; align-items: center; gap: 16px; }
+
+/* --- Responsive --- */
+@media (max-width: 640px) {
+    .page-seguimiento .fila { grid-template-columns: 1fr; }
+    .page-seguimiento .card { padding: 24px 20px; }
+    .page-seguimiento .navbar { padding: 14px 20px; }
+    .page-seguimiento input,
+    .page-seguimiento select,
+    .page-seguimiento button,
+    .page-seguimiento .btn-volver {
+        min-height: 44px;
+    }
+    .page-seguimiento input,
+    .page-seguimiento select,
+    .page-seguimiento textarea {
+        font-size: 16px;
+    }
+}
+
+/* Tablas -> tarjetas apiladas en celular */
+@media (max-width: 720px) {
+    .page-seguimiento table, .page-seguimiento tbody { display: block; width: 100%; }
+    .page-seguimiento table tr:first-child { display: none; }
+    .page-seguimiento table tr { display: block; background: #FAF8F6; border: 1px solid #EFE8E2;
+        border-radius: 14px; padding: 10px 14px; margin-bottom: 12px; }
+    .page-seguimiento table td { display: flex; justify-content: space-between; align-items: center; gap: 14px;
+        text-align: right; border: none; padding: 6px 0; word-break: break-word; white-space: normal; }
+    .page-seguimiento table td[data-label]::before { content: attr(data-label); flex-shrink: 0; text-align: left;
+        font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #706464; }
+    .page-seguimiento table td:not([data-label]) { display: block; text-align: center; }
+    .page-seguimiento table td.celda-titulo { text-align: left; padding-bottom: 8px; margin-bottom: 4px; border-bottom: 1px dashed #EFE8E2; }
+    .page-seguimiento table td.actions { flex-wrap: wrap; justify-content: flex-start; gap: 8px;
+        border-top: 1px dashed #EFE8E2; margin-top: 6px; padding-top: 10px; }
+    .page-seguimiento table td.actions::before { display: none; }
+    .page-seguimiento table td.actions:not(:has(a, button)) { display: none; }
+    .page-seguimiento .actions a,
+    .page-seguimiento .actions .btn-link { display: inline-flex; align-items: center; justify-content: center; min-height: 40px;
+        padding: 0 14px; margin: 0; border: 1px solid #EFE8E2; border-radius: 10px; background: #fff; }
+    .page-seguimiento .desc { white-space: normal; max-width: none; }
+    .page-seguimiento table td.celda-titulo .nombre { font-size: 1rem; }
+    .page-seguimiento .actions form { display: inline-flex; }
+    .page-seguimiento .panel-edicion .acciones-form { flex-wrap: wrap; }
+}
+
+
+/* Precio del servicio */
+.page-seguimiento .precio { font-weight: 700; color: var(--rose-deep); white-space: nowrap; }
+
+
+
+/* =====================================================================
+   3. ESPECÍFICO DE SEGUIMIENTO
+   ===================================================================== */
+
+.page-seguimiento .evento-ficha {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px 22px;
+    background: #FAF8F6; border: 1px solid var(--border-soft); border-radius: 14px;
+    padding: 16px 20px; margin-bottom: 22px;
+}
+.page-seguimiento .evento-ficha .dato-label {
+    display: block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.5px;
+    text-transform: uppercase; color: var(--text-secondary); margin-bottom: 3px;
+}
+.page-seguimiento .evento-ficha .dato-valor { font-size: 0.9rem; font-weight: 600; word-break: break-word; }
+
+.page-seguimiento .aviso {
+    padding: 12px 16px; border-radius: 10px; margin-bottom: 18px; font-size: 0.85rem;
+    background: #FDF3E3; color: #8C6A29; border: 1px solid #F0DDB8;
+}
+
+.page-seguimiento .campo textarea.detalle { min-height: 110px; }
+.page-seguimiento h2.seccion { font-family: 'Playfair Display', Georgia, serif; font-size: 1.2rem; margin: 26px 0 14px; }
+
+/* --- Línea de tiempo --- */
+.page-seguimiento .linea { position: relative; margin-left: 8px; padding-left: 26px; border-left: 2px solid var(--border-soft); }
+.page-seguimiento .avance { position: relative; padding-bottom: 22px; }
+.page-seguimiento .avance:last-child { padding-bottom: 0; }
+.page-seguimiento .avance::before {
+    content: ""; position: absolute; left: -34px; top: 4px; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--gold); border: 3px solid var(--white); box-shadow: 0 0 0 2px var(--gold);
+}
+.page-seguimiento .avance-titulo { font-weight: 700; font-size: 0.98rem; }
+.page-seguimiento .avance-fecha { font-size: 0.76rem; color: var(--text-secondary); margin: 2px 0 6px; }
+.page-seguimiento .avance-detalle { font-size: 0.86rem; line-height: 1.55; white-space: pre-line; word-break: break-word; }
+.page-seguimiento .avance-acciones { display: flex; gap: 14px; align-items: center; margin-top: 8px; }
+.page-seguimiento .avance-acciones form { display: inline; }
+.page-seguimiento .avance-acciones a { color: var(--rose-dark); font-size: 0.8rem; font-weight: 600; text-decoration: none; }
+
+@media (max-width: 720px) {
+    .page-seguimiento .linea { padding-left: 20px; }
+    .page-seguimiento .avance::before { left: -28px; }
+    .page-seguimiento .avance-acciones a, .page-seguimiento .avance-acciones .btn-link { min-height: 40px; display: inline-flex; align-items: center; }
+}

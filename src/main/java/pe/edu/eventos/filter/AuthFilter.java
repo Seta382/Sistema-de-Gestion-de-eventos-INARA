@@ -18,7 +18,7 @@ import java.io.IOException;
 /**
  * Filtro de seguridad para proteger rutas privadas y validar sesiones activas.
  */
-@WebFilter(filterName = "AuthFilter", urlPatterns = {"/cliente/*", "/empleado/*", "/compras/*", "/articulos/*", "/proveedor/*"})
+@WebFilter(filterName = "AuthFilter", urlPatterns = {"/cliente/*", "/empleado/*", "/compras/*", "/articulos/*", "/proveedor/*", "/servicio/*", "/cotizacion/*", "/acuerdo/*", "/pago/*", "/seguimiento/*"})
 public class AuthFilter implements Filter {
 
     @Override
@@ -50,7 +50,7 @@ public class AuthFilter implements Filter {
         String uri = httpRequest.getRequestURI();
 
         // Control de acceso basado en rol: /empleado/* restringido para roles administrativos
-        if (uri.contains("/empleado/") || uri.contains("/compras/") || uri.contains("/articulos/") || uri.contains("/proveedor/")) {
+        if (uri.contains("/empleado/") || uri.contains("/compras/") || uri.contains("/articulos/") || uri.contains("/proveedor/") || uri.contains("/servicio/") || uri.contains("/cotizacion/") || uri.contains("/acuerdo/") || uri.contains("/pago/") || uri.contains("/seguimiento/")) {
             String rol = usuario.getRol() != null ? usuario.getRol().toUpperCase() : "";
             if (!Constantes.ROL_ADMIN.equals(rol) && !Constantes.ROL_EMPLEADO.equals(rol)) {
                 // Cliente intentando entrar a zona administrativa -> redirigir a su portal

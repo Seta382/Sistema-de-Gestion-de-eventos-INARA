@@ -1462,3 +1462,6 @@ h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.6rem; color: 
 .evd-steps li.current::before { background: #A66A6A; }
 .evd-dot { position: relative; z-index: 1; }
 
+/* Enlace "Cotizar" de la tabla de eventos (page-eventos) */
+.page-eventos .btn-cotizar { color: var(--rose-dark); font-size: 0.8rem; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.page-eventos .btn-cotizar:hover { text-decoration: underline; }

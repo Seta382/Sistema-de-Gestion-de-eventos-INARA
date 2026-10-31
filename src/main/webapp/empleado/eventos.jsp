@@ -113,6 +113,7 @@
                     <th>Presupuesto</th>
                     <th>Coordinador</th>
                     <th>Estado</th>
+                    <th></th>
                 </tr>
                 <% for (Evento ev : eventos) {
                        boolean pasado = hoy != null && ev.getFechaEvento() != null && ev.getFechaEvento().isBefore(hoy);
@@ -136,11 +137,21 @@
                     <td class="nowrap" data-label="Presupuesto"><%= ev.getPresupuesto() != null ? nf.format(ev.getPresupuesto()) : "—" %></td>
                     <td data-label="Coordinador"><%= texto(ev.getNombreCoordinador(), "Sin asignar") %></td>
                     <td data-label="Estado"><span class="badge estado-<%= esc(ev.getEstado()) %>"><%= texto(ev.getEstado(), "—") %></span></td>
+                    <td class="actions">
+                        <a class="btn-cotizar" href="<%= ctx %>/cotizacion?idEvento=<%= ev.getIdEvento() %>"><%= "SOLICITADO".equals(ev.getEstado()) || "COTIZADO".equals(ev.getEstado()) ? "Cotizar" : "Cotizaciones" %></a>
+                        <% if ("COTIZADO".equals(ev.getEstado()) || "CONFIRMADO".equals(ev.getEstado())) { %>
+                        <a class="btn-cotizar" href="<%= ctx %>/acuerdo?idEvento=<%= ev.getIdEvento() %>">Acuerdo</a>
+                        <% } %>
+                        <% if ("CONFIRMADO".equals(ev.getEstado()) || "EN_PROCESO".equals(ev.getEstado()) || "FINALIZADO".equals(ev.getEstado())) { %>
+                        <a class="btn-cotizar" href="<%= ctx %>/pago?idEvento=<%= ev.getIdEvento() %>">Pagos</a>
+                        <a class="btn-cotizar" href="<%= ctx %>/seguimiento?idEvento=<%= ev.getIdEvento() %>">Seguimiento</a>
+                        <% } %>
+                    </td>
                 </tr>
                 <% } %>
                 <% if (eventos.isEmpty()) { %>
                 <tr>
-                    <td colspan="8" class="empty-msg">
+                    <td colspan="9" class="empty-msg">
                         <%= !busqueda.isEmpty()
                                 ? "No se encontraron eventos que coincidan con tu búsqueda."
                                 : "No hay eventos para mostrar con este filtro." %>

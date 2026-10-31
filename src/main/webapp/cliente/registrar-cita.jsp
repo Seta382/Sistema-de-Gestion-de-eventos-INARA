@@ -101,45 +101,45 @@
 </main>
 
 <script>
-(function () {
-    var form = document.getElementById('form-cita');
-    var fecha = document.getElementById('fecha');
-    var grupoLugar = document.getElementById('grupo-lugar');
-    var lugar = document.getElementById('lugar');
-    var boton = form.querySelector('button[type="submit"]');
+    (function () {
+        var form = document.getElementById('form-cita');
+        var fecha = document.getElementById('fecha');
+        var grupoLugar = document.getElementById('grupo-lugar');
+        var lugar = document.getElementById('lugar');
+        var boton = form.querySelector('button[type="submit"]');
 
-    // No permitir fechas pasadas
-    var hoy = new Date();
-    fecha.min = hoy.getFullYear() + '-' +
-                String(hoy.getMonth() + 1).padStart(2, '0') + '-' +
-                String(hoy.getDate()).padStart(2, '0');
+        // No permitir fechas pasadas
+        var hoy = new Date();
+        fecha.min = hoy.getFullYear() + '-' +
+            String(hoy.getMonth() + 1).padStart(2, '0') + '-' +
+            String(hoy.getDate()).padStart(2, '0');
 
-    // El campo "Lugar" solo aplica a citas presenciales.
-    // Se oculta (no se deshabilita) para que el formulario siga enviando "lugar" vacío, igual que antes.
-    function actualizarModalidad() {
-        var virtual = form.querySelector('input[name="modalidad"]:checked').value === 'VIRTUAL';
-        grupoLugar.hidden = virtual;
-        if (virtual) lugar.value = '';
-    }
-    form.querySelectorAll('input[name="modalidad"]').forEach(function (r) {
-        r.addEventListener('change', actualizarModalidad);
-    });
-    actualizarModalidad();
+        // El campo "Lugar" solo aplica a citas presenciales.
+        // Se oculta (no se deshabilita) para que el formulario siga enviando "lugar" vacío, igual que antes.
+        function actualizarModalidad() {
+            var virtual = form.querySelector('input[name="modalidad"]:checked').value === 'VIRTUAL';
+            grupoLugar.hidden = virtual;
+            if (virtual) lugar.value = '';
+        }
+        form.querySelectorAll('input[name="modalidad"]').forEach(function (r) {
+            r.addEventListener('change', actualizarModalidad);
+        });
+        actualizarModalidad();
 
-    // Evita el doble envío (que crearía la cita dos veces)
-    form.addEventListener('submit', function (e) {
-        if (form.dataset.enviado === '1') { e.preventDefault(); return; }
-        form.dataset.enviado = '1';
-        boton.disabled = true;
-        boton.textContent = 'Agendando...';
-    });
-    // Si el usuario vuelve atrás con el botón del navegador, se reactiva
-    window.addEventListener('pageshow', function () {
-        form.dataset.enviado = '';
-        boton.disabled = false;
-        boton.textContent = 'Agendar cita';
-    });
-})();
+        // Evita el doble envío (que crearía la cita dos veces)
+        form.addEventListener('submit', function (e) {
+            if (form.dataset.enviado === '1') { e.preventDefault(); return; }
+            form.dataset.enviado = '1';
+            boton.disabled = true;
+            boton.textContent = 'Agendando...';
+        });
+        // Si el usuario vuelve atrás con el botón del navegador, se reactiva
+        window.addEventListener('pageshow', function () {
+            form.dataset.enviado = '';
+            boton.disabled = false;
+            boton.textContent = 'Agendar cita';
+        });
+    })();
 </script>
 </body>
 </html>

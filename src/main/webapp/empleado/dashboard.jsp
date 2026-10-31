@@ -9,6 +9,10 @@
 <%@ page import="pe.edu.eventos.model.Cita" %>
 <%@ page import="pe.edu.eventos.service.EventoService" %>
 <%@ page import="pe.edu.eventos.service.CitaService" %>
+<%@ page import="pe.edu.eventos.service.ServicioService" %>
+<%@ page import="pe.edu.eventos.service.CotizacionService" %>
+<%@ page import="pe.edu.eventos.service.AcuerdoService" %>
+<%@ page import="pe.edu.eventos.service.PagoService" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.text.NumberFormat" %>
 <%@ page import="java.util.Locale" %>
@@ -111,6 +115,10 @@
     int totalEventos = conteoEventos.get("TODOS") != null ? conteoEventos.get("TODOS") : 0;
     List<Cita> listaCitas = eventoService.listarCitasDisponibles(); // FIX: nuevo
     int citasPendientes = new CitaService().contarPorEstado("PENDIENTE");
+    int serviciosActivos = new ServicioService().listarActivos().size();
+    int cotizacionesPendientes = new CotizacionService().contarPendientes();
+    int acuerdosPendientes = new AcuerdoService().contarPendientes();
+    int pagosPorConfirmar = new PagoService().contarPendientes();
     // Llega desde "Convertir en evento" en el panel de citas (?idCita=X)
     String idCitaPreseleccionada = request.getParameter("idCita");
     NumberFormat nf = NumberFormat.getCurrencyInstance(new Locale("es", "PE"));
@@ -273,6 +281,54 @@
                     <div class="kpi-value"><%= citasPendientes%> Pendientes</div>
                 </div>
                 <div class="kpi-icon">&#128197;</div>
+            </div>
+        </a>
+
+        <a href="<%= request.getContextPath()%>/servicio"
+           style="text-decoration: none; color: inherit; display: block;">
+
+            <div class="kpi-card gold">
+                <div>
+                    <div class="kpi-label">Servicios y Precios</div>
+                    <div class="kpi-value"><%= serviciosActivos%> Activos</div>
+                </div>
+                <div class="kpi-icon">&#128178;</div>
+            </div>
+
+        </a>
+        <a href="<%= request.getContextPath()%>/cotizacion"
+           style="text-decoration: none; color: inherit; display: block;">
+
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">Cotizaciones</div>
+                    <div class="kpi-value"><%= cotizacionesPendientes%> Pendientes</div>
+                </div>
+                <div class="kpi-icon">&#128203;</div>
+            </div>
+
+        </a>
+        <a href="<%= request.getContextPath()%>/acuerdo"
+           style="text-decoration: none; color: inherit; display: block;">
+
+            <div class="kpi-card gold">
+                <div>
+                    <div class="kpi-label">Acuerdos</div>
+                    <div class="kpi-value"><%= acuerdosPendientes%> Por aceptar</div>
+                </div>
+                <div class="kpi-icon">&#128221;</div>
+            </div>
+
+        </a>
+        <a href="<%= request.getContextPath()%>/pago"
+           style="text-decoration: none; color: inherit; display: block;">
+
+            <div class="kpi-card gold">
+                <div>
+                    <div class="kpi-label">Pagos</div>
+                    <div class="kpi-value"><%= pagosPorConfirmar%> Por confirmar</div>
+                </div>
+                <div class="kpi-icon">&#128176;</div>
             </div>
 
         </a>
@@ -1043,207 +1099,207 @@
 
 <!-- Ventana flotante de detalle del evento -->
 <script>
-(function () {
-    var dlg = document.getElementById('evento-dialog');
-    if (!dlg || typeof dlg.showModal !== 'function') return;
+    (function () {
+        var dlg = document.getElementById('evento-dialog');
+        if (!dlg || typeof dlg.showModal !== 'function') return;
 
-    function set(id, texto) { document.getElementById(id).textContent = texto; }
+        function set(id, texto) { document.getElementById(id).textContent = texto; }
 
-    var ETAPAS_TXT = ['Solicitado', 'Cotizado', 'Confirmado', 'En proceso', 'Finalizado'];
+        var ETAPAS_TXT = ['Solicitado', 'Cotizado', 'Confirmado', 'En proceso', 'Finalizado'];
 
-    function fechaCorta(iso) {
-        var p = (iso || '').split('-');
-        return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : iso;
-    }
+        function fechaCorta(iso) {
+            var p = (iso || '').split('-');
+            return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : iso;
+        }
 
-    function abrirDetalleEvento(card) {
-        var d = card.dataset;
-        set('evd-tipo', d.tipo);
-        set('evd-nombre', d.nombre);
-        set('evd-cliente', d.cliente);
-        set('evd-fecha', d.fecha);
-        set('evd-hora', d.hora + ' hrs');
-        set('evd-invitados', d.invitados + ' invitados');
-        set('evd-presupuesto', d.presupuesto);
-        set('evd-coordinador', d.coordinador);
-        set('evd-estado', d.etapa);
+        function abrirDetalleEvento(card) {
+            var d = card.dataset;
+            set('evd-tipo', d.tipo);
+            set('evd-nombre', d.nombre);
+            set('evd-cliente', d.cliente);
+            set('evd-fecha', d.fecha);
+            set('evd-hora', d.hora + ' hrs');
+            set('evd-invitados', d.invitados + ' invitados');
+            set('evd-presupuesto', d.presupuesto);
+            set('evd-coordinador', d.coordinador);
+            set('evd-estado', d.etapa);
 
-        // Avance por etapas
-        var idx = parseInt(d.idx, 10);
-        var pct = parseInt(d.pct, 10) || 0;
-        var lista = document.getElementById('evd-steps');
-        lista.querySelectorAll('li').forEach(function (li, i) {
-            li.classList.toggle('done', idx >= 0 && (i < idx || idx === 4));
-            li.classList.toggle('current', idx >= 0 && i === idx && idx < 4);
+            // Avance por etapas
+            var idx = parseInt(d.idx, 10);
+            var pct = parseInt(d.pct, 10) || 0;
+            var lista = document.getElementById('evd-steps');
+            lista.querySelectorAll('li').forEach(function (li, i) {
+                li.classList.toggle('done', idx >= 0 && (i < idx || idx === 4));
+                li.classList.toggle('current', idx >= 0 && i === idx && idx < 4);
+            });
+            lista.classList.toggle('cancelado', idx < 0);
+            document.getElementById('evd-progress-fill').style.width = pct + '%';
+            set('evd-progress-text', idx >= 0 ? 'Etapa ' + (idx + 1) + ' de 5 · ' + pct + '% completado' : d.etapa);
+
+            // Reporte rápido por WhatsApp
+            var llenos = idx >= 0 ? idx + 1 : 0;
+            var texto = [
+                '*INARA – Avance de tu evento*',
+                'Evento: ' + d.nombre,
+                'Fecha: ' + fechaCorta(d.fecha) + ' · ' + d.hora,
+                idx >= 0 ? 'Etapa: ' + d.etapa + ' (' + (idx + 1) + ' de 5)' : 'Estado: ' + d.etapa,
+                idx >= 0 ? '▓'.repeat(llenos) + '░'.repeat(5 - llenos) + ' ' + pct + '%' : '',
+                'Coordinador: ' + d.coordinador
+            ].filter(Boolean).join('\n');
+            var base = d.telefono ? 'https://wa.me/' + d.telefono : 'https://wa.me/';
+            document.getElementById('evd-wa').href = base + '?text=' + encodeURIComponent(texto);
+            document.getElementById('evd-wa-nota').hidden = !!d.telefono;
+
+            // Botón "Avanzar etapa": solo si el evento no está finalizado ni cancelado
+            var btnAv = document.getElementById('evd-avanzar');
+            var puedeAvanzar = idx >= 0 && idx < ETAPAS_TXT.length - 1;
+            btnAv.hidden = !puedeAvanzar;
+            btnAv.disabled = false;
+            btnAv.dataset.idEvento = d.id;
+            btnAv.dataset.destino = puedeAvanzar ? ETAPAS_TXT[idx + 1] : '';
+            btnAv.textContent = puedeAvanzar ? 'Avanzar a ' + ETAPAS_TXT[idx + 1] : '';
+
+            dlg.showModal();
+        }
+
+        document.querySelectorAll('.event-live-card[data-nombre]').forEach(function (card) {
+            card.addEventListener('click', function () { abrirDetalleEvento(card); });
+            card.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    abrirDetalleEvento(card);
+                }
+            });
         });
-        lista.classList.toggle('cancelado', idx < 0);
-        document.getElementById('evd-progress-fill').style.width = pct + '%';
-        set('evd-progress-text', idx >= 0 ? 'Etapa ' + (idx + 1) + ' de 5 · ' + pct + '% completado' : d.etapa);
 
-        // Reporte rápido por WhatsApp
-        var llenos = idx >= 0 ? idx + 1 : 0;
-        var texto = [
-            '*INARA – Avance de tu evento*',
-            'Evento: ' + d.nombre,
-            'Fecha: ' + fechaCorta(d.fecha) + ' · ' + d.hora,
-            idx >= 0 ? 'Etapa: ' + d.etapa + ' (' + (idx + 1) + ' de 5)' : 'Estado: ' + d.etapa,
-            idx >= 0 ? '▓'.repeat(llenos) + '░'.repeat(5 - llenos) + ' ' + pct + '%' : '',
-            'Coordinador: ' + d.coordinador
-        ].filter(Boolean).join('\n');
-        var base = d.telefono ? 'https://wa.me/' + d.telefono : 'https://wa.me/';
-        document.getElementById('evd-wa').href = base + '?text=' + encodeURIComponent(texto);
-        document.getElementById('evd-wa-nota').hidden = !!d.telefono;
-
-        // Botón "Avanzar etapa": solo si el evento no está finalizado ni cancelado
-        var btnAv = document.getElementById('evd-avanzar');
-        var puedeAvanzar = idx >= 0 && idx < ETAPAS_TXT.length - 1;
-        btnAv.hidden = !puedeAvanzar;
-        btnAv.disabled = false;
-        btnAv.dataset.idEvento = d.id;
-        btnAv.dataset.destino = puedeAvanzar ? ETAPAS_TXT[idx + 1] : '';
-        btnAv.textContent = puedeAvanzar ? 'Avanzar a ' + ETAPAS_TXT[idx + 1] : '';
-
-        dlg.showModal();
-    }
-
-    document.querySelectorAll('.event-live-card[data-nombre]').forEach(function (card) {
-        card.addEventListener('click', function () { abrirDetalleEvento(card); });
-        card.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                abrirDetalleEvento(card);
-            }
+        // Clic en el fondo oscuro cierra la ventana
+        dlg.addEventListener('click', function (e) {
+            if (e.target === dlg) dlg.close();
         });
-    });
 
-    // Clic en el fondo oscuro cierra la ventana
-    dlg.addEventListener('click', function (e) {
-        if (e.target === dlg) dlg.close();
-    });
+        // Avanzar el evento a la siguiente etapa (se guarda en la base de datos)
+        document.getElementById('evd-avanzar').addEventListener('click', function () {
+            var btn = this;
+            var destino = btn.dataset.destino;
+            if (!confirm('¿Pasar este evento a la etapa "' + destino + '"?')) return;
 
-    // Avanzar el evento a la siguiente etapa (se guarda en la base de datos)
-    document.getElementById('evd-avanzar').addEventListener('click', function () {
-        var btn = this;
-        var destino = btn.dataset.destino;
-        if (!confirm('¿Pasar este evento a la etapa "' + destino + '"?')) return;
+            var textoOriginal = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Guardando...';
 
-        var textoOriginal = btn.textContent;
-        btn.disabled = true;
-        btn.textContent = 'Guardando...';
+            var params = new URLSearchParams();
+            params.append('accion', 'avanzarEtapa');
+            params.append('idEvento', btn.dataset.idEvento);
 
-        var params = new URLSearchParams();
-        params.append('accion', 'avanzarEtapa');
-        params.append('idEvento', btn.dataset.idEvento);
-
-        fetch('<%= request.getContextPath()%>/evento', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'},
-            body: params.toString()
-        })
-            .then(function (res) { return res.json(); })
-            .then(function (data) {
-                if (data.success) {
-                    dlg.close();
-                    if (typeof showToast === 'function') showToast('Etapa actualizada a ' + destino);
-                    setTimeout(function () { window.location.reload(); }, 900);
-                } else {
-                    alert(data.mensaje || 'No se pudo cambiar la etapa.');
+            fetch('<%= request.getContextPath()%>/evento', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'},
+                body: params.toString()
+            })
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    if (data.success) {
+                        dlg.close();
+                        if (typeof showToast === 'function') showToast('Etapa actualizada a ' + destino);
+                        setTimeout(function () { window.location.reload(); }, 900);
+                    } else {
+                        alert(data.mensaje || 'No se pudo cambiar la etapa.');
+                        btn.disabled = false;
+                        btn.textContent = textoOriginal;
+                    }
+                })
+                .catch(function () {
+                    alert('Ocurrió un error de comunicación con el servidor.');
                     btn.disabled = false;
                     btn.textContent = textoOriginal;
-                }
-            })
-            .catch(function () {
-                alert('Ocurrió un error de comunicación con el servidor.');
-                btn.disabled = false;
-                btn.textContent = textoOriginal;
-            });
-    });
-})();
+                });
+        });
+    })();
 </script>
 
 <!-- Gráficos del dashboard (Chart.js) -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>
-(function () {
-    if (typeof Chart === 'undefined') return;
+    (function () {
+        if (typeof Chart === 'undefined') return;
 
-    var D = {
-        etapa: {claves: <%= jsonTexts(etapaClaves) %>, labels: <%= jsonTexts(etapaLabels) %>, valores: <%= jsonNums(etapaVals) %>},
-        mes:   {claves: <%= jsonTexts(mesesKeys) %>, valores: <%= jsonNums(mesesVals) %>},
-        tipo:  {labels: <%= jsonTexts(porTipo.keySet()) %>, valores: <%= jsonNums(porTipo.values()) %>},
-        stock: {labels: <%= jsonTexts(stockLabels) %>, valores: <%= jsonNums(stockVals) %>}
-    };
+        var D = {
+            etapa: {claves: <%= jsonTexts(etapaClaves) %>, labels: <%= jsonTexts(etapaLabels) %>, valores: <%= jsonNums(etapaVals) %>},
+            mes:   {claves: <%= jsonTexts(mesesKeys) %>, valores: <%= jsonNums(mesesVals) %>},
+            tipo:  {labels: <%= jsonTexts(porTipo.keySet()) %>, valores: <%= jsonNums(porTipo.values()) %>},
+            stock: {labels: <%= jsonTexts(stockLabels) %>, valores: <%= jsonNums(stockVals) %>}
+        };
 
-    var COLOR_ETAPA = {SOLICITADO: '#E7D5B3', COTIZADO: '#C6A15B', CONFIRMADO: '#A66A6A',
-                       EN_PROCESO: '#743E3E', FINALIZADO: '#2F6B4F', CANCELADO: '#B9B1AC'};
-    var PALETA = ['#A66A6A', '#C6A15B', '#743E3E', '#D8A7A7', '#E7D5B3', '#B88566', '#2F6B4F'];
-    var MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+        var COLOR_ETAPA = {SOLICITADO: '#E7D5B3', COTIZADO: '#C6A15B', CONFIRMADO: '#A66A6A',
+            EN_PROCESO: '#743E3E', FINALIZADO: '#2F6B4F', CANCELADO: '#B9B1AC'};
+        var PALETA = ['#A66A6A', '#C6A15B', '#743E3E', '#D8A7A7', '#E7D5B3', '#B88566', '#2F6B4F'];
+        var MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
-    Chart.defaults.font.family = "'Montserrat', sans-serif";
-    Chart.defaults.color = '#706464';
+        Chart.defaults.font.family = "'Montserrat', sans-serif";
+        Chart.defaults.color = '#706464';
 
-    function lienzo(id) { return document.getElementById(id); }
-    function formatoMes(clave) {
-        var p = clave.split('-');
-        return MESES[parseInt(p[1], 10) - 1] + ' ' + p[0];
-    }
-    var ejeEnteros = {beginAtZero: true, ticks: {precision: 0}, grid: {color: '#F0EAE5'}};
-    var sinCuadricula = {grid: {display: false}};
+        function lienzo(id) { return document.getElementById(id); }
+        function formatoMes(clave) {
+            var p = clave.split('-');
+            return MESES[parseInt(p[1], 10) - 1] + ' ' + p[0];
+        }
+        var ejeEnteros = {beginAtZero: true, ticks: {precision: 0}, grid: {color: '#F0EAE5'}};
+        var sinCuadricula = {grid: {display: false}};
 
-    if (lienzo('chart-etapas')) {
-        new Chart(lienzo('chart-etapas'), {
-            type: 'doughnut',
-            data: {
-                labels: D.etapa.labels,
-                datasets: [{
-                    data: D.etapa.valores,
-                    backgroundColor: D.etapa.claves.map(function (c) { return COLOR_ETAPA[c] || '#B9B1AC'; }),
-                    borderColor: '#FFFFFF', borderWidth: 3
-                }]
-            },
-            options: {maintainAspectRatio: false, cutout: '62%',
-                      plugins: {legend: {position: 'bottom', labels: {boxWidth: 12, padding: 14}}}}
-        });
-    }
+        if (lienzo('chart-etapas')) {
+            new Chart(lienzo('chart-etapas'), {
+                type: 'doughnut',
+                data: {
+                    labels: D.etapa.labels,
+                    datasets: [{
+                        data: D.etapa.valores,
+                        backgroundColor: D.etapa.claves.map(function (c) { return COLOR_ETAPA[c] || '#B9B1AC'; }),
+                        borderColor: '#FFFFFF', borderWidth: 3
+                    }]
+                },
+                options: {maintainAspectRatio: false, cutout: '62%',
+                    plugins: {legend: {position: 'bottom', labels: {boxWidth: 12, padding: 14}}}}
+            });
+        }
 
-    if (lienzo('chart-meses')) {
-        new Chart(lienzo('chart-meses'), {
-            type: 'bar',
-            data: {
-                labels: D.mes.claves.map(formatoMes),
-                datasets: [{label: 'Eventos', data: D.mes.valores, backgroundColor: '#A66A6A', borderRadius: 8, maxBarThickness: 38}]
-            },
-            options: {maintainAspectRatio: false, plugins: {legend: {display: false}},
-                      scales: {y: ejeEnteros, x: sinCuadricula}}
-        });
-    }
+        if (lienzo('chart-meses')) {
+            new Chart(lienzo('chart-meses'), {
+                type: 'bar',
+                data: {
+                    labels: D.mes.claves.map(formatoMes),
+                    datasets: [{label: 'Eventos', data: D.mes.valores, backgroundColor: '#A66A6A', borderRadius: 8, maxBarThickness: 38}]
+                },
+                options: {maintainAspectRatio: false, plugins: {legend: {display: false}},
+                    scales: {y: ejeEnteros, x: sinCuadricula}}
+            });
+        }
 
-    if (lienzo('chart-tipos')) {
-        new Chart(lienzo('chart-tipos'), {
-            type: 'bar',
-            data: {
-                labels: D.tipo.labels,
-                datasets: [{label: 'Eventos', data: D.tipo.valores,
-                            backgroundColor: D.tipo.labels.map(function (_, i) { return PALETA[i % PALETA.length]; }),
-                            borderRadius: 8, maxBarThickness: 30}]
-            },
-            options: {indexAxis: 'y', maintainAspectRatio: false, plugins: {legend: {display: false}},
-                      scales: {x: ejeEnteros, y: sinCuadricula}}
-        });
-    }
+        if (lienzo('chart-tipos')) {
+            new Chart(lienzo('chart-tipos'), {
+                type: 'bar',
+                data: {
+                    labels: D.tipo.labels,
+                    datasets: [{label: 'Eventos', data: D.tipo.valores,
+                        backgroundColor: D.tipo.labels.map(function (_, i) { return PALETA[i % PALETA.length]; }),
+                        borderRadius: 8, maxBarThickness: 30}]
+                },
+                options: {indexAxis: 'y', maintainAspectRatio: false, plugins: {legend: {display: false}},
+                    scales: {x: ejeEnteros, y: sinCuadricula}}
+            });
+        }
 
-    if (lienzo('chart-stock')) {
-        new Chart(lienzo('chart-stock'), {
-            type: 'bar',
-            data: {
-                labels: D.stock.labels,
-                datasets: [{label: 'Unidades en stock', data: D.stock.valores, backgroundColor: '#C6A15B', borderRadius: 8, maxBarThickness: 30}]
-            },
-            options: {indexAxis: 'y', maintainAspectRatio: false, plugins: {legend: {display: false}},
-                      scales: {x: ejeEnteros, y: sinCuadricula}}
-        });
-    }
-})();
+        if (lienzo('chart-stock')) {
+            new Chart(lienzo('chart-stock'), {
+                type: 'bar',
+                data: {
+                    labels: D.stock.labels,
+                    datasets: [{label: 'Unidades en stock', data: D.stock.valores, backgroundColor: '#C6A15B', borderRadius: 8, maxBarThickness: 30}]
+                },
+                options: {indexAxis: 'y', maintainAspectRatio: false, plugins: {legend: {display: false}},
+                    scales: {x: ejeEnteros, y: sinCuadricula}}
+            });
+        }
+    })();
 </script>
 </body>
 </html>

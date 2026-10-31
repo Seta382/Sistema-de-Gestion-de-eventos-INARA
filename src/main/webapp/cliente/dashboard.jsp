@@ -5,6 +5,8 @@
 <%@ page import="pe.edu.eventos.dao.impl.ClienteDAOImpl" %>
 <%@ page import="pe.edu.eventos.model.Cita" %>
 <%@ page import="pe.edu.eventos.service.CitaService" %>
+<%@ page import="pe.edu.eventos.facade.CotizacionFacade" %>
+<%@ page import="pe.edu.eventos.facade.AcuerdoFacade" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Collections" %>
 <%@ page import="java.text.SimpleDateFormat" %>
@@ -45,6 +47,9 @@
             ? new CitaService().listarPorCliente(idCliente)
             : Collections.emptyList();
 
+    // Cotizaciones que esperan su respuesta
+    int cotizacionesPorResponder = new CotizacionFacade().contarPendientesDelCliente(usuario.getId());
+    int acuerdosPorAceptar = new AcuerdoFacade().contarPendientesDelCliente(usuario.getId());
 
 %>
 <!DOCTYPE html>
@@ -176,10 +181,26 @@
 
                 <div class="stat-box">
                     <div>
-                        <div class="stat-label">Cotizaciones Disponibles</div>
-                        <div class="stat-main">Paquetes 2026</div>
+                        <div class="stat-label">Mis Cotizaciones</div>
+                        <div class="stat-main"><%= cotizacionesPorResponder > 0 ? cotizacionesPorResponder + " por responder" : "Al día" %></div>
                     </div>
-                    <span style="font-size: 0.82rem; color: var(--rose-dark); font-weight: 600;">Actualizado</span>
+                    <a href="${pageContext.request.contextPath}/mis-cotizaciones" class="stat-action-btn">Ver</a>
+                </div>
+
+                <div class="stat-box">
+                    <div>
+                        <div class="stat-label">Mis Acuerdos</div>
+                        <div class="stat-main"><%= acuerdosPorAceptar > 0 ? acuerdosPorAceptar + " por aceptar" : "Al día" %></div>
+                    </div>
+                    <a href="${pageContext.request.contextPath}/mis-acuerdos" class="stat-action-btn">Ver</a>
+                </div>
+
+                <div class="stat-box">
+                    <div>
+                        <div class="stat-label">Mi Evento</div>
+                        <div class="stat-main">Estado, pagos y avances</div>
+                    </div>
+                    <a href="${pageContext.request.contextPath}/mi-evento" class="stat-action-btn">Ver</a>
                 </div>
             </div>
         </section>

@@ -425,5 +425,8 @@
     <p>&copy; 2026 <strong>INARA</strong> — Gestión & Producción de Eventos Exclusivos. Todos los derechos reservados.</p>
 </footer>
 
+<!-- Asistente Virtual / Chatbot INARA -->
+<jsp:include page="/includes/chatbot.jsp" />
+
 </body>
 </html>

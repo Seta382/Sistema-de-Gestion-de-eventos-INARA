@@ -63,6 +63,9 @@
     </table>
 </div>
 
+<!-- Asistente Virtual / Chatbot INARA -->
+<jsp:include page="/includes/chatbot.jsp" />
+
 </body>
 </html>
 

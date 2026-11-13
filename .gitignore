@@ -1,8 +1,49 @@
-# IntelliJ IDEA
-.idea/
+### IntelliJ IDEA ###
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+.kotlin
 
-# Maven
-target/
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
 
-# Credenciales de Supabase
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+### INARA: secretos y archivos locales (no subir) ###
+# Contraseña de la base de datos: cada quien tiene la suya. Usar application.properties.example
 src/main/resources/application.properties
+# Maven (se genera al compilar)
+target/
+# IntelliJ / Tomcat local
+.idea/
+*.iml
+.smarttomcat/
+
+# Túnel de Cloudflare: el .exe se instala con "winget install Cloudflare.cloudflared"
+cloudflared.exe
+cloudflared.log
+*.crt
+*.pem
+*.log
+# Variables locales
+.env

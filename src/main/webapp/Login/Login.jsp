@@ -106,27 +106,14 @@
             <div class="link-footer">
                 ¿Aún no tienes cuenta? <a href="${pageContext.request.contextPath}/registro">Regístrate aquí</a>
             </div>
-
-            <div class="staff-access-pill">
-                <button type="button" class="btn-staff-shortcut" onclick="autoFillStaff()">
-                    <span>&#128188;</span> Acceso Staff Administrativo
-                </button>
-            </div>
         </form>
     </section>
 </main>
 
 <script src="${pageContext.request.contextPath}/js/login.js"></script>
-<script>
-    function autoFillStaff() {
-        const correo = document.getElementById('correo');
-        const pass = document.getElementById('password');
-        if (correo && pass) {
-            correo.value = 'admin@inara.pe';
-            pass.value = 'AdminInara2026!';
-            pass.focus();
-        }
-    }
-</script>
+
+<!-- Asistente Virtual / Chatbot INARA -->
+<jsp:include page="/includes/chatbot.jsp" />
+
 </body>
 </html>

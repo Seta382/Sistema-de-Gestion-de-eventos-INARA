@@ -39,22 +39,22 @@ public final class PasswordUtil {
     }
 
     /**
-     * Verifica si una contraseña coincide con la almacenada.
-     * Soporta tanto contraseñas con hash SHA-256 como en texto plano para compatibilidad con datos existentes.
+     * Verifica si una contraseña coincide con el hash SHA-256 guardado.
+     * Ya NO se aceptan contraseñas en texto plano: si en la base queda alguna sin hashear
+     * (por ejemplo un usuario de prueba antiguo), hay que convertirla con database/02_hashear_passwords.sql.
+     * Tampoco sirve escribir el hash guardado como si fuera la contraseña.
      * @param plainPassword contraseña en texto plano introducida por el usuario.
-     * @param storedPassword contraseña almacenada en la base de datos (hash o plano).
+     * @param storedPassword hash SHA-256 (hexadecimal) almacenado en la base de datos.
      * @return true si coincide, false en caso contrario.
      */
     public static boolean verificarPassword(String plainPassword, String storedPassword) {
         if (plainPassword == null || storedPassword == null) {
             return false;
         }
-        // Si coincide directamente en texto plano (ej. usuario de prueba inicial)
-        if (plainPassword.equals(storedPassword)) {
-            return true;
-        }
-        // Si coincide con el hash SHA-256
         String hashed = hashPassword(plainPassword);
-        return storedPassword.equalsIgnoreCase(hashed);
+        // Comparación en tiempo constante (no revela cuántos caracteres coinciden)
+        return MessageDigest.isEqual(
+                hashed.getBytes(StandardCharsets.UTF_8),
+                storedPassword.trim().toLowerCase().getBytes(StandardCharsets.UTF_8));
     }
 }

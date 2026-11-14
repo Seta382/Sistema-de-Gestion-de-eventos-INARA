@@ -5,6 +5,7 @@ import pe.edu.eventos.dao.impl.PagoDAOImpl;
 import pe.edu.eventos.dao.EventoDAO;
 import pe.edu.eventos.dao.impl.EventoDAOImpl;
 import pe.edu.eventos.model.Evento;
+import pe.edu.eventos.model.Notificacion;
 import pe.edu.eventos.model.Pago;
 import pe.edu.eventos.model.ResumenPago;
 
@@ -27,6 +28,13 @@ public class PagoService {
 
     private final PagoDAO pagoDAO;
     private final EventoDAO eventoDAO;
+
+    // Avisos a cliente y personal; si falla el aviso, la operación sigue igual
+    private NotificacionService notificaciones = new NotificacionService();
+
+    public void setNotificaciones(NotificacionService notificaciones) {
+        this.notificaciones = notificaciones;
+    }
 
     public PagoService() {
         this(new PagoDAOImpl(), new EventoDAOImpl());
@@ -80,9 +88,14 @@ public class PagoService {
         }
 
         Pago p = new Pago(idEvento, monto, m, est, comp);
-        return pagoDAO.registrar(p) != null
-                ? null
-                : "No se pudo registrar el pago. Revisa que no supere el saldo pendiente y vuelve a intentar.";
+        if (pagoDAO.registrar(p) == null) {
+            return "No se pudo registrar el pago. Revisa que no supere el saldo pendiente y vuelve a intentar.";
+        }
+        notificaciones.avisarCliente(idEvento, Notificacion.PAGO,
+                Pago.COMPLETADO.equals(est)
+                        ? "Registramos tu pago de S/ " + fmt(monto) + " para {evento}. ¡Gracias!"
+                        : "Recibimos tu pago de S/ " + fmt(monto) + " para {evento}. Lo estamos verificando.");
+        return null;
     }
 
     /** Verifica un pago PENDIENTE: pasa a COMPLETADO si no supera el total acordado. */
@@ -90,9 +103,12 @@ public class PagoService {
         Pago p = pagoDAO.buscarPorId(idPago);
         if (p == null) return "El pago indicado no existe.";
         if (!p.isPendiente()) return "Este pago ya no está pendiente (estado actual: " + p.getEstado() + ").";
-        return pagoDAO.confirmar(idPago)
-                ? null
-                : "No se pudo confirmar: el pago superaría el total acordado o cambió mientras lo revisabas.";
+        if (!pagoDAO.confirmar(idPago)) {
+            return "No se pudo confirmar: el pago superaría el total acordado o cambió mientras lo revisabas.";
+        }
+        notificaciones.avisarCliente(p.getIdEvento(), Notificacion.PAGO,
+                "Confirmamos tu pago de S/ " + fmt(p.getMonto()) + " para {evento}. ¡Gracias!");
+        return null;
     }
 
     /** Rechaza un pago PENDIENTE o anula uno COMPLETADO. */
@@ -100,9 +116,14 @@ public class PagoService {
         Pago p = pagoDAO.buscarPorId(idPago);
         if (p == null) return "El pago indicado no existe.";
         if (Pago.RECHAZADO.equals(p.getEstado())) return "Este pago ya está rechazado.";
-        return pagoDAO.cambiarEstado(idPago, p.getEstado(), Pago.RECHAZADO)
-                ? null
-                : "El pago cambió mientras lo revisabas. Recarga la página.";
+        String estabaCompletado = p.isCompletado() ? "anulado" : "rechazado";
+        if (!pagoDAO.cambiarEstado(idPago, p.getEstado(), Pago.RECHAZADO)) {
+            return "El pago cambió mientras lo revisabas. Recarga la página.";
+        }
+        notificaciones.avisarCliente(p.getIdEvento(), Notificacion.PAGO,
+                "Tu pago de S/ " + fmt(p.getMonto()) + " para {evento} fue " + estabaCompletado
+                        + ". Si tienes dudas, escríbenos y lo revisamos.");
+        return null;
     }
 
     /** @return null si el evento admite pagos; si no, el motivo */

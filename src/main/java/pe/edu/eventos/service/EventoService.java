@@ -20,6 +20,7 @@ import pe.edu.eventos.model.Cliente;
 import pe.edu.eventos.model.Empleado;
 import pe.edu.eventos.model.Evento;
 import pe.edu.eventos.model.EventoArticulo;
+import pe.edu.eventos.model.Notificacion;
 import pe.edu.eventos.model.Proveedor;
 import pe.edu.eventos.model.TipoEvento;
 
@@ -46,6 +47,11 @@ public class EventoService {
     private final ClienteDAO clienteDAO;
     private final TipoEventoDAO tipoEventoDAO;
     private final CitaDAO citaDAO; // FIX: nuevo
+    private NotificacionService notificaciones = new NotificacionService();
+
+    public void setNotificaciones(NotificacionService notificaciones) {
+        this.notificaciones = notificaciones;
+    }
 
     public EventoService() {
         this.eventoDAO = new EventoDAOImpl();
@@ -124,7 +130,24 @@ public class EventoService {
         if (!eventoDAO.cambiarEstado(idEvento, evento.getEstado(), siguiente)) {
             throw new IllegalArgumentException("No se pudo actualizar la etapa. Recarga la página e inténtalo de nuevo.");
         }
+        notificaciones.avisarCliente(idEvento, Notificacion.GENERAL, mensajeEtapa(siguiente));
         return siguiente;
+    }
+
+    /** Texto del aviso al cliente cuando su evento entra en una nueva etapa. */
+    static String mensajeEtapa(String etapa) {
+        switch (etapa) {
+            case "COTIZADO":
+                return "Tu evento {evento} pasó a la etapa Cotizado. Revisa tu cotización en el portal.";
+            case "CONFIRMADO":
+                return "¡Tu evento {evento} fue confirmado! Ya estamos preparando todo.";
+            case "EN_PROCESO":
+                return "Tu evento {evento} entró en preparación. Te iremos informando cada avance.";
+            case "FINALIZADO":
+                return "Tu evento {evento} finalizó. ¡Gracias por confiar en INARA!";
+            default:
+                return "Tu evento {evento} cambió de etapa a " + etapa + ".";
+        }
     }
 
     public List<Cita> listarCitasDisponibles() {

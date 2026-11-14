@@ -5,6 +5,7 @@ import pe.edu.eventos.dao.SeguimientoDAO;
 import pe.edu.eventos.dao.impl.EventoDAOImpl;
 import pe.edu.eventos.dao.impl.SeguimientoDAOImpl;
 import pe.edu.eventos.model.Evento;
+import pe.edu.eventos.model.Notificacion;
 import pe.edu.eventos.model.Seguimiento;
 
 import java.util.List;
@@ -20,6 +21,13 @@ public class SeguimientoService {
 
     private final SeguimientoDAO seguimientoDAO;
     private final EventoDAO eventoDAO;
+
+    // Avisos a cliente y personal; si falla el aviso, la operación sigue igual
+    private NotificacionService notificaciones = new NotificacionService();
+
+    public void setNotificaciones(NotificacionService notificaciones) {
+        this.notificaciones = notificaciones;
+    }
 
     public SeguimientoService() {
         this(new SeguimientoDAOImpl(), new EventoDAOImpl());
@@ -39,9 +47,12 @@ public class SeguimientoService {
         String error = validar(titulo, descripcion);
         if (error != null) return error;
 
-        return seguimientoDAO.registrar(new Seguimiento(idEvento, titulo.trim(), limpiar(descripcion))) != null
-                ? null
-                : "No se pudo registrar el avance. Intenta nuevamente.";
+        if (seguimientoDAO.registrar(new Seguimiento(idEvento, titulo.trim(), limpiar(descripcion))) == null) {
+            return "No se pudo registrar el avance. Intenta nuevamente.";
+        }
+        notificaciones.avisarCliente(idEvento, Notificacion.SEGUIMIENTO,
+                "Nuevo avance en {evento}: " + titulo.trim());
+        return null;
     }
 
     public String actualizar(int idSeguimiento, String titulo, String descripcion) {

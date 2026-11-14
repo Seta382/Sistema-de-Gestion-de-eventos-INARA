@@ -28,7 +28,10 @@
 
 <header class="navbar">
     <div class="logo">INARA</div>
-    <a href="${pageContext.request.contextPath}/cliente/dashboard.jsp" class="btn-volver">&larr; Volver a mi portal</a>
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <jsp:include page="/includes/campana.jsp" />
+        <a href="${pageContext.request.contextPath}/cliente/dashboard.jsp" class="btn-volver">&larr; Volver a mi portal</a>
+    </div>
 </header>
 
 <main class="contenedor">
@@ -82,9 +85,6 @@
 
     </div>
 </main>
-
-<!-- Asistente Virtual / Chatbot INARA -->
-<jsp:include page="/includes/chatbot.jsp" />
 
 </body>
 </html>

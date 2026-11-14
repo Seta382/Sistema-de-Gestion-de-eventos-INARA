@@ -109,6 +109,10 @@
 
         <h2 class="seccion">Avances registrados</h2>
 
+        <c:if test="${sinTelefono}">
+            <p class="nota-wsp">El cliente no tiene un teléfono válido registrado, por eso no aparece el botón de WhatsApp.</p>
+        </c:if>
+
         <c:if test="${empty avances}">
             <p class="empty-msg">Todavía no hay avances para este evento.</p>
         </c:if>
@@ -122,6 +126,9 @@
                         <div class="avance-detalle"><c:out value="${av.descripcion}"/></div>
                     </c:if>
                     <div class="avance-acciones">
+                        <c:if test="${not empty enlacesWa[av.idSeguimiento]}">
+                            <a class="btn-wsp" href="<c:out value='${enlacesWa[av.idSeguimiento]}'/>" target="_blank" rel="noopener noreferrer">&#128172; Enviar por WhatsApp</a>
+                        </c:if>
                         <a href="${pageContext.request.contextPath}/seguimiento?idEvento=${evento.idEvento}&amp;editar=${av.idSeguimiento}#panel-edicion">Editar</a>
                         <form action="${pageContext.request.contextPath}/seguimiento" method="post"
                               onsubmit="return confirm('¿Eliminar este avance? El cliente dejará de verlo.')">

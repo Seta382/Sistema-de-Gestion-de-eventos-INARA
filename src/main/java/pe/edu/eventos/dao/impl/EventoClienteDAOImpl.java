@@ -58,4 +58,23 @@ public class EventoClienteDAOImpl implements EventoClienteDAO {
         }
         return lista;
     }
+
+    @Override
+    public String telefonoDelCliente(int idEvento) {
+        String sql = "SELECT u.telefono FROM evento e " +
+                "JOIN cliente cl ON cl.id_cliente = e.id_cliente " +
+                "JOIN usuario u ON u.id = cl.id_usuario " +
+                "WHERE e.id_evento = ?";
+        try (Connection conn = ConexionDB.obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idEvento);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getString(1) : null;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error en EventoClienteDAOImpl.telefonoDelCliente: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

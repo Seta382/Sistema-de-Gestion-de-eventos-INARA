@@ -9,6 +9,7 @@ import pe.edu.eventos.dao.impl.ServicioDAOImpl;
 import pe.edu.eventos.model.Cotizacion;
 import pe.edu.eventos.model.DetalleCotizacion;
 import pe.edu.eventos.model.Evento;
+import pe.edu.eventos.model.Notificacion;
 import pe.edu.eventos.model.Servicio;
 
 import java.math.BigDecimal;
@@ -33,6 +34,13 @@ public class CotizacionService {
     private final CotizacionDAO cotizacionDAO;
     private final EventoDAO eventoDAO;
     private final ServicioDAO servicioDAO;
+
+    // Avisos a cliente y personal; si falla el aviso, la operación sigue igual
+    private NotificacionService notificaciones = new NotificacionService();
+
+    public void setNotificaciones(NotificacionService notificaciones) {
+        this.notificaciones = notificaciones;
+    }
 
     public CotizacionService() {
         this(new CotizacionDAOImpl(), new EventoDAOImpl(), new ServicioDAOImpl());
@@ -106,9 +114,13 @@ public class CotizacionService {
         c.setTotal(total);
         c.setObservaciones(obs == null || obs.isEmpty() ? null : obs);
 
-        return cotizacionDAO.registrar(c, detalles) != null
-                ? null
-                : "No se pudo registrar la cotización. Es posible que el evento ya tenga una cotización aceptada; recarga la página.";
+        if (cotizacionDAO.registrar(c, detalles) == null) {
+            return "No se pudo registrar la cotización. Es posible que el evento ya tenga una cotización aceptada; recarga la página.";
+        }
+        notificaciones.avisarCliente(idEvento, Notificacion.COTIZACION,
+                "Tienes una nueva cotización para {evento} por S/ " + total.toPlainString()
+                        + ". Revísala y respóndenos desde tu portal.");
+        return null;
     }
 
     /** El personal registra la respuesta del cliente (por ejemplo, si aceptó por teléfono o WhatsApp). */
@@ -133,9 +145,25 @@ public class CotizacionService {
             return "El evento está " + c.getEstadoEvento().toLowerCase() + "; ya no se puede responder esta cotización.";
         }
         String nuevo = aceptar ? Cotizacion.ACEPTADA : Cotizacion.RECHAZADA;
-        return cotizacionDAO.cambiarEstado(c.getIdCotizacion(), Cotizacion.PENDIENTE, nuevo)
-                ? null
-                : "La cotización cambió mientras la revisabas. Recarga la página.";
+        if (!cotizacionDAO.cambiarEstado(c.getIdCotizacion(), Cotizacion.PENDIENTE, nuevo)) {
+            return "La cotización cambió mientras la revisabas. Recarga la página.";
+        }
+        avisarRespuesta(c, aceptar, idClienteSolicitante != null);
+        return null;
+    }
+
+    /** Si respondió el cliente, avisa al personal; si el personal registró la respuesta, avisa al cliente. */
+    private void avisarRespuesta(Cotizacion c, boolean aceptada, boolean laDioElCliente) {
+        if (laDioElCliente) {
+            notificaciones.avisarPersonal(c.getIdEvento(), Notificacion.COTIZACION,
+                    "{cliente} " + (aceptada ? "aceptó" : "rechazó") + " la cotización #" + c.getIdCotizacion()
+                            + " de {evento}."
+                            + (aceptada ? " Siguiente paso: preparar el acuerdo." : " Puedes preparar una nueva cotización."));
+        } else {
+            notificaciones.avisarCliente(c.getIdEvento(), Notificacion.COTIZACION,
+                    "Registramos tu respuesta: la cotización #" + c.getIdCotizacion() + " de {evento} quedó "
+                            + (aceptada ? "aceptada" : "rechazada") + ".");
+        }
     }
 
     /**

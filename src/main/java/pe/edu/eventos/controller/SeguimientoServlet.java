@@ -6,16 +6,20 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import pe.edu.eventos.dao.EventoClienteDAO;
 import pe.edu.eventos.dao.EventoDAO;
+import pe.edu.eventos.dao.impl.EventoClienteDAOImpl;
 import pe.edu.eventos.dao.impl.EventoDAOImpl;
 import pe.edu.eventos.dto.UsuarioDTO;
 import pe.edu.eventos.model.Evento;
 import pe.edu.eventos.model.Seguimiento;
 import pe.edu.eventos.service.SeguimientoService;
 import pe.edu.eventos.util.Constantes;
+import pe.edu.eventos.util.WhatsAppUtil;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,6 +38,7 @@ public class SeguimientoServlet extends HttpServlet {
 
     private final SeguimientoService service = new SeguimientoService();
     private final EventoDAO eventoDAO = new EventoDAOImpl();
+    private final EventoClienteDAO eventoClienteDAO = new EventoClienteDAOImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -129,9 +134,24 @@ public class SeguimientoServlet extends HttpServlet {
         Evento evento = eventoDAO.buscarPorId(idEvento);
         if (evento == null) return false;
         request.setAttribute("evento", evento);
-        request.setAttribute("avances", service.listarPorEvento(idEvento));
+        List<Seguimiento> avances = service.listarPorEvento(idEvento);
+        request.setAttribute("avances", avances);
+        cargarEnlacesWhatsApp(request, evento, avances);
         request.setAttribute("motivoBloqueo", service.motivoNoAdmiteAvances(evento));
         return true;
+    }
+
+    /** Un enlace de WhatsApp por avance (idSeguimiento -> url) para avisar al cliente con un clic. */
+    private void cargarEnlacesWhatsApp(HttpServletRequest request, Evento evento, List<Seguimiento> avances) {
+        String telefono = avances.isEmpty() ? null : eventoClienteDAO.telefonoDelCliente(evento.getIdEvento());
+        Map<Integer, String> enlaces = new HashMap<>();
+        for (Seguimiento s : avances) {
+            String url = WhatsAppUtil.enlace(telefono, WhatsAppUtil.mensajeAvance(
+                    evento.getNombreCliente(), evento.getNombre(), s.getTitulo(), s.getDescripcion()));
+            if (url != null) enlaces.put(s.getIdSeguimiento(), url);
+        }
+        request.setAttribute("enlacesWa", enlaces);
+        request.setAttribute("sinTelefono", !avances.isEmpty() && enlaces.isEmpty());
     }
 
     private Integer leerId(String texto) {

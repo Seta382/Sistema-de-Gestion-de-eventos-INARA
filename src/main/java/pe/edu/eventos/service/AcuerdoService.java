@@ -10,6 +10,7 @@ import pe.edu.eventos.model.Acuerdo;
 import pe.edu.eventos.model.Cotizacion;
 import pe.edu.eventos.model.DetalleCotizacion;
 import pe.edu.eventos.model.Evento;
+import pe.edu.eventos.model.Notificacion;
 
 import java.util.List;
 import java.util.Locale;
@@ -27,6 +28,13 @@ public class AcuerdoService {
     private final AcuerdoDAO acuerdoDAO;
     private final CotizacionDAO cotizacionDAO;
     private final EventoDAO eventoDAO;
+
+    // Avisos a cliente y personal; si falla el aviso, la operación sigue igual
+    private NotificacionService notificaciones = new NotificacionService();
+
+    public void setNotificaciones(NotificacionService notificaciones) {
+        this.notificaciones = notificaciones;
+    }
 
     public AcuerdoService() {
         this(new AcuerdoDAOImpl(), new CotizacionDAOImpl(), new EventoDAOImpl());
@@ -51,9 +59,12 @@ public class AcuerdoService {
         String error = validarCondiciones(condiciones);
         if (error != null) return error;
 
-        return acuerdoDAO.registrar(new Acuerdo(idEvento, condiciones.trim())) != null
-                ? null
-                : "No se pudo registrar el acuerdo. Es posible que otra persona ya lo haya creado; recarga la página.";
+        if (acuerdoDAO.registrar(new Acuerdo(idEvento, condiciones.trim())) == null) {
+            return "No se pudo registrar el acuerdo. Es posible que otra persona ya lo haya creado; recarga la página.";
+        }
+        notificaciones.avisarCliente(idEvento, Notificacion.ACUERDO,
+                "El acuerdo de {evento} está listo. Léelo y acéptalo para confirmar tu evento.");
+        return null;
     }
 
     /** Edita las condiciones mientras el cliente no haya respondido. */
@@ -92,9 +103,17 @@ public class AcuerdoService {
         if (esEventoCerrado(a.getEstadoEvento())) {
             return "El evento está " + a.getEstadoEvento().toLowerCase() + "; ya no se puede aceptar este acuerdo.";
         }
-        return acuerdoDAO.aceptar(a.getIdAcuerdo())
-                ? null
-                : "El acuerdo cambió mientras lo revisabas. Recarga la página.";
+        if (!acuerdoDAO.aceptar(a.getIdAcuerdo())) {
+            return "El acuerdo cambió mientras lo revisabas. Recarga la página.";
+        }
+        if (idClienteSolicitante != null) {
+            notificaciones.avisarPersonal(a.getIdEvento(), Notificacion.ACUERDO,
+                    "{cliente} aceptó el acuerdo #" + a.getIdAcuerdo() + " de {evento}. El evento quedó confirmado.");
+        } else {
+            notificaciones.avisarCliente(a.getIdEvento(), Notificacion.ACUERDO,
+                    "Registramos la aceptación de tu acuerdo de {evento}. ¡Tu evento quedó confirmado!");
+        }
+        return null;
     }
 
     /** Cancela un acuerdo pendiente o aceptado (si estaba aceptado, el evento vuelve a COTIZADO). */
@@ -108,9 +127,15 @@ public class AcuerdoService {
             return "El evento ya está " + String.valueOf(a.getEstadoEvento()).toLowerCase()
                     + "; no se puede cancelar un acuerdo aceptado en esta etapa.";
         }
-        return acuerdoDAO.cancelar(idAcuerdo)
-                ? null
-                : "El acuerdo cambió mientras lo revisabas. Recarga la página.";
+        boolean estabaAceptado = a.isAceptado();
+        if (!acuerdoDAO.cancelar(idAcuerdo)) {
+            return "El acuerdo cambió mientras lo revisabas. Recarga la página.";
+        }
+        notificaciones.avisarCliente(a.getIdEvento(), Notificacion.ACUERDO,
+                "El acuerdo #" + a.getIdAcuerdo() + " de {evento} fue cancelado."
+                        + (estabaAceptado ? " Tu evento volvió a la etapa de cotización." : "")
+                        + " Nuestro equipo se pondrá en contacto contigo.");
+        return null;
     }
 
     /**

@@ -245,3 +245,16 @@ body { font-family: 'Montserrat', sans-serif; background: var(--bg-primary); col
     .page-seguimiento .avance::before { left: -28px; }
     .page-seguimiento .avance-acciones a, .page-seguimiento .avance-acciones .btn-link { min-height: 40px; display: inline-flex; align-items: center; }
 }
+
+/* --- Enviar avance por WhatsApp --- */
+.page-seguimiento .avance-acciones a.btn-wsp {
+    display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px;
+    background: #2F6B4F; color: #FFFFFF; font-size: 0.78rem; font-weight: 700; text-decoration: none;
+}
+.page-seguimiento .nota-wsp { font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 14px; }
+
+@media (max-width: 720px) {
+    .page-seguimiento .avance-acciones { flex-wrap: wrap; }
+    .page-seguimiento .avance-acciones a.btn-wsp { min-height: 44px; justify-content: center; flex: 1 1 100%; }
+}
+

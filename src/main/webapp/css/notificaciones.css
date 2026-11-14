@@ -1,0 +1,265 @@
+/* =====================================================================
+   notificaciones.css — Estilos del módulo NOTIFICACIONES (INARA)
+
+   Clase que va en el <body> de los JSP:
+     notificacion/listado.jsp     ->  <body class="page-notificacion">
+
+   Link en el <head>:
+     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/notificaciones.css">
+   ===================================================================== */
+
+
+/* =====================================================================
+   1. BASE COMÚN (variables, reset, tipografía)
+   ===================================================================== */
+:root {
+    --bg-primary: #F8F4F1;
+    --rose-dark: #A66A6A;
+    --rose-deep: #743E3E;
+    --rose-light: #D8A7A7;
+    --gold: #C6A15B;
+    --text-primary: #3D3333;
+    --text-secondary: #706464;
+    --white: #FFFFFF;
+    --border-soft: #EFE8E2;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body { font-family: 'Montserrat', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+
+
+/* =====================================================================
+   2. PÁGINA: Acuerdos  ->  <body class="page-notificacion">
+   ===================================================================== */
+
+/* --- Barra superior --- */
+.page-notificacion .navbar {
+    background: var(--white); padding: 18px 40px; border-bottom: 1px solid var(--border-soft);
+    display: flex; justify-content: space-between; align-items: center;
+}
+.page-notificacion .logo { font-size: 1.7rem; font-weight: 700; letter-spacing: 3px; color: var(--rose-dark); }
+.page-notificacion .btn-volver {
+    text-decoration: none; color: var(--rose-dark); border: 1px solid var(--rose-light);
+    padding: 8px 16px; border-radius: 20px; font-size: 0.85rem;
+}
+
+/* --- Contenedor y tarjeta principal --- */
+.page-notificacion .contenedor { max-width: 1100px; margin: 36px auto; padding: 0 20px; }
+.page-notificacion .card {
+    background: var(--white); padding: 36px 40px; border-radius: 24px; border: 1px solid var(--border-soft);
+}
+.page-notificacion h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.6rem; margin-bottom: 4px; }
+.page-notificacion .subtitulo { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 22px; }
+
+/* --- Mensajes de éxito / error --- */
+.page-notificacion .mensaje { padding: 12px 16px; border-radius: 10px; margin-bottom: 18px; font-size: 0.85rem; }
+.page-notificacion .exito { background: #E8F5E9; color: #2E7D32; }
+.page-notificacion .error { background: #FFEBEE; color: #C62828; }
+
+/* --- Buscador --- */
+.page-notificacion .search-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.page-notificacion .search-bar input[type="search"] {
+    flex: 1; min-width: 240px; padding: 12px 16px; border: 1.5px solid var(--border-soft);
+    border-radius: 12px; background: #FAF8F6; font-size: 0.9rem; font-family: inherit;
+    color: var(--text-primary); outline: none;
+}
+.page-notificacion .search-bar input[type="search"]:focus {
+    border-color: var(--rose-dark); background: var(--white);
+    box-shadow: 0 0 0 3px rgba(216, 167, 167, 0.25);
+}
+.page-notificacion .btn-primary {
+    padding: 12px 22px; border: none; border-radius: 12px; cursor: pointer;
+    background: linear-gradient(135deg, var(--gold), var(--rose-dark)); color: var(--white);
+    font-size: 0.82rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; font-family: inherit;
+}
+.page-notificacion .clear { font-size: 0.82rem; color: var(--rose-dark); text-decoration: none; font-weight: 600; }
+.page-notificacion .results-info { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px; }
+
+/* --- Formulario desplegable "Nuevo ..." --- */
+.page-notificacion details.nuevo { margin-bottom: 18px; border: 1px solid var(--border-soft); border-radius: 14px; background: #FDFBFA; }
+.page-notificacion details.nuevo > summary {
+    cursor: pointer; padding: 13px 18px; font-size: 0.88rem; font-weight: 700;
+    color: var(--rose-deep); list-style: none;
+}
+.page-notificacion details.nuevo > summary::-webkit-details-marker { display: none; }
+.page-notificacion details.nuevo[open] > summary { border-bottom: 1px solid var(--border-soft); }
+.page-notificacion .form-nuevo { padding: 20px 18px 22px; }
+
+/* --- Campos de formulario --- */
+.page-notificacion .campo { margin-bottom: 16px; }
+.page-notificacion .campo label {
+    display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.78rem;
+    text-transform: uppercase; letter-spacing: 0.4px;
+}
+.page-notificacion .campo input,
+.page-notificacion .campo textarea,
+.page-notificacion .campo select {
+    width: 100%; padding: 11px 12px; border: 1px solid var(--border-soft);
+    border-radius: 9px; font-size: 0.9rem; font-family: inherit; background: var(--white);
+}
+.page-notificacion .campo textarea { min-height: 80px; resize: vertical; }
+.page-notificacion .campo small { display: block; margin-top: 6px; font-size: 0.78rem; color: var(--text-secondary); }
+.page-notificacion .campo small a { color: var(--rose-dark); font-weight: 600; }
+.page-notificacion .fila { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* --- Filtros --- */
+.page-notificacion .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.page-notificacion .filters a {
+    padding: 7px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; text-decoration: none;
+    color: var(--text-secondary); background: #FAF8F6; border: 1px solid var(--border-soft);
+}
+.page-notificacion .filters a.active { background: var(--rose-dark); color: var(--white); border-color: var(--rose-dark); }
+
+/* --- Tabla --- */
+.page-notificacion .tabla-wrap { overflow-x: auto; }
+.page-notificacion table { width: 100%; border-collapse: collapse; }
+.page-notificacion th,
+.page-notificacion td {
+    text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border-soft);
+    font-size: 0.86rem; vertical-align: middle;
+}
+.page-notificacion th { text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.5px; color: var(--text-secondary); }
+.page-notificacion .nombre { display: block; font-weight: 600; }
+.page-notificacion .desc {
+    display: block; font-size: 0.78rem; color: var(--text-secondary); max-width: 320px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.page-notificacion .fila-inactiva td { opacity: 0.6; }
+.page-notificacion .empty-msg { text-align: center; padding: 30px; color: var(--text-secondary); }
+
+/* --- Badges de estado --- */
+.page-notificacion .badge { padding: 4px 11px; border-radius: 14px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+.page-notificacion .badge-activo   { background: #F4F8F4; color: #2F6B4F; }
+.page-notificacion .badge-inactivo { background: #F0F0F0; color: #706464; }
+
+/* --- Acciones de cada fila --- */
+.page-notificacion .actions form { display: inline; }
+.page-notificacion .actions a.btn-editar {
+    color: var(--rose-dark); font-size: 0.8rem; font-weight: 600; text-decoration: none; margin-right: 12px;
+}
+.page-notificacion .btn-link {
+    background: none; border: none; cursor: pointer; font-family: inherit;
+    font-size: 0.8rem; font-weight: 600; padding: 0;
+}
+.page-notificacion .btn-baja     { color: #923838; }
+.page-notificacion .btn-reactivar { color: #2F6B4F; }
+
+/* --- Panel de edición --- */
+.page-notificacion .panel-edicion {
+    border: 1px solid var(--gold); border-left-width: 5px; border-radius: 14px;
+    background: #FFFDF8; padding: 20px 22px 22px; margin-bottom: 22px;
+}
+.page-notificacion .panel-edicion h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.15rem; margin-bottom: 14px; }
+.page-notificacion .panel-edicion .acciones-form { display: flex; align-items: center; gap: 16px; }
+
+/* --- Responsive --- */
+@media (max-width: 640px) {
+    .page-notificacion .fila { grid-template-columns: 1fr; }
+    .page-notificacion .card { padding: 24px 20px; }
+    .page-notificacion .navbar { padding: 14px 20px; }
+    .page-notificacion input,
+    .page-notificacion select,
+    .page-notificacion button,
+    .page-notificacion .btn-volver {
+        min-height: 44px;
+    }
+    .page-notificacion input,
+    .page-notificacion select,
+    .page-notificacion textarea {
+        font-size: 16px;
+    }
+}
+
+/* Tablas -> tarjetas apiladas en celular */
+@media (max-width: 720px) {
+    .page-notificacion table, .page-notificacion tbody { display: block; width: 100%; }
+    .page-notificacion table tr:first-child { display: none; }
+    .page-notificacion table tr { display: block; background: #FAF8F6; border: 1px solid #EFE8E2;
+        border-radius: 14px; padding: 10px 14px; margin-bottom: 12px; }
+    .page-notificacion table td { display: flex; justify-content: space-between; align-items: center; gap: 14px;
+        text-align: right; border: none; padding: 6px 0; word-break: break-word; white-space: normal; }
+    .page-notificacion table td[data-label]::before { content: attr(data-label); flex-shrink: 0; text-align: left;
+        font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #706464; }
+    .page-notificacion table td:not([data-label]) { display: block; text-align: center; }
+    .page-notificacion table td.celda-titulo { text-align: left; padding-bottom: 8px; margin-bottom: 4px; border-bottom: 1px dashed #EFE8E2; }
+    .page-notificacion table td.actions { flex-wrap: wrap; justify-content: flex-start; gap: 8px;
+        border-top: 1px dashed #EFE8E2; margin-top: 6px; padding-top: 10px; }
+    .page-notificacion table td.actions::before { display: none; }
+    .page-notificacion table td.actions:not(:has(a, button)) { display: none; }
+    .page-notificacion .actions a,
+    .page-notificacion .actions .btn-link { display: inline-flex; align-items: center; justify-content: center; min-height: 40px;
+        padding: 0 14px; margin: 0; border: 1px solid #EFE8E2; border-radius: 10px; background: #fff; }
+    .page-notificacion .desc { white-space: normal; max-width: none; }
+    .page-notificacion table td.celda-titulo .nombre { font-size: 1rem; }
+    .page-notificacion .actions form { display: inline-flex; }
+    .page-notificacion .panel-edicion .acciones-form { flex-wrap: wrap; }
+}
+
+
+/* Precio del servicio */
+.page-notificacion .precio { font-weight: 700; color: var(--rose-deep); white-space: nowrap; }
+
+
+
+/* =====================================================================
+   3. ESPECÍFICO DE NOTIFICACIONES
+   ===================================================================== */
+
+.page-notificacion .contenedor { max-width: 860px; }
+
+.page-notificacion .barra-notif { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.page-notificacion .barra-notif .filters { margin-bottom: 0; }
+.page-notificacion .barra-notif form { display: inline; }
+.page-notificacion .btn-leer-todas { color: var(--rose-dark); }
+
+/* --- Un aviso --- */
+.page-notificacion .notif {
+    display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; margin-bottom: 10px;
+    border: 1px solid var(--border-soft); border-radius: 14px; background: var(--white);
+}
+.page-notificacion .notif.sin-leer { background: #FFFDF8; border-color: var(--gold); border-left-width: 5px; }
+.page-notificacion .notif-icono {
+    flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem; background: #FAF8F6; border: 1px solid var(--border-soft);
+}
+.page-notificacion .notif-cuerpo { flex: 1; min-width: 0; }
+.page-notificacion .notif-mensaje { font-size: 0.9rem; line-height: 1.5; word-break: break-word; }
+.page-notificacion .notif.sin-leer .notif-mensaje { font-weight: 600; }
+.page-notificacion .notif-fecha { font-size: 0.76rem; color: var(--text-secondary); margin-top: 4px; }
+.page-notificacion .punto-nueva { color: var(--gold); font-weight: 700; }
+.page-notificacion .notif-acciones { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+.page-notificacion .notif-acciones form { display: inline; }
+.page-notificacion .btn-ver {
+    padding: 8px 16px; border-radius: 10px; border: 1px solid var(--rose-light); background: var(--white);
+    color: var(--rose-dark); font-family: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer;
+}
+
+@media (max-width: 640px) {
+    .page-notificacion .notif { flex-wrap: wrap; padding: 14px; }
+    .page-notificacion .notif-cuerpo { flex-basis: calc(100% - 56px); }
+    .page-notificacion .notif-acciones { flex-direction: row; align-items: center; width: 100%; justify-content: flex-start; gap: 14px;
+        padding-top: 10px; border-top: 1px dashed var(--border-soft); }
+    .page-notificacion .btn-ver { min-height: 44px; flex: 1; }
+    .page-notificacion .notif-acciones form:only-child { flex: 1; display: flex; }
+}
+
+
+/* =====================================================================
+   4. CAMPANA (se incluye en cualquier barra superior: includes/campana.jsp)
+   Sin prefijo de página porque aparece en varias pantallas.
+   ===================================================================== */
+.campana {
+    position: relative; display: inline-flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; border-radius: 50%; text-decoration: none; flex-shrink: 0;
+    border: 1px solid #D8A7A7; background: #FFFFFF; color: #A66A6A; transition: background 0.2s;
+}
+.campana:hover { background: #FAF8F6; }
+.campana-icono { font-size: 1.1rem; line-height: 1; }
+.campana-contador {
+    position: absolute; top: -5px; right: -5px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px;
+    background: #C0392B; color: #FFFFFF; font-family: 'Montserrat', sans-serif; font-size: 0.68rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; border: 2px solid #FFFFFF; box-sizing: border-box;
+}
+.campana-contador[hidden] { display: none; }
+@media (max-width: 640px) { .campana { width: 44px; height: 44px; } }

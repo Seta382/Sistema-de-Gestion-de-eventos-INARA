@@ -84,6 +84,8 @@
                 </div>
             </div>
 
+            <jsp:include page="/includes/campana.jsp" />
+
             <a href="${pageContext.request.contextPath}/login?accion=logout" class="btn-logout">
                 Cerrar Sesión
             </a>

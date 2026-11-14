@@ -38,7 +38,8 @@ target/
 .idea/
 *.iml
 .smarttomcat/
-
+# Postman local
+.postman/
 # Túnel de Cloudflare: el .exe se instala con "winget install Cloudflare.cloudflared"
 cloudflared.exe
 cloudflared.log
@@ -47,3 +48,5 @@ cloudflared.log
 *.log
 # Variables locales
 .env
+# Rutas propias de cada persona para los .bat (copiar de iniciar-config.ejemplo.bat)
+iniciar-config.bat

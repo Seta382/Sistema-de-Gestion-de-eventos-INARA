@@ -1,0 +1,9 @@
+# Copia este archivo como "application.properties" (en esta misma carpeta) y completa tus datos.
+# application.properties NO se sube a GitHub: tiene la contraseña de la base de datos.
+#
+# Los datos están en Supabase: Project Settings > Database > Connection string > Session pooler
+db.host=aws-0-REGION.pooler.supabase.com
+db.port=5432
+db.database=postgres
+db.user=postgres.TU_PROJECT_REF
+db.password=TU_CONTRASENA_DE_LA_BASE

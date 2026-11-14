@@ -23,6 +23,7 @@ import pe.edu.eventos.model.EventoArticulo;
 import pe.edu.eventos.model.Notificacion;
 import pe.edu.eventos.model.Proveedor;
 import pe.edu.eventos.model.TipoEvento;
+import pe.edu.eventos.util.ReglasFecha;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -192,8 +193,10 @@ public class EventoService {
         if (evento.getIdTipoEvento() == null || evento.getIdTipoEvento() <= 0) {
             throw new IllegalArgumentException("Debe seleccionar un Tipo de Celebración.");
         }
-        if (evento.getFechaEvento() == null) {
-            throw new IllegalArgumentException("La fecha del evento es obligatoria.");
+        // La fecha no puede ser anterior a hoy (hora de Lima); si es hoy, la hora tampoco puede haber pasado
+        String errorFecha = ReglasFecha.validarNoPasada(evento.getFechaEvento(), evento.getHoraEvento(), "del evento");
+        if (errorFecha != null) {
+            throw new IllegalArgumentException(errorFecha);
         }
         if (evento.getNumInvitados() == null || evento.getNumInvitados() <= 0) {
             throw new IllegalArgumentException("El aforo estimado debe ser mayor a 0.");

@@ -3,6 +3,7 @@ package pe.edu.eventos.service;
 import pe.edu.eventos.dao.CitaDAO;
 import pe.edu.eventos.dao.impl.CitaDAOImpl;
 import pe.edu.eventos.model.Cita;
+import pe.edu.eventos.util.ReglasFecha;
 
 import java.sql.Date;
 import java.sql.Time;
@@ -25,8 +26,10 @@ public class CitaService {
         if (cita.getFecha() == null || cita.getHora() == null) {
             return "Debes indicar fecha y hora";
         }
-        if (cita.getFecha().toLocalDate().isBefore(java.time.LocalDate.now())) {
-            return "La fecha de la cita no puede ser en el pasado";
+        String errorFecha = ReglasFecha.validarNoPasada(
+                cita.getFecha().toLocalDate(), cita.getHora().toLocalTime(), "de la cita");
+        if (errorFecha != null) {
+            return errorFecha;
         }
         if (cita.getModalidad() == null || cita.getModalidad().isBlank()) {
             cita.setModalidad("PRESENCIAL");
@@ -62,6 +65,10 @@ public class CitaService {
     }
 
     public boolean reprogramar(int idCita, Date nuevaFecha, Time nuevaHora) {
+        if (nuevaFecha == null || nuevaHora == null
+                || ReglasFecha.validarNoPasada(nuevaFecha.toLocalDate(), nuevaHora.toLocalTime(), "de la cita") != null) {
+            return false; // no se puede reprogramar al pasado
+        }
         return citaDAO.reprogramar(idCita, nuevaFecha, nuevaHora);
     }
 

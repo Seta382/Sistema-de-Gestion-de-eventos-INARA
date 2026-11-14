@@ -42,6 +42,14 @@ public interface UsuarioDAO {
     boolean registrar(Usuario usuario);
 
     /**
+     * Registra un usuario con rol CLIENTE junto con su fila en "cliente" en UNA sola transacción:
+     * o se crean las dos o no se crea ninguna. Deja usuario.getId() (y, si es Cliente, su idCliente) seteados.
+     *
+     * @return true si se crearon ambas filas; false si algo falló (se hizo rollback).
+     */
+    boolean registrarCliente(Usuario usuario, String dni, String direccion);
+
+    /**
      * Obtiene el listado de todos los usuarios registrados.
      *
      * @return Lista de usuarios.

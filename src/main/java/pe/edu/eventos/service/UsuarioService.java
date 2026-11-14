@@ -69,20 +69,13 @@ public class UsuarioService {
         usuario.setPassword(PasswordUtil.hashPassword(usuario.getPassword()));
         usuario.setCorreo(correoLimpio);
 
-        boolean creado = usuarioDAO.registrar(usuario); // debe dejar usuario.getId() seteado
-        if (!creado) {
-            return false;
-        }
-
+        // Un cliente se guarda en una sola transacción (usuario + cliente): si falla la segunda
+        // fila no queda un usuario huérfano que bloquee el correo para volver a registrarse.
         if (usuario instanceof Cliente cliente) {
-            Integer idCliente = clienteDAO.crear(usuario.getId(), cliente.getDni(), cliente.getDireccion());
-            if (idCliente == null) {
-                return false; // el usuario quedó creado pero la fila cliente falló; revisar logs
-            }
-            cliente.setIdCliente(idCliente);
+            return usuarioDAO.registrarCliente(usuario, cliente.getDni(), cliente.getDireccion());
         }
 
-        return true;
+        return usuarioDAO.registrar(usuario);
     }
 
     public Usuario buscarPorCorreo(String correo) {

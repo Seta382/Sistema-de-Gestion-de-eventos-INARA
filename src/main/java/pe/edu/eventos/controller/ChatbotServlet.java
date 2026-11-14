@@ -13,6 +13,7 @@ import pe.edu.eventos.facade.AcuerdoFacade;
 import pe.edu.eventos.facade.CotizacionFacade;
 import pe.edu.eventos.model.Cita;
 import pe.edu.eventos.service.CitaService;
+import pe.edu.eventos.service.NotificacionService;
 import pe.edu.eventos.util.Constantes;
 
 import java.io.IOException;
@@ -36,6 +37,7 @@ public class ChatbotServlet extends HttpServlet {
     private final AcuerdoFacade acuerdoFacade = new AcuerdoFacade();
     private final CitaService citaService = new CitaService();
     private final ClienteDAO clienteDAO = new ClienteDAOImpl();
+    private final NotificacionService notificacionService = new NotificacionService();
 
     private static final String WHATSAPP_NUMERO = "51992937943";
 
@@ -91,6 +93,7 @@ public class ChatbotServlet extends HttpServlet {
         int cotizacionesPendientes = 0;
         int acuerdosPendientes = 0;
         List<Cita> misCitas = Collections.emptyList();
+        int notifSinLeer = 0;
 
         if (estaAutenticado) {
             try {
@@ -100,44 +103,107 @@ public class ChatbotServlet extends HttpServlet {
                 if (idCliente != null) {
                     misCitas = citaService.listarPorCliente(idCliente);
                 }
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 // Registro tolerante a fallos
             }
+            // El servicio de notificaciones nunca lanza: si falla devuelve 0
+            notifSinLeer = notificacionService.contarNoLeidas(usuario.getId());
         }
+        String avisoNotif = avisoNotificaciones(notifSinLeer);
 
         // 1. Mensaje vacío o saludo inicial / apertura del chat
         if (msgNorm.isEmpty() || msgNorm.equals("inicio") || msgNorm.equals("start") || msgNorm.equals("hola sofia")) {
             String saludo = estaAutenticado
-                    ? "¡Hola <strong>" + primerNombre + "</strong>! ✨ Soy <strong>Sofía</strong>, tu asistente virtual de <strong>INARA</strong>.<br>Es un placer atenderte hoy en tu Portal Exclusivo. ¿En qué te puedo orientar sobre la planificación de tu evento?"
+                    ? "¡Hola <strong>" + primerNombre + "</strong>! ✨ Soy <strong>Sofía</strong>, tu asistente virtual de <strong>INARA</strong>.<br>Es un placer atenderte hoy en tu Portal Exclusivo. ¿En qué te puedo orientar sobre la planificación de tu evento?" + avisoNotif
                     : "¡Hola! ✨ Bienvenido(a) a <strong>INARA</strong>, productora de eventos y experiencias exclusivas. Soy <strong>Sofía</strong>, tu asistente virtual. ¿En qué puedo ayudarte hoy?";
 
             List<String> sugerencias = estaAutenticado
-                    ? Arrays.asList("📅 Agendar Cita", "💍 Paquetes de Bodas", "💰 Mis Cotizaciones", "🍾 Catering Gourmet", "💬 Hablar con Asesor")
+                    ? sugerenciasConNotif(notifSinLeer, "📅 Agendar Cita", "💍 Paquetes de Bodas", "💰 Mis Cotizaciones", "🍾 Catering Gourmet", "💬 Hablar con Asesor")
                     : Arrays.asList("💍 Paquetes de Bodas", "🎆 Quinceañeros", "🍾 Catering de Autor", "📅 Solicitar Cita", "💬 WhatsApp");
 
-            return new RespuestaChat(saludo, sugerencias, null, null);
+            return new RespuestaChat(saludo, sugerencias,
+                    notifSinLeer > 0 ? contextPath + "/notificaciones" : null,
+                    notifSinLeer > 0 ? "🔔 Ver notificaciones" : null);
         }
 
         // 2. Saludos genéricos
-        if (contieneAlguno(msgNorm, "hola", "buenos dias", "buenas tardes", "buenas noches", "saludos", "que tal", "hey")) {
-            String resp = "¡Hola " + (estaAutenticado ? "<strong>" + primerNombre + "</strong>" : "") + "! ✨ ¿Cómo puedo asistirte hoy? Puedo ayudarte a consultar paquetes, cotizaciones, citas con nuestros Wedding & Event Planners o dar seguimiento a tu celebración.";
+        // Solo si es un saludo corto: "hola quiero una cita" debe llegar a la regla de citas
+        if (msgNorm.split(" ").length <= 3 && contieneAlguno(msgNorm, "hola", "buenos dias", "buenas tardes", "buenas noches", "saludos", "que tal", "hey")) {
+            String resp = "¡Hola " + (estaAutenticado ? "<strong>" + primerNombre + "</strong>" : "") + "! ✨ ¿Cómo puedo asistirte hoy? Puedo ayudarte a consultar paquetes, cotizaciones, citas con nuestros Wedding & Event Planners o dar seguimiento a tu celebración." + avisoNotif;
             return new RespuestaChat(resp,
-                    Arrays.asList("📅 Agendar Cita", "💍 Paquetes de Bodas", "💰 Cotizaciones", "💬 WhatsApp Asesor"),
-                    null, null);
+                    sugerenciasConNotif(notifSinLeer, "📅 Agendar Cita", "💍 Paquetes de Bodas", "💰 Cotizaciones", "💬 WhatsApp Asesor"),
+                    notifSinLeer > 0 ? contextPath + "/notificaciones" : null,
+                    notifSinLeer > 0 ? "🔔 Ver notificaciones" : null);
         }
 
         // 3. Identidad / Quién eres
-        if (contieneAlguno(msgNorm, "quien eres", "como te llamas", "que eres", "presentate", "que puedes hacer", "ayuda", "menu")) {
+        if (contieneAlguno(msgNorm, "quien eres", "como te llamas", "que eres", "presentate", "que puedes hacer", "ayuda")) {
             String resp = "Soy <strong>Sofía</strong>, la asistente virtual de <strong>INARA Eventos Luxury</strong>. 🌟<br><br>"
                     + "Puedo orientarte con:<br>"
                     + "• 💍 <strong>Bodas y Galas de Ensueño:</strong> Diseño conceptual, producción y logística.<br>"
                     + "• 🎆 <strong>Quinceañeros & Proms:</strong> Fiestas temáticas y tecnología audiovisual.<br>"
                     + "• 🍾 <strong>Catering & Mixología:</strong> Menús de autor y estaciones gourmet.<br>"
                     + "• 📅 <strong>Agendamiento de Citas:</strong> Presenciales en nuestro Showroom o virtuales.<br>"
-                    + "• 💰 <strong>Cotizaciones & Acuerdos:</strong> Seguimiento del presupuesto y contratos.";
+                    + "• 💰 <strong>Cotizaciones & Acuerdos:</strong> Seguimiento del presupuesto y contratos.<br>"
+                    + "• 🔔 <strong>Notificaciones:</strong> Avisos sobre tu cotización, acuerdo, pagos y avances.";
             return new RespuestaChat(resp,
                     Arrays.asList("💍 Paquetes de Bodas", "📅 Agendar Cita", "🍾 Catering", "💰 Presupuesto"),
                     null, null);
+        }
+
+        // 3b. Notificaciones / avisos
+        if (contieneAlguno(msgNorm, "notificacion", "notificaciones", "aviso", "avisos", "novedad", "novedades", "alerta", "alertas")) {
+            if (estaAutenticado) {
+                String resp = notifSinLeer > 0
+                        ? "🔔 Tienes <strong>" + notifSinLeer + " notificación(es) sin leer</strong>. Ahí te avisamos cuando hay una nueva cotización, un acuerdo por aceptar, un pago confirmado o un avance de tu evento."
+                        : "🔔 No tienes notificaciones sin leer. Aquí te avisaremos cuando haya una nueva cotización, un acuerdo, un pago confirmado o un avance de tu evento.";
+                return new RespuestaChat(resp,
+                        Arrays.asList("📋 Mis Cotizaciones", "🎉 Mi Evento", "📅 Mis Citas"),
+                        contextPath + "/notificaciones", "🔔 Ver mis notificaciones");
+            } else {
+                return new RespuestaChat("Para ver tus notificaciones debes iniciar sesión en el portal.",
+                        Arrays.asList("🔐 Iniciar Sesión", "💬 Contactar WhatsApp"),
+                        contextPath + "/login", "🔐 Iniciar Sesión");
+            }
+        }
+
+        // 5. Mis Citas (consulta de citas existentes)
+        if (contieneAlguno(msgNorm, "mis citas", "mi cita", "tengo cita", "tengo citas", "cuando es mi cita", "ver citas", "proxima cita")) {
+            if (estaAutenticado) {
+                if (misCitas.isEmpty()) {
+                    return new RespuestaChat("Actualmente no tienes citas programadas. Te invitamos a agendar una para comenzar a diseñar cada detalle de tu evento.",
+                            Arrays.asList("📅 Agendar Cita", "💬 WhatsApp Asesor"),
+                            contextPath + "/citas?accion=nueva", "📅 Agendar Cita Ahora");
+                } else {
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                    StringBuilder sb = new StringBuilder("Tienes <strong>" + misCitas.size() + " cita(s) registrada(s)</strong>:<br><ul style='margin: 8px 0; padding-left: 18px;'>");
+                    for (int i = 0; i < Math.min(misCitas.size(), 3); i++) {
+                        Cita c = misCitas.get(i);
+                        sb.append("<li><strong>").append(sdf.format(c.getFecha())).append("</strong> a las ").append(c.getHora())
+                                .append(" &bull; <em>").append(c.getModalidad()).append("</em> (").append(c.getEstado()).append(")</li>");
+                    }
+                    sb.append("</ul>Puedes revisar el historial completo en tu panel:");
+                    return new RespuestaChat(sb.toString(),
+                            Arrays.asList("📅 Agendar Otra Cita", "🏠 Ir a Dashboard", "💬 WhatsApp"),
+                            contextPath + "/citas", "📋 Ver Todas Mis Citas");
+                }
+            } else {
+                return new RespuestaChat("Para revisar tus citas programadas debes iniciar sesión en el portal.",
+                        Arrays.asList("🔐 Iniciar Sesión", "💬 Contactar WhatsApp"),
+                        contextPath + "/login", "🔐 Iniciar Sesión");
+            }
+        }
+
+        // 15. Ubicación / Showroom / Horarios
+        if (contieneAlguno(msgNorm, "donde estan", "ubicacion", "direccion", "lugar", "oficina", "horario", "horarios", "atencion")) {
+            String resp = "📍 <strong>Showroom & Horarios de Atención:</strong><br>"
+                    + "• <strong>Showroom INARA:</strong> te confirmamos la dirección exacta al agendar tu cita.<br>"
+                    + "• <strong>Horario de Atención:</strong> Lunes a Sábado de 9:00 a.m. a 7:00 p.m.<br>"
+                    + "• <em>Atendemos previa cita</em> para brindarte una atención privada con degustación y catálogo de materiales.";
+            return new RespuestaChat(resp,
+                    Arrays.asList("📅 Agendar Visita al Showroom", "💬 Contactar WhatsApp", "💍 Ver Servicios"),
+                    estaAutenticado ? contextPath + "/citas?accion=nueva" : urlWhatsapp,
+                    "📅 Agendar Visita en Showroom");
         }
 
         // 4. Agendar citas / Citas
@@ -166,33 +232,6 @@ public class ChatbotServlet extends HttpServlet {
             }
         }
 
-        // 5. Mis Citas (consulta de citas existentes)
-        if (contieneAlguno(msgNorm, "mis citas", "tengo cita", "cuando es mi cita", "ver citas")) {
-            if (estaAutenticado) {
-                if (misCitas.isEmpty()) {
-                    return new RespuestaChat("Actualmente no tienes citas programadas. Te invitamos a agendar una para comenzar a diseñar cada detalle de tu evento.",
-                            Arrays.asList("📅 Agendar Cita", "💬 WhatsApp Asesor"),
-                            contextPath + "/citas?accion=nueva", "📅 Agendar Cita Ahora");
-                } else {
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-                    StringBuilder sb = new StringBuilder("Tienes <strong>" + misCitas.size() + " cita(s) registrada(s)</strong>:<br><ul style='margin: 8px 0; padding-left: 18px;'>");
-                    for (int i = 0; i < Math.min(misCitas.size(), 3); i++) {
-                        Cita c = misCitas.get(i);
-                        sb.append("<li><strong>").append(sdf.format(c.getFecha())).append("</strong> a las ").append(c.getHora())
-                                .append(" &bull; <em>").append(c.getModalidad()).append("</em> (").append(c.getEstado()).append(")</li>");
-                    }
-                    sb.append("</ul>Puedes revisar el historial completo en tu panel:");
-                    return new RespuestaChat(sb.toString(),
-                            Arrays.asList("📅 Agendar Otra Cita", "🏠 Ir a Dashboard", "💬 WhatsApp"),
-                            contextPath + "/citas", "📋 Ver Todas Mis Citas");
-                }
-            } else {
-                return new RespuestaChat("Para revisar tus citas programadas debes iniciar sesión en el portal.",
-                        Arrays.asList("🔐 Iniciar Sesión", "💬 Contactar WhatsApp"),
-                        contextPath + "/login", "🔐 Iniciar Sesión");
-            }
-        }
-
         // 6. Bodas / Matrimonios
         if (contieneAlguno(msgNorm, "boda", "bodas", "matrimonio", "casamiento", "novia", "novio", "nupcial")) {
             String resp = "💍 <strong>Bodas Exclusivas INARA:</strong><br>"
@@ -211,7 +250,7 @@ public class ChatbotServlet extends HttpServlet {
         }
 
         // 7. Quinceañeros / Proms
-        if (contieneAlguno(msgNorm, "quince", "quinceanero", "15 anos", "xv", "quinceanera", "prom", "graduacion", "promo")) {
+        if (contieneAlguno(msgNorm, "quince", "quinceanero", "quinceaneros", "quinceanera", "quinceaneras", "15 anos", "xv", "prom", "proms", "promo", "graduacion")) {
             String resp = "🎆 <strong>Quinceañeros & Proms de Ensueño:</strong><br>"
                     + "Diseñamos fiestas temáticas inolvidables con la mejor tecnología de entretenimiento.<br><br>"
                     + "<strong>Incluye:</strong><br>"
@@ -227,7 +266,7 @@ public class ChatbotServlet extends HttpServlet {
         }
 
         // 8. Catering / Gastronomía / Bebidas
-        if (contieneAlguno(msgNorm, "catering", "comida", "menu", "platos", "buffet", "cena", "degustacion", "trago", "bebida", "barra libre", "vino", "mixologia", "postre")) {
+        if (contieneAlguno(msgNorm, "catering", "comida", "menu", "menus", "platos", "buffet", "cena", "cenas", "degustacion", "trago", "tragos", "bebida", "bebidas", "barra libre", "vino", "mixologia", "postre", "postres")) {
             String resp = "🍾 <strong>Catering de Autor & Gastronomía Selecta:</strong><br>"
                     + "Una propuesta culinaria de alta gama adaptada al perfil de tus invitados:<br><br>"
                     + "• <strong>Cenas Servidas:</strong> Menús de 3 o 4 tiempos con presentaciones de autor.<br>"
@@ -242,7 +281,7 @@ public class ChatbotServlet extends HttpServlet {
         }
 
         // 9. Mobiliario / Decoración / Ambientación
-        if (contieneAlguno(msgNorm, "mobiliario", "decoracion", "toldos", "toldo", "luces", "flores", "sillas", "mesas", "ambientacion", "centros de mesa", "chandelier")) {
+        if (contieneAlguno(msgNorm, "mobiliario", "decoracion", "diseno", "toldos", "toldo", "luces", "flores", "sillas", "silla", "mesas", "mesa", "ambientacion", "centros de mesa", "chandelier")) {
             String resp = "🎨 <strong>Diseño, Decoración & Mobiliario de Alta Gama:</strong><br>"
                     + "Convertimos cualquier locación en un espacio mágico:<br><br>"
                     + "• <strong>Mobiliario Luxury:</strong> Sillas Phoenix, Dior, Tiffany y salas lounge en tonos blanco y dorado.<br>"
@@ -256,7 +295,7 @@ public class ChatbotServlet extends HttpServlet {
         }
 
         // 10. Cotizaciones / Precios / Presupuesto
-        if (contieneAlguno(msgNorm, "cotizacion", "cotizaciones", "precio", "precios", "costo", "costos", "presupuesto", "cuanto cuesta", "tarifa", "valor")) {
+        if (contieneAlguno(msgNorm, "cotizacion", "cotizaciones", "cotizar", "precio", "precios", "costo", "costos", "presupuesto", "cuanto cuesta", "cuanto sale", "tarifa", "valor")) {
             if (estaAutenticado) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("💰 <strong>Cotizaciones y Presupuesto:</strong><br>");
@@ -308,8 +347,21 @@ public class ChatbotServlet extends HttpServlet {
             }
         }
 
+        // 13. Formas de Pago / Financiación / Cuentas bancarias
+        if (contieneAlguno(msgNorm, "pago", "pagos", "pagar", "forma de pago", "formas de pago", "transferencia", "tarjeta", "cuotas", "adelanto", "yape", "plin", "banco", "cuenta bancaria", "factura", "boleta")) {
+            String resp = "💳 <strong>Opciones de Pago:</strong><br>"
+                    + "• <strong>Reserva:</strong> Con un adelanto del 50% reservas la fecha de tu evento.<br>"
+                    + "• <strong>Saldo:</strong> Se coordina con tu planner y lo ves reflejado en <strong>Mi Evento</strong>.<br>"
+                    + "• <strong>Medios aceptados:</strong> Transferencia bancaria, tarjeta, Yape, Plin o efectivo.<br>"
+                    + "• Cada pago queda registrado y te avisamos cuando lo confirmamos.";
+            return new RespuestaChat(resp,
+                    Arrays.asList("🎉 Ver Mis Pagos en Mi Evento", "📑 Mis Acuerdos", "💬 Consultar a Finanzas"),
+                    estaAutenticado ? contextPath + "/mi-evento" : urlWhatsapp,
+                    estaAutenticado ? "💳 Ver Estado de Mis Pagos" : "📲 Contactar Área de Pagos");
+        }
+
         // 12. Mi Evento / Estado / Seguimiento / Avances
-        if (contieneAlguno(msgNorm, "mi evento", "estado", "avances", "seguimiento", "como va mi evento", "cronograma", "pagos")) {
+        if (contieneAlguno(msgNorm, "mi evento", "estado de mi evento", "avance", "avances", "seguimiento", "como va mi evento", "cronograma")) {
             if (estaAutenticado) {
                 String resp = "🎉 <strong>Seguimiento de tu Evento:</strong><br>"
                         + "En la sección <strong>Mi Evento</strong> puedes verificar el estado de avance, los servicios contratados, el resumen de pagos y abonos realizados, y la bitácora de preparativos.";
@@ -323,19 +375,6 @@ public class ChatbotServlet extends HttpServlet {
             }
         }
 
-        // 13. Formas de Pago / Financiación / Cuentas bancarias
-        if (contieneAlguno(msgNorm, "pago", "pagos", "forma de pago", "transferencia", "tarjeta", "cuotas", "adelanto", "yape", "plin", "banco", "factura", "boleta")) {
-            String resp = "💳 <strong>Opciones de Pago & Facilidades:</strong><br>"
-                    + "• <strong>Reserva Inicial:</strong> Con el 30% aseguras y bloqueas la fecha exclusiva de tu evento.<br>"
-                    + "• <strong>Pagos Fraccionados:</strong> Cronograma de cuotas intermedias flexibles hasta 15 días antes de la fecha del evento.<br>"
-                    + "• <strong>Medios Aceptados:</strong> Transferencias bancarias (BCP, BBVA, Interbank), tarjetas de crédito/débito (Visa, Mastercard, Amex), Yape/Plin empresarial o efectivo en oficina.<br>"
-                    + "• Emitimos Factura o Boleta electrónica según lo requieras.";
-            return new RespuestaChat(resp,
-                    Arrays.asList("🎉 Ver Mis Pagos en Mi Evento", "📑 Mis Acuerdos", "💬 Consultar a Finanzas"),
-                    estaAutenticado ? contextPath + "/mi-evento" : urlWhatsapp,
-                    estaAutenticado ? "💳 Ver Estado de Mis Pagos" : "📲 Contactar Área de Pagos");
-        }
-
         // 14. Asesor humano / WhatsApp / Teléfono
         if (contieneAlguno(msgNorm, "humano", "asesor", "persona", "telefono", "celular", "llamar", "whatsapp", "contactar", "hablar con alguien", "operador")) {
             String resp = "💬 <strong>Atención Personalizada:</strong><br>"
@@ -344,18 +383,6 @@ public class ChatbotServlet extends HttpServlet {
             return new RespuestaChat(resp,
                     Arrays.asList("💬 Abrir WhatsApp Ahora", "📅 Agendar Cita", "💍 Ver Paquetes"),
                     urlWhatsapp, "📲 Chatear por WhatsApp con Asesor");
-        }
-
-        // 15. Ubicación / Showroom / Horarios
-        if (contieneAlguno(msgNorm, "donde estan", "ubicacion", "direccion", "lugar", "oficina", "horario", "horarios", "atencion")) {
-            String resp = "📍 <strong>Showroom & Horarios de Atención:</strong><br>"
-                    + "• <strong>Showroom Exclusivo INARA:</strong> Av. Principal Luxury Event Suites, San Isidro / Miraflores, Lima.<br>"
-                    + "• <strong>Horario de Atención:</strong> Lunes a Sábado de 9:00 a.m. a 7:00 p.m.<br>"
-                    + "• <em>Atendemos previa cita</em> para brindarte una atención privada con degustación y catálogo de materiales.";
-            return new RespuestaChat(resp,
-                    Arrays.asList("📅 Agendar Visita al Showroom", "💬 Contactar WhatsApp", "💍 Ver Servicios"),
-                    estaAutenticado ? contextPath + "/citas?accion=nueva" : urlWhatsapp,
-                    "📅 Agendar Visita en Showroom");
         }
 
         // 16. Agradecimientos
@@ -397,6 +424,17 @@ public class ChatbotServlet extends HttpServlet {
                 urlWhatsapp, "📲 Hablar con Asesor en WhatsApp");
     }
 
+    private static String avisoNotificaciones(int n) {
+        return n > 0 ? "<br><br>🔔 Tienes <strong>" + n + " notificación(es) sin leer</strong>." : "";
+    }
+
+    private static List<String> sugerenciasConNotif(int n, String... base) {
+        List<String> lista = new ArrayList<>();
+        if (n > 0) lista.add("🔔 Mis notificaciones");
+        lista.addAll(Arrays.asList(base));
+        return lista;
+    }
+
     private static String normalizarTexto(String s) {
         if (s == null) return "";
         String norm = Normalizer.normalize(s.toLowerCase(), Normalizer.Form.NFD);
@@ -408,7 +446,8 @@ public class ChatbotServlet extends HttpServlet {
     private static boolean contieneAlguno(String texto, String... palabras) {
         for (String p : palabras) {
             String pNorm = normalizarTexto(p);
-            if (texto.contains(pNorm)) {
+            // Palabra completa: "prom" no debe activarse con "promedio", ni "hey" con "they"
+            if (!pNorm.isEmpty() && Pattern.compile("(?<![a-z0-9])" + Pattern.quote(pNorm) + "(?![a-z0-9])").matcher(texto).find()) {
                 return true;
             }
         }

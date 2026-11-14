@@ -1,6 +1,7 @@
 package pe.edu.eventos.dao.impl;
 
 import pe.edu.eventos.dao.UsuarioDAO;
+import pe.edu.eventos.model.Cliente;
 import pe.edu.eventos.model.Usuario;
 import pe.edu.eventos.util.ConexionDB;
 import pe.edu.eventos.util.PasswordUtil;
@@ -93,6 +94,80 @@ public class UsuarioDAOImpl implements UsuarioDAO {
             return false;
         } catch (SQLException e) {
             System.err.println("Error en UsuarioDAOImpl.registrar: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean registrarCliente(Usuario usuario, String dni, String direccion) {
+        String sqlUsuario = "INSERT INTO usuario (nombre, apellido, correo, password, rol, telefono) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
+        String sqlCliente = "INSERT INTO public.cliente (id_usuario, dni, direccion) VALUES (?, ?, ?)";
+
+        try (Connection conn = ConexionDB.obtenerConexion()) {
+            boolean autoCommitPrevio = conn.getAutoCommit();
+            conn.setAutoCommit(false);
+            try {
+                int idUsuario;
+                try (PreparedStatement ps = conn.prepareStatement(sqlUsuario, new String[]{"id"})) {
+                    ps.setString(1, usuario.getNombre());
+                    ps.setString(2, usuario.getApellido());
+                    ps.setString(3, usuario.getCorreo().trim().toLowerCase());
+                    ps.setString(4, usuario.getPassword());
+                    ps.setString(5, usuario.getRol() != null ? usuario.getRol() : "CLIENTE");
+                    ps.setString(6, usuario.getTelefono());
+                    if (ps.executeUpdate() == 0) {
+                        throw new SQLException("No se insertó el usuario.");
+                    }
+                    try (ResultSet rs = ps.getGeneratedKeys()) {
+                        if (!rs.next()) {
+                            throw new SQLException("No se obtuvo el id del usuario.");
+                        }
+                        idUsuario = rs.getInt(1);
+                    }
+                }
+
+                int idCliente;
+                try (PreparedStatement ps = conn.prepareStatement(sqlCliente, new String[]{"id_cliente"})) {
+                    ps.setInt(1, idUsuario);
+                    ps.setString(2, dni);
+                    ps.setString(3, direccion);
+                    if (ps.executeUpdate() == 0) {
+                        throw new SQLException("No se insertó el cliente.");
+                    }
+                    try (ResultSet rs = ps.getGeneratedKeys()) {
+                        if (!rs.next()) {
+                            throw new SQLException("No se obtuvo el id del cliente.");
+                        }
+                        idCliente = rs.getInt(1);
+                    }
+                }
+
+                conn.commit();
+                usuario.setId(idUsuario);
+                if (usuario instanceof Cliente cliente) {
+                    cliente.setIdCliente(idCliente);
+                }
+                return true;
+            } catch (SQLException e) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    System.err.println("Error en rollback de UsuarioDAOImpl.registrarCliente: " + ex.getMessage());
+                }
+                System.err.println("Error en UsuarioDAOImpl.registrarCliente (se hizo rollback): " + e.getMessage());
+                e.printStackTrace();
+                return false;
+            } finally {
+                try {
+                    conn.setAutoCommit(autoCommitPrevio);
+                } catch (SQLException ignorado) {
+                    // la conexión se cierra enseguida
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error en UsuarioDAOImpl.registrarCliente: " + e.getMessage());
             e.printStackTrace();
             return false;
         }

@@ -2,6 +2,7 @@ package pe.edu.eventos.dao.impl;
 
 import pe.edu.eventos.dao.CitaDAO;
 import pe.edu.eventos.model.Cita;
+import pe.edu.eventos.util.BusquedaUtil;
 import pe.edu.eventos.util.ConexionDB;
 
 import java.sql.Connection;
@@ -141,19 +142,7 @@ public class CitaDAOImpl implements CitaDAO {
         }
 
         // Cada palabra escrita debe coincidir en al menos uno de estos campos (AND entre palabras)
-        for (String palabra : tokenizar(busqueda)) {
-            sql.append("AND (CONCAT(u.nombre, ' ', u.apellido) ILIKE ? ")
-                    .append("OR cli.dni ILIKE ? ")
-                    .append("OR c.motivo ILIKE ? ")
-                    .append("OR c.lugar ILIKE ? ")
-                    .append("OR c.modalidad ILIKE ? ")
-                    .append("OR TO_CHAR(c.fecha, 'YYYY-MM-DD') ILIKE ? ")
-                    .append("OR TO_CHAR(c.fecha, 'DD/MM/YYYY') ILIKE ?) ");
-            String patron = "%" + escaparLike(palabra) + "%";
-            for (int i = 0; i < 7; i++) {
-                params.add(patron);
-            }
-        }
+        agregarFiltroBusqueda(sql, params, busqueda);
 
         sql.append("ORDER BY c.fecha, c.hora");
 
@@ -175,23 +164,25 @@ public class CitaDAOImpl implements CitaDAO {
         return citas;
     }
 
-    /** Separa el texto en palabras (máx. 6, máx. 50 caracteres cada una). */
-    private List<String> tokenizar(String texto) {
-        List<String> palabras = new ArrayList<>();
-        if (texto == null || texto.trim().isEmpty()) {
-            return palabras;
+    /**
+     * Agrega al SQL un bloque AND por cada palabra escrita (debe coincidir en al menos un campo).
+     * Los textos se comparan sin tildes ("sesion" encuentra "sesión"); DNI y fecha se comparan tal cual.
+     * Separado y sin acceso a BD para poder probarlo.
+     */
+    static void agregarFiltroBusqueda(StringBuilder sql, List<String> params, String busqueda) {
+        for (String palabra : BusquedaUtil.tokenizar(busqueda)) {
+            sql.append("AND (").append(BusquedaUtil.sinTildesSql("CONCAT(u.nombre, ' ', u.apellido)")).append(" ILIKE ? ")
+                    .append("OR cli.dni ILIKE ? ")
+                    .append("OR ").append(BusquedaUtil.sinTildesSql("c.motivo")).append(" ILIKE ? ")
+                    .append("OR ").append(BusquedaUtil.sinTildesSql("c.lugar")).append(" ILIKE ? ")
+                    .append("OR ").append(BusquedaUtil.sinTildesSql("c.modalidad")).append(" ILIKE ? ")
+                    .append("OR TO_CHAR(c.fecha, 'YYYY-MM-DD') ILIKE ? ")
+                    .append("OR TO_CHAR(c.fecha, 'DD/MM/YYYY') ILIKE ?) ");
+            String patron = BusquedaUtil.patronContieneSinTildes(palabra);
+            for (int i = 0; i < 7; i++) {
+                params.add(patron);
+            }
         }
-        for (String p : texto.trim().split("\\s+")) {
-            if (p.isEmpty()) continue;
-            palabras.add(p.length() > 50 ? p.substring(0, 50) : p);
-            if (palabras.size() == 6) break;
-        }
-        return palabras;
-    }
-
-    /** Escapa los comodines de LIKE para que "50%" o "a_b" se busquen tal cual (escape por defecto: \). */
-    private String escaparLike(String s) {
-        return s.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
 
     @Override

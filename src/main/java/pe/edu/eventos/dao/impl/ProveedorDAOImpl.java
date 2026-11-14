@@ -170,8 +170,10 @@ public class ProveedorDAOImpl implements ProveedorDAO {
                         "FROM proveedor WHERE 1=1 ");
 
         for (String palabra : BusquedaUtil.tokenizar(texto)) {
-            sql.append("AND (razon_social ILIKE ? OR ruc ILIKE ? OR correo ILIKE ? OR direccion ILIKE ?) ");
-            String patron = BusquedaUtil.patronContiene(palabra);
+            sql.append("AND (").append(BusquedaUtil.sinTildesSql("razon_social")).append(" ILIKE ? ")
+                    .append("OR ruc ILIKE ? OR correo ILIKE ? ")
+                    .append("OR ").append(BusquedaUtil.sinTildesSql("direccion")).append(" ILIKE ?) ");
+            String patron = BusquedaUtil.patronContieneSinTildes(palabra);
             for (int i = 0; i < 4; i++) {
                 params.add(patron);
             }

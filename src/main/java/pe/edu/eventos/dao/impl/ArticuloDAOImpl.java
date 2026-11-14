@@ -197,8 +197,11 @@ public class ArticuloDAOImpl implements ArticuloDAO {
 
         // Cada palabra debe coincidir en al menos uno de estos campos (AND entre palabras)
         for (String palabra : BusquedaUtil.tokenizar(texto)) {
-            sql.append("AND (a.nombre ILIKE ? OR a.descripcion ILIKE ? OR p.razon_social ILIKE ? OR p.ruc ILIKE ?) ");
-            String patron = BusquedaUtil.patronContiene(palabra);
+            sql.append("AND (").append(BusquedaUtil.sinTildesSql("a.nombre")).append(" ILIKE ? ")
+                    .append("OR ").append(BusquedaUtil.sinTildesSql("a.descripcion")).append(" ILIKE ? ")
+                    .append("OR ").append(BusquedaUtil.sinTildesSql("p.razon_social")).append(" ILIKE ? ")
+                    .append("OR p.ruc ILIKE ?) ");
+            String patron = BusquedaUtil.patronContieneSinTildes(palabra);
             for (int i = 0; i < 4; i++) {
                 params.add(patron);
             }

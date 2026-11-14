@@ -805,6 +805,18 @@
         }
     }
 
+    // Fecha de hoy (yyyy-mm-dd) en el reloj del equipo; el servidor vuelve a validar con hora de Lima
+    function hoyIso() {
+        var d = new Date();
+        var mes = String(d.getMonth() + 1).padStart(2, '0');
+        var dia = String(d.getDate()).padStart(2, '0');
+        return d.getFullYear() + '-' + mes + '-' + dia;
+    }
+    (function () {
+        var campoFecha = document.getElementById('ev-fecha');
+        if (campoFecha) campoFecha.min = hoyIso();
+    })();
+
     function irAInsumos() {
         const nombre = document.getElementById('ev-nombre').value.trim();
         const cliente = document.getElementById('ev-cliente').value;
@@ -822,6 +834,11 @@
         }
         if (!fecha) {
             alert('Por favor especifica la fecha del evento.');
+            document.getElementById('ev-fecha').focus();
+            return;
+        }
+        if (fecha < hoyIso()) {
+            alert('La fecha del evento no puede ser anterior a hoy.');
             document.getElementById('ev-fecha').focus();
             return;
         }

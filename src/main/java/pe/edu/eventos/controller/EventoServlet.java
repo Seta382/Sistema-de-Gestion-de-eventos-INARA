@@ -21,6 +21,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,7 +79,7 @@ public class EventoServlet extends HttpServlet {
             return;
         }
 
-        // [CAMBIO 1] Solo el personal (admin o empleado) puede registrar eventos o cambiar su etapa
+        // Solo el personal (admin o empleado) puede registrar eventos o cambiar su etapa
         UsuarioDTO usuario = (UsuarioDTO) session.getAttribute(Constantes.SESION_USUARIO);
         String rol = usuario.getRol() != null ? usuario.getRol().toUpperCase() : "";
         if (!Constantes.ROL_ADMIN.equals(rol) && !Constantes.ROL_EMPLEADO.equals(rol)) {
@@ -88,7 +89,7 @@ public class EventoServlet extends HttpServlet {
         }
 
         try {
-            // [CAMBIO 2] Cambio de etapa: POST /evento con accion=avanzarEtapa e idEvento
+            // Cambio de etapa: POST /evento con accion=avanzarEtapa e idEvento
             if ("avanzarEtapa".equals(request.getParameter("accion"))) {
                 avanzarEtapa(request, out);
                 return;
@@ -106,18 +107,18 @@ public class EventoServlet extends HttpServlet {
 
             Evento evento = new Evento();
             evento.setNombre(nombre);
-            evento.setIdTipoEvento(idTipoStr != null ? Integer.parseInt(idTipoStr) : null);
-            evento.setIdCliente(idClienteStr != null ? Integer.parseInt(idClienteStr) : null);
+            evento.setIdTipoEvento(idTipoStr != null ? Integer.parseInt(idTipoStr.trim()) : null);
+            evento.setIdCliente(idClienteStr != null ? Integer.parseInt(idClienteStr.trim()) : null);
 
             if (fechaStr != null && !fechaStr.trim().isEmpty()) {
                 evento.setFechaEvento(LocalDate.parse(fechaStr.trim()));
             }
             if (horaStr != null && !horaStr.trim().isEmpty()) {
                 String h = horaStr.trim();
-                if (h.length() == 5) h = h + ":00"; // format HH:mm:ss
+                if (h.length() == 5) h = h + ":00"; // formato HH:mm:ss
                 evento.setHoraEvento(LocalTime.parse(h));
             }
-            evento.setNumInvitados(aforoStr != null ? Integer.parseInt(aforoStr) : 0);
+            evento.setNumInvitados(aforoStr != null ? Integer.parseInt(aforoStr.trim()) : 0);
             evento.setPresupuesto(presupuestoStr != null && !presupuestoStr.trim().isEmpty()
                     ? new BigDecimal(presupuestoStr.trim()) : BigDecimal.ZERO);
 
@@ -128,6 +129,24 @@ public class EventoServlet extends HttpServlet {
             String idCitaStr = request.getParameter("idCita");
             if (idCitaStr != null && !idCitaStr.trim().isEmpty()) {
                 evento.setIdCita(Integer.parseInt(idCitaStr.trim()));
+            }
+
+            // Validaciones en el servidor (no depender solo del JavaScript)
+            if (nombre == null || nombre.trim().isEmpty() || nombre.length() > 150) {
+                throw new IllegalArgumentException("Nombre de evento inválido.");
+            }
+            if (evento.getIdCliente() == null) {
+                throw new IllegalArgumentException("Debes seleccionar un cliente.");
+            }
+            if (evento.getNumInvitados() <= 0) {
+                throw new IllegalArgumentException("El aforo debe ser mayor a 0.");
+            }
+            if (evento.getPresupuesto().signum() < 0) {
+                throw new IllegalArgumentException("El presupuesto no puede ser negativo.");
+            }
+            if (evento.getFechaEvento() == null || evento.getFechaEvento().isBefore(
+                    LocalDate.now(EventoDAO.ZONA_NEGOCIO))) {
+                throw new IllegalArgumentException("La fecha del evento no puede ser anterior a hoy.");
             }
 
             // 2. Insumos seleccionados: formato "idArticulo:cantidad,idArticulo:cantidad"
@@ -171,18 +190,26 @@ public class EventoServlet extends HttpServlet {
                 out.print("{\"success\":false,\"mensaje\":\"No se pudo completar el registro del evento en Supabase. Se ejecutó Rollback.\"}");
             }
 
+        } catch (DateTimeParseException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            out.print("{\"success\":false,\"mensaje\":\"Fecha u hora con formato inválido.\"}");
+        } catch (NumberFormatException e) {
+            // Debe ir antes que IllegalArgumentException (es su subclase)
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            out.print("{\"success\":false,\"mensaje\":\"Hay un número con formato inválido.\"}");
         } catch (IllegalArgumentException e) {
+            // Mensajes controlados por nosotros (validaciones del servidor y del servicio)
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             out.print("{\"success\":false,\"mensaje\":\"" + escapeJson(e.getMessage()) + "\"}");
         } catch (Exception e) {
             e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.print("{\"success\":false,\"mensaje\":\"Error interno al procesar el evento: " + escapeJson(e.getMessage()) + "\"}");
+            out.print("{\"success\":false,\"mensaje\":\"Error interno al procesar el evento.\"}");
         }
     }
 
     /**
-     * [CAMBIO 3] Pasa un evento a la siguiente etapa.
+     * Pasa un evento a la siguiente etapa.
      * Los errores de validación los atrapa doPost (IllegalArgumentException).
      */
     private void avanzarEtapa(HttpServletRequest request, PrintWriter out) {
@@ -212,14 +239,14 @@ public class EventoServlet extends HttpServlet {
         request.setAttribute("conteos", eventoService.contarEventosPorPeriodo());
         request.setAttribute("busqueda", q);
         request.setAttribute("filtro", filtro);
-        request.setAttribute("hoy", java.time.LocalDate.now(EventoDAO.ZONA_NEGOCIO));
+        request.setAttribute("hoy", LocalDate.now(EventoDAO.ZONA_NEGOCIO));
         // Fragmento ya codificado para armar los links de los filtros en la vista
         request.setAttribute("qParamHtml", q.isEmpty() ? "" : "&amp;q=" + URLEncoder.encode(q, StandardCharsets.UTF_8));
 
         request.getRequestDispatcher("/empleado/eventos.jsp").forward(request, response);
     }
 
-    /** PROXIMOS (por defecto), PASADOS o TODOS. */
+    /** PROXIMOS (por defecto), PASADOS o TODOS. Cualquier otro valor se descarta. */
     private String leerFiltroCronograma(String valor) {
         if (valor == null) return EventoDAO.FILTRO_PROXIMOS;
         String f = valor.trim().toUpperCase();
@@ -229,7 +256,10 @@ public class EventoServlet extends HttpServlet {
 
     private String escapeJson(String s) {
         if (s == null) return "";
-        return s.replace("\"", "\\\"").replace("\n", " ").replace("\r", "");
+        return s.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", " ")
+                .replace("\r", "")
+                .replace("\t", " ");
     }
 }
-

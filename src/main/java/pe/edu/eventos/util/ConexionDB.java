@@ -1,22 +1,24 @@
 package pe.edu.eventos.util;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
 /**
- * Conexión a Supabase (PostgreSQL) usando el Session pooler.
- * Las credenciales viven en resources/application.properties, NO en el
- * código, para no subir la contraseña al repositorio por accidente.
+ * Conexión a Supabase (PostgreSQL) con pool de conexiones (HikariCP).
+ * Las credenciales viven en resources/application.properties.
  */
 public class ConexionDB {
 
-    private static final Properties props = new Properties();
+    private static final HikariDataSource dataSource;
 
     static {
+        Properties props = new Properties();
         try (InputStream input = ConexionDB.class.getClassLoader()
                 .getResourceAsStream("application.properties")) {
             if (input == null) {
@@ -26,30 +28,41 @@ public class ConexionDB {
         } catch (IOException e) {
             throw new RuntimeException("Error al leer application.properties", e);
         }
+
+        String url = String.format(
+                "jdbc:postgresql://%s:%s/%s?sslmode=require",
+                props.getProperty("db.host"),
+                props.getProperty("db.port"),
+                props.getProperty("db.database"));
+
+        HikariConfig cfg = new HikariConfig();
+        cfg.setDriverClassName("org.postgresql.Driver");
+        cfg.setJdbcUrl(url);
+        cfg.setUsername(props.getProperty("db.user"));
+        cfg.setPassword(props.getProperty("db.password"));
+
+        cfg.setMaximumPoolSize(8);          // el plan gratis de Supabase limita conexiones
+        cfg.setMinimumIdle(2);              // mantiene 2 conexiones listas
+        cfg.setConnectionTimeout(10_000);   // falla en 10 s en vez de colgarse
+        cfg.setIdleTimeout(300_000);        // 5 min
+        cfg.setMaxLifetime(1_500_000);      // 25 min (menor al límite del pooler)
+        cfg.setInitializationFailTimeout(-1); // no tumba la app si la BD tarda al arrancar
+        cfg.setPoolName("inara-pool");
+
+        dataSource = new HikariDataSource(cfg);
     }
 
     private ConexionDB() {
     }
 
     public static Connection obtenerConexion() throws SQLException {
-        try {
-            Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new SQLException("No se encontró el driver JDBC de PostgreSQL en el classpath", e);
+        return dataSource.getConnection();
+    }
+
+    /** Cierra el pool (se llama al detener la aplicación). */
+    public static void cerrar() {
+        if (dataSource != null && !dataSource.isClosed()) {
+            dataSource.close();
         }
-
-        String host = props.getProperty("db.host");
-        String port = props.getProperty("db.port");
-        String database = props.getProperty("db.database");
-        String user = props.getProperty("db.user");
-        String password = props.getProperty("db.password");
-
-        // sslmode=require porque Supabase exige conexiones cifradas
-        String url = String.format(
-                "jdbc:postgresql://%s:%s/%s?sslmode=require",
-                host, port, database
-        );
-
-        return DriverManager.getConnection(url, user, password);
     }
 }

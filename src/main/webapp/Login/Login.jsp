@@ -1,4 +1,11 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%!
+    private static String esc(Object o) {
+        if (o == null) return "";
+        return String.valueOf(o).replace("&", "&amp;").replace("<", "&lt;")
+                .replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&#39;");
+    }
+%>
 <!DOCTYPE html>
 <html lang="es">
 <head>
